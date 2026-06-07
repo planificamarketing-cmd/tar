@@ -2,38 +2,37 @@
 
 > **Partida guardada del proyecto.** Este archivo (+ `CLAUDE.md` + `git log`) es lo ÚNICO que se lee al iniciar sesión. NO releer el PRD, el plan ni el código completos: consultar solo la sección puntual que toque la tarea en curso. Se regenera (se sobrescribe) al final de cada sesión.
 
-**Última actualización:** 2026-06-07 · sesión Fase 0
-**Fase actual:** FASE 0 — Cimientos · **COMPLETA** (DoD cumplida) → siguiente FASE 1 · **Avance global:** ~12%
+**Última actualización:** 2026-06-07 · sesión Fase 1
+**Fase actual:** FASE 1 — Datos + prototipos · **parte técnica COMPLETA**; resta firma de diseño (cliente). **Avance global:** ~25%
 
 ## Hecho
-- Monorepo pnpm + Turborepo operativo: `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, ESLint + Prettier. **pnpm fijado a 9.15.9** vía `packageManager` (la 11.x de corepack exige Node 22; el repo corre en Node 20).
-- BD local en Docker con `postgis/postgis:16-3.4` (`infra/docker-compose.yml`). Verificado: PostGIS 3.4.3 / PG16. Comandos `pnpm db:up` / `db:down`.
-- `apps/api` (Express 5 + TS): env tipado con Zod (`src/env.ts`), logger pino, `errorHandler` central con formato `{ error: { code, message } }`, `helmet`/`cors`/`hpp`/`rate-limit`, **`GET /health`** que comprueba conectividad a PostGIS. Test supertest en verde (health + 404).
-- `apps/web` (Next.js 14 App Router + Tailwind v3): página placeholder, tokens de marca base (rojo `#D2103E` confirmado). `output: standalone`, `transpilePackages: ['@tar/shared']`.
-- `packages/db` (Drizzle + pg): cliente `db`/`pool`, `drizzle.config.ts`, runner de migración y seed (placeholders), comandos `db:generate`/`db:migrate`/`db:seed`.
-- `packages/shared`: placeholder de esquemas Zod (se pueblan en Fase 1).
-- `.env.example` completo (§12); CI GitHub Actions `lint → typecheck → build`; carpeta `design-reference/` con placeholder.
-- **Verificado:** `pnpm install`, `lint`, `typecheck`, `build`, `test` en verde; `pnpm dev` levanta API con `/health` → `{ db: true, postgis: ... }`.
+- **FASE 0** completa (cimientos, ver `git log`).
+- **Esquema Drizzle completo** (`packages/db/src/schema.ts`, §4.1): 14 tablas con enums, precios duales + normalizados MXN, `geo geography(Point,4326)`, full-text español (`search_vector`), soft delete, índices btree/GIN/GiST. Migración `0000_*` aplicada (con `CREATE EXTENSION postgis, citext`).
+- **Seed** (`pnpm db:seed`, idempotente): 1 admin (`admin@tarinternacional.com` / `admin123`), 8 amenidades, 5 colonias (CDMX/Edomex/Qro), **10 propiedades** de muestra (venta/renta, MXN/USD, los tipos del inventario). Verificado: normalización MXN, `ST_Within`/bbox y full-text funcionando.
+- **Esquemas Zod compartidos** (`packages/shared/src/*`, §5): enums, paginación, auth, users, **filtros de propiedades + create/update + bbox del mapa**, leads (honeypot + consentimiento LFPDPPP + cita), webhooks (salientes/entrantes/api-keys), scripts.
+- **ERD borrador**: `docs/ERD.md` (Mermaid) + `docs/schema.sql` (dump del esquema aplicado).
+- Verificado: `lint`, `typecheck`, `build`, `test` en verde.
 
 ## En progreso
-- _(ninguna — fase cerrada)_
+- _(ninguna técnica — esperando insumos del cliente para el bloque de diseño)_
 
 ## Siguiente (máx. 3)
-1. **Iniciar FASE 1:** implementar esquema Drizzle completo (§4.1) en `packages/db/src/schema.ts` (users, properties con `geo` geography + índices, precios duales normalizados, leads, webhooks, api_keys, etc.).
-2. Migración inicial + `db:seed` con 10 propiedades reales del CSV; definir esquemas Zod compartidos en `packages/shared` (§5).
-3. Publicar el prototipo v3 en URL navegable (con rojo `#D2103E`) para revisión del cliente.
+1. **Iniciar FASE A — Backend (§5):** A.1 Auth (argon2 + access/refresh rotativo, `requireAuth`/`requireRole`, helmet/cors/hpp/rate-limit estricto en login) sobre el esquema y los Zod ya listos.
+2. A.2 Propiedades: CRUD + `publish` (slug inmutable, valida geo) + `GET /properties` (filtros sobre `price_*_mxn`, sort premium) + `GET /properties/map` (bbox `ST_Within`, SQL crudo).
+3. Cuando el cliente entregue el prototipo v3: publicarlo con el rojo `#D2103E` y abrir la ronda de revisión/firma (desbloquea Fase B).
 
 ## Decisiones / desviaciones respecto al PRD
-- 2026-06-07: **pnpm 9.15.9** (no la 11.x) por compatibilidad con Node 20. Sin impacto en el stack.
-- 2026-06-07: API se empaqueta con **tsup** (CJS) y los paquetes `@tar/*` se exponen como fuente TS (inlined vía `noExternal`); web los transpila con `transpilePackages`. Evita un paso de build intermedio en los packages.
-- 2026-06-07: `design-reference/` contiene solo un placeholder; copiar prototipo v3 + logo reales tras la firma (bloqueo de cliente).
+- 2026-06-07: el **seed usa datos de muestra sintéticos** representativos (no el CSV real, que es entrega del cliente para el Lanzamiento). La carga real será vía `pnpm import:inventario` (Fase A.5).
+- 2026-06-07: el tipo `geography(Point,4326)` requiere **quitar las comillas** que drizzle-kit añade al modificador en el SQL generado (nota en `schema.ts`). Migración ya corregida.
+- 2026-06-07: ERD entregado como `docs/ERD.md` (Mermaid) + `schema.sql`; el **PDF definitivo** es entregable de Lanzamiento (§15).
+- La parte de diseño de la Fase 1 (prototipo/firma) NO bloquea la Fase A (backend); sí es prerequisito duro de la Fase B.
 
 ## Bloqueos / pendientes del cliente
-- Dominio definitivo (pendiente TAR)
-- Firma del diseño v3 tras revisión (pendiente TAR) — prerequisito duro de la Fase B
-- API keys: Google Maps, SendGrid, Cloudflare R2 (pendiente TAR)
+- **Prototipo v3 (HTML) + logo** para publicar, revisar y firmar (bloquea Fase B).
+- Dominio definitivo (pendiente TAR).
+- API keys: Google Maps, SendGrid, Cloudflare R2 (pendiente TAR) — necesarias antes de Fase B / importador.
 
 ## Cómo retomar
 - `git log --oneline -15` para ver el avance real de código.
 - Tareas marcadas `[x]` en `PLAN_EJECUCION_FASES.md` = fuente de verdad del checklist.
-- Levantar: `pnpm db:up` (BD) + `pnpm dev` (api+web). Copiar `.env.example` → `.env` si no existe.
+- Levantar: `pnpm db:up` (BD) + `pnpm dev`. Recargar datos: `pnpm db:migrate && pnpm db:seed`.
