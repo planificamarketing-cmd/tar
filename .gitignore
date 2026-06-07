@@ -13,6 +13,9 @@ dist/
 build/
 *.tsbuildinfo
 
+# Turborepo
+.turbo/
+
 # Estado de Claude Code (logs y transcripts locales)
 .claude/session.log
 .claude/transcripts/

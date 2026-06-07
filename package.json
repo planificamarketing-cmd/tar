@@ -1,0 +1,34 @@
+{
+  "name": "tar-portal",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Plataforma TAR Internacional — portal inmobiliario (PERN + Next.js 14, monorepo pnpm + Turborepo).",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=20 <21"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:e2e": "turbo run test:e2e",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:generate": "pnpm --filter @tar/db db:generate",
+    "db:migrate": "pnpm --filter @tar/db db:migrate",
+    "db:seed": "pnpm --filter @tar/db db:seed",
+    "db:up": "docker compose -f infra/docker-compose.yml up -d",
+    "db:down": "docker compose -f infra/docker-compose.yml down"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.4.2",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  }
+}

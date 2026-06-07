@@ -1,0 +1,24 @@
+# BD local en Docker con la MISMA imagen que producción (paridad VPS, CLAUDE.md).
+# En dev se expone 5432 al host para conectarse desde la API/Drizzle locales.
+# En producción NO se exponen los puertos de Postgres: solo Caddy (80/443) es público.
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: tar-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tar}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tar}
+      POSTGRES_DB: ${POSTGRES_DB:-tar_portal}
+    ports:
+      - '5432:5432'
+    volumes:
+      - tar-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-tar} -d ${POSTGRES_DB:-tar_portal}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  tar-db-data:

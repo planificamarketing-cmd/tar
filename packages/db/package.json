@@ -1,0 +1,29 @@
+{
+  "name": "@tar/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "build": "echo \"@tar/db: solo fuente TS, sin build\" && exit 0",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx --env-file=../../.env src/migrate.ts",
+    "db:seed": "tsx --env-file=../../.env src/seed.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.38.3",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.10",
+    "@types/pg": "^8.11.10",
+    "drizzle-kit": "^0.30.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

@@ -10,14 +10,14 @@ Mapeado al roadmap de 16 semanas del documento comercial. Cada fase tiene **tare
 
 > **Nota de infraestructura:** las Fases 0–B se desarrollan **100% en equipo local** (Docker Compose para la BD; api/web con `pnpm dev`). El servidor del cliente NO se necesita hasta la FASE QA (semanas 14–15); no tenerlo las primeras semanas no bloquea nada. Lo único que sí se necesita antes de la Fase B: API key de Google Maps y cuenta SendGrid (pueden ser keys de desarrollo temporales).
 
-- [ ] Inicializar monorepo: `pnpm-workspace.yaml`, `turbo.json`, ESLint + Prettier + tsconfig base compartido, `.gitattributes` (LF), `.nvmrc` (Node 20).
-- [ ] BD local **con Docker** (misma imagen `postgis/postgis:16-3.4` que producción), nunca instalación nativa — asegura paridad con el VPS.
-- [ ] Crear `apps/api` (Express 5 + TS), `apps/web` (Next.js 14 + TS + Tailwind), `packages/db`, `packages/shared`; copiar el prototipo v3 y logo a `design-reference/`.
-- [ ] `infra/docker-compose.yml` con `db` (postgis/postgis:16-3.4); levantar PostgreSQL + PostGIS local.
-- [ ] Configurar Drizzle en `packages/db` (conexión `pg`, comandos `db:generate`/`db:migrate`).
-- [ ] `.env.example` completo (§12) + carga de env tipada con Zod.
-- [ ] `logger` (pino), `errorHandler`, `/health` en API.
-- [ ] CI GitHub Actions: `lint → typecheck → build`.
+- [x] Inicializar monorepo: `pnpm-workspace.yaml`, `turbo.json`, ESLint + Prettier + tsconfig base compartido, `.gitattributes` (LF), `.nvmrc` (Node 20).
+- [x] BD local **con Docker** (misma imagen `postgis/postgis:16-3.4` que producción), nunca instalación nativa — asegura paridad con el VPS.
+- [x] Crear `apps/api` (Express 5 + TS), `apps/web` (Next.js 14 + TS + Tailwind), `packages/db`, `packages/shared`; copiar el prototipo v3 y logo a `design-reference/`. _(carpeta `design-reference/` creada con placeholder; el prototipo/logo se copian tras la firma del cliente — Fase 1.)_
+- [x] `infra/docker-compose.yml` con `db` (postgis/postgis:16-3.4); levantar PostgreSQL + PostGIS local.
+- [x] Configurar Drizzle en `packages/db` (conexión `pg`, comandos `db:generate`/`db:migrate`).
+- [x] `.env.example` completo (§12) + carga de env tipada con Zod.
+- [x] `logger` (pino), `errorHandler`, `/health` en API.
+- [x] CI GitHub Actions: `lint → typecheck → build`.
 
 **Entregable:** `pnpm dev` levanta API (`/health` OK) y web (página vacía) contra Postgres+PostGIS.
 **DoD:** repo compila, lint/typecheck en verde, CI pasa, BD conecta.
