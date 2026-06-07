@@ -1,0 +1,27 @@
+# Dependencias
+node_modules/
+.pnpm-store/
+
+# Entorno y secretos (NUNCA commitear)
+.env
+.env.*
+!.env.example
+
+# Builds
+.next/
+dist/
+build/
+*.tsbuildinfo
+
+# Estado de Claude Code (logs y transcripts locales)
+.claude/session.log
+.claude/transcripts/
+
+# Media local en dev (las imágenes no van al repo)
+/srv/tar/media/
+apps/api/uploads/
+
+# Respaldos y temporales
+/var/backups/
+*.log
+.DS_Store

@@ -1,0 +1,16 @@
+# Normaliza finales de línea: todo el stack corre en Linux/Node.
+# Evita que Git en Windows convierta a CRLF y rompa los scripts .sh en el VPS.
+* text=auto eol=lf
+*.sh text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+# Solo los .bat/.cmd de Windows conservan CRLF
+*.{cmd,bat} text eol=crlf
+# Binarios sin tocar
+*.png binary
+*.jpg binary
+*.webp binary
+*.svg binary
+*.pdf binary
