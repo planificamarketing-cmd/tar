@@ -24,6 +24,10 @@ build/
 /srv/tar/media/
 apps/api/uploads/
 
+# Datos del cliente (PII): inventario real, aviso de privacidad, referencias.
+# Disponibles localmente para el importador (Fase A.5) y contenido; NO van al repo.
+/data/
+
 # Respaldos y temporales
 /var/backups/
 *.log

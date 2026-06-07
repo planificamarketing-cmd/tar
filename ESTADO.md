@@ -11,6 +11,8 @@
 - **Seed** (`pnpm db:seed`, idempotente): 1 admin (`admin@tarinternacional.com` / `admin123`), 8 amenidades, 5 colonias (CDMX/Edomex/Qro), **10 propiedades** de muestra (venta/renta, MXN/USD, los tipos del inventario). Verificado: normalización MXN, `ST_Within`/bbox y full-text funcionando.
 - **Esquemas Zod compartidos** (`packages/shared/src/*`, §5): enums, paginación, auth, users, **filtros de propiedades + create/update + bbox del mapa**, leads (honeypot + consentimiento LFPDPPP + cita), webhooks (salientes/entrantes/api-keys), scripts.
 - **ERD borrador**: `docs/ERD.md` (Mermaid) + `docs/schema.sql` (dump del esquema aplicado).
+- **Prototipo v3 ingerido** (handoff de Claude Design) en `design-reference/prototipo-v3/`: HTML + 4 JSX + logo. Rojo de marca corregido a **`#D2103E`** (confirmado del logo). Navegable local con `pnpm prototipo` (http://localhost:4173). Falta deploy público.
+- **Datos del cliente resguardados** en `data/` (gitignored, PII): **CSV real de inventario (105 propiedades)** para el importador (Fase A.5), aviso de privacidad PDF (para `/aviso-privacidad`), capturas del diseño desplegado y contenido "Nosotros".
 - Verificado: `lint`, `typecheck`, `build`, `test` en verde.
 
 ## En progreso
@@ -28,7 +30,8 @@
 - La parte de diseño de la Fase 1 (prototipo/firma) NO bloquea la Fase A (backend); sí es prerequisito duro de la Fase B.
 
 ## Bloqueos / pendientes del cliente
-- **Prototipo v3 (HTML) + logo** para publicar, revisar y firmar (bloquea Fase B).
+- **Revisión y FIRMA del prototipo v3** por TAR (hasta 3 rondas, §13) — bloquea Fase B. (El prototipo ya está ingerido y listo para mostrar.)
+- **Elegir host gratuito + cuenta** para el deploy público del prototipo (Netlify/Vercel/GH Pages/Cloudflare).
 - Dominio definitivo (pendiente TAR).
 - API keys: Google Maps, SendGrid, Cloudflare R2 (pendiente TAR) — necesarias antes de Fase B / importador.
 
