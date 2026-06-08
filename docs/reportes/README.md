@@ -1,0 +1,35 @@
+# Reportes de avance — Plataforma TAR Internacional
+
+Reportes para presentar el avance al cliente, **alineados al cronograma de 16
+semanas** (`PLAN_EJECUCION_FASES.md`). Aunque la ejecución va **adelantada**, el
+avance se organiza por la semana del cronograma a la que corresponde cada entrega.
+
+## Cadencia
+- **Semanal** (`semana-NN.md`): qué se hizo esa semana del cronograma, entregables,
+  evidencia de que funciona, decisiones, riesgos y lo que sigue.
+- **Quincenal** (`quincena-N.md`): consolidado ejecutivo de dos semanas, pensado
+  para presentar al cliente (resumen, % de avance, hitos, demos).
+
+Plantillas: [`_plantilla-semanal.md`](_plantilla-semanal.md) ·
+[`_plantilla-quincenal.md`](_plantilla-quincenal.md).
+
+## Mapa cronograma ↔ fases ↔ reporte
+| Semana | Fase (plan) | Reporte | Estado |
+|---|---|---|---|
+| 1 | Fase 0 Cimientos + inicio Fase 1 | [semana-01](semana-01.md) | ✅ |
+| 2 | Fase 1 Datos + prototipos | [semana-02](semana-02.md) | ✅ |
+| 3 | Fase A.1–A.2 (Auth, Propiedades) | [semana-03](semana-03.md) | ✅ |
+| 4 | Fase A.3–A.4 (Media, Leads/Webhooks) | [semana-04](semana-04.md) | ✅ |
+| 5 | Fase A.5–A.6 (Importador, OpenAPI) | [semana-05](semana-05.md) | ✅ |
+| 6 | Cierre Fase A + verificación · inicio Fase C | [semana-06](semana-06.md) | 🔄 |
+| 6–8 | Fase C Backoffice | _(en curso)_ | ⏳ |
+| 8–13 | Fase B Frontend público | _(tras firma diseño)_ | ⛔ |
+| 14–15 | Fase QA | — | ⏳ |
+| 16 | Lanzamiento | — | ⏳ |
+
+Quincenales: [quincena-1](quincena-1.md) (sem 1–2) · [quincena-2](quincena-2.md)
+(sem 3–4) · [quincena-3](quincena-3.md) (sem 5–6).
+
+> **Nota de calendario:** las fechas reales dependen del kick-off formal con TAR.
+> Corte de este paquete de reportes: **2026-06-07**. La ejecución está **adelantada**
+> respecto al cronograma contractual (sin costo adicional, §13).
