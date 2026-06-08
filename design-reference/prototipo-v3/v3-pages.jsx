@@ -655,6 +655,12 @@ const Map3 = ({ onNavigate }) => {
       <div style={{ flex: 1, position: "relative" }}>
         <div ref={mapRef} style={{ position:"absolute", inset:0 }} />
 
+        {/* "Buscar en esta área" — re-busca por el área visible al desplazar el mapa (PRD §7.1) */}
+        <button title="Re-busca por el área visible del mapa"
+          style={{ position:"absolute", top:74, left:"50%", transform:"translateX(-50%)", zIndex:6, background:"#0F1B2D", color:"#fff", border:"none", padding:"10px 18px", borderRadius:24, fontFamily:"var(--sans)", fontSize:13, fontWeight:600, cursor:"pointer", boxShadow:"0 4px 14px rgba(0,0,0,0.25)", display:"inline-flex", alignItems:"center", gap:7 }}>
+          <I3Search s={14}/> Buscar en esta área
+        </button>
+
         {/* Filter pills overlay (top) */}
         <div style={{ position:"absolute", top:20, left:20, right:20, display:"flex", gap:8, zIndex:5, flexWrap:"wrap" }}>
           {/* Price pill (dropdown emulation) */}
@@ -725,11 +731,20 @@ const Detail3 = ({ propertyId, onNavigate }) => {
 
   return (
     <div style={{ paddingTop:84, background:"#FAFAF8", minHeight:"100vh" }}>
-      {/* Back bar */}
-      <div style={{ maxWidth:1400, margin:"0 auto", padding:"12px 32px" }}>
-        <button onClick={() => onNavigate("listings")} style={{ background:"none", border:"none", cursor:"pointer", fontFamily:"var(--sans)", fontSize:13, color:"#6B7280", display:"flex", alignItems:"center", gap:5 }}>
-          <I3ChevL s={14}/> Volver a propiedades
-        </button>
+      {/* Breadcrumbs (navegación + SEO/JSON-LD BreadcrumbList) */}
+      <div style={{ maxWidth:1400, margin:"0 auto", padding:"12px 32px", display:"flex", alignItems:"center", gap:7, flexWrap:"wrap", fontFamily:"var(--sans)", fontSize:13 }}>
+        {[
+          ["Inicio", () => onNavigate("home")],
+          [p.operation === "venta" ? "Venta" : "Renta", () => onNavigate("listings", { operation:p.operation })],
+          [p.colony || p.location, () => onNavigate("listings", { search:p.colony || "" })],
+        ].map(([label, go], i) => (
+          <React.Fragment key={i}>
+            <button onClick={go} style={{ background:"none", border:"none", cursor:"pointer", fontFamily:"var(--sans)", fontSize:13, color:"#6B7280", padding:0 }}
+              onMouseEnter={e => e.currentTarget.style.color="var(--tar)"} onMouseLeave={e => e.currentTarget.style.color="#6B7280"}>{label}</button>
+            <span style={{ color:"#D1D5DB" }}>/</span>
+          </React.Fragment>
+        ))}
+        <span style={{ color:"#0F1B2D", fontWeight:500, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", maxWidth:360 }}>{p.title}</span>
       </div>
 
       {/* Gallery — main + 3 thumb grid */}
@@ -823,7 +838,9 @@ const Detail3 = ({ propertyId, onNavigate }) => {
             <div style={{ background:"#fff", borderRadius:18, padding:"28px 32px", border:"1px solid #F1F1F0" }}>
               <h3 style={{ fontFamily:"var(--display)", fontSize:22, fontWeight:700, color:"#0F1B2D", marginBottom:18 }}>Datos</h3>
               <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:0 }}>
-                {[["Tipo",TYPE_LABELS[p.type]],["Operación",p.operation.charAt(0).toUpperCase()+p.operation.slice(1)],["Superficie",`${p.area} m²`],["Antigüedad",p.age>0?`${p.age} años`:"Nueva"],["Ubicación",p.location],["Estatus","Disponible"]].map(([k,v]) => (
+                {[["Tipo",TYPE_LABELS[p.type]],["Operación",p.operation.charAt(0).toUpperCase()+p.operation.slice(1)],["Superficie",`${p.area} m²`],
+                  ...(p.area>0 ? [["Precio por m²",`$${Math.round(p.price/p.area).toLocaleString("es-MX")} ${p.currency}/m²${p.operation==="renta"?"/mes":""}`]] : []),
+                  ["Antigüedad",p.age>0?`${p.age} años`:"Nueva"],["Ubicación",p.location],["Estatus","Disponible"]].map(([k,v]) => (
                   <div key={k} style={{ padding:"12px 0", borderBottom:"1px solid #F1F1F0", display:"flex", justifyContent:"space-between", fontFamily:"var(--sans)", fontSize:14 }}>
                     <span style={{ color:"#6B7280" }}>{k}</span>
                     <span style={{ color:"#0F1B2D", fontWeight:500 }}>{v}</span>

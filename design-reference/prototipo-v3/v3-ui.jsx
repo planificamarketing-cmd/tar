@@ -31,6 +31,7 @@ const I3List   = ({s=16}) => <S s={s} d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.0
 const I3Edit   = ({s=16}) => <S s={s} d={["M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7","M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"]} />;
 const I3Share  = ({s=16}) => <S s={s} d={["M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8","M16 6l-4-4-4 4","M12 2v13"]} />;
 const I3Verif  = ({s=16}) => <S s={s} d={["M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z","M9 12l2 2 4-4"]} />;
+const I3Camera = ({s=16}) => <S s={s} d={["M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z","M12 17a4 4 0 100-8 4 4 0 000 8z"]} />;
 
 // ── Property image with For Sale/Renta badge ─────────────────────────────────
 const PropImg3 = ({ property, height = 220, rounded = true }) => (
@@ -61,6 +62,12 @@ const PropImg3 = ({ property, height = 220, rounded = true }) => (
       <div style={{ position:"absolute", top:14, right:14, background:"var(--tar)", color:"#fff", padding:"5px 12px", borderRadius:20, fontFamily:"var(--sans)", fontSize:11, fontWeight:700 }}>Nuevo</div>
     )}
     <div style={{ position:"absolute", bottom:10, left:14, color:"rgba(255,255,255,0.85)", fontFamily:"var(--sans)", fontSize:11, fontWeight:500, textShadow:"0 1px 3px rgba(0,0,0,0.5)" }}>{TYPE_LABELS[property.type]}</div>
+    {/* Contador de fotos — señal de galería (estándar en portales inmobiliarios). */}
+    {property.images && property.images.length > 1 && (
+      <div style={{ position:"absolute", bottom:12, right:12, display:"inline-flex", alignItems:"center", gap:5, background:"rgba(15,27,45,0.72)", color:"#fff", padding:"4px 9px", borderRadius:14, fontFamily:"var(--sans)", fontSize:11, fontWeight:600 }}>
+        <I3Camera s={12}/> {property.images.length}
+      </div>
+    )}
   </div>
 );
 
@@ -282,6 +289,8 @@ const ContactForm3 = ({ property, compact = false, onClose }) => {
   ];
   const sel = countries.find(c => c.code === country);
   const [open, setOpen] = React.useState(false);
+  const [mode, setMode] = React.useState("contacto"); // contacto | cita (PRD lead.type)
+  const [visit, setVisit] = React.useState({ date:"", time:"" });
 
   const inp = (placeholder, val, on, type="text") => (
     <div style={{ position:"relative", border:"1px solid #D1D5DB", borderRadius:10, padding:"10px 14px 6px", background:"#fff" }}>
@@ -295,8 +304,8 @@ const ContactForm3 = ({ property, compact = false, onClose }) => {
     return (
       <div style={{ background:"#fff", borderRadius:14, padding:"32px 24px", textAlign:"center", border:"1px solid #E5E5E4" }}>
         <div style={{ width:64, height:64, background:"#DCFCE7", border:"1px solid #16A34A", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px", color:"#16A34A" }}><I3Check s={28}/></div>
-        <div style={{ fontFamily:"var(--display)", fontSize:22, fontWeight:700, color:"#0F1B2D", marginBottom:8 }}>¡Mensaje enviado!</div>
-        <p style={{ fontFamily:"var(--sans)", fontSize:14, color:"#6B7280", lineHeight:1.7 }}>Un asesor de TAR Internacional se pondrá en contacto contigo en menos de 2 horas hábiles.</p>
+        <div style={{ fontFamily:"var(--display)", fontSize:22, fontWeight:700, color:"#0F1B2D", marginBottom:8 }}>{mode==="cita" ? "¡Visita solicitada!" : "¡Mensaje enviado!"}</div>
+        <p style={{ fontFamily:"var(--sans)", fontSize:14, color:"#6B7280", lineHeight:1.7 }}>{mode==="cita" ? "Confirmaremos la fecha y hora de tu visita por teléfono o correo en breve." : "Un asesor de TAR Internacional se pondrá en contacto contigo en menos de 2 horas hábiles."}</p>
         {onClose && <button onClick={onClose} style={{ marginTop:20, background:"#0F1B2D", color:"#fff", border:"none", padding:"11px 28px", fontFamily:"var(--sans)", fontSize:14, cursor:"pointer", fontWeight:600, borderRadius:24 }}>Cerrar</button>}
       </div>
     );
@@ -304,7 +313,17 @@ const ContactForm3 = ({ property, compact = false, onClose }) => {
 
   return (
     <div style={{ background:"#fff", borderRadius:14, padding:"24px", border:"1px solid #E5E5E4", boxShadow:"0 2px 8px rgba(0,0,0,0.03)" }}>
-      <div style={{ fontFamily:"var(--display)", fontSize:22, fontWeight:700, color:"#0F1B2D", marginBottom:18, letterSpacing:-0.3 }}>Contacta al anunciante</div>
+      <div style={{ fontFamily:"var(--display)", fontSize:22, fontWeight:700, color:"#0F1B2D", marginBottom:14, letterSpacing:-0.3 }}>{mode==="cita" ? "Agenda una visita" : "Contacta al anunciante"}</div>
+
+      {/* Tipo de solicitud: contacto general o agendar visita (PRD lead.type) */}
+      <div style={{ display:"flex", gap:6, background:"#F7F7F6", padding:4, borderRadius:12, marginBottom:16 }}>
+        {[["contacto","Contactar"],["cita","Agendar visita"]].map(([m,l]) => (
+          <button key={m} onClick={() => setMode(m)}
+            style={{ flex:1, padding:"9px 0", border:"none", borderRadius:9, cursor:"pointer", fontFamily:"var(--sans)", fontSize:13, fontWeight:600,
+              background: mode===m ? "#fff" : "transparent", color: mode===m ? "var(--tar)" : "#6B7280",
+              boxShadow: mode===m ? "0 1px 4px rgba(0,0,0,0.08)" : "none", transition:"all 0.15s" }}>{l}</button>
+        ))}
+      </div>
 
       <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
         <div style={{ display:"grid", gridTemplateColumns:compact?"1fr":"1fr 1fr", gap:10 }}>
@@ -339,6 +358,22 @@ const ContactForm3 = ({ property, compact = false, onClose }) => {
           {inp("Teléfono", form.phone, v => setForm({...form, phone:v}), "tel")}
         </div>
 
+        {/* Fecha y hora de la visita (solo modo cita → PRD lead.preferred_at) */}
+        {mode === "cita" && (
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+            <div style={{ position:"relative", border:"1px solid #D1D5DB", borderRadius:10, padding:"14px 14px 6px", background:"#fff" }}>
+              <label style={{ position:"absolute", top:5, left:14, fontFamily:"var(--sans)", fontSize:10, color:"#9CA3AF", background:"#fff", padding:"0 4px", marginLeft:-4 }}>Fecha preferida</label>
+              <input type="date" value={visit.date} onChange={e => setVisit({...visit, date:e.target.value})}
+                style={{ width:"100%", border:"none", outline:"none", fontFamily:"var(--sans)", fontSize:14, padding:"4px 0", color:"#0F1B2D", background:"transparent" }} />
+            </div>
+            <div style={{ position:"relative", border:"1px solid #D1D5DB", borderRadius:10, padding:"14px 14px 6px", background:"#fff" }}>
+              <label style={{ position:"absolute", top:5, left:14, fontFamily:"var(--sans)", fontSize:10, color:"#9CA3AF", background:"#fff", padding:"0 4px", marginLeft:-4 }}>Hora</label>
+              <input type="time" value={visit.time} onChange={e => setVisit({...visit, time:e.target.value})}
+                style={{ width:"100%", border:"none", outline:"none", fontFamily:"var(--sans)", fontSize:14, padding:"4px 0", color:"#0F1B2D", background:"transparent" }} />
+            </div>
+          </div>
+        )}
+
         {/* Message textarea */}
         <div style={{ position:"relative", border:"1px solid #D1D5DB", borderRadius:10, padding:"10px 14px", background:"#fff" }}>
           <label style={{ position:"absolute", top:6, left:14, fontFamily:"var(--sans)", fontSize:10, color:"#9CA3AF", background:"#fff", padding:"0 4px", marginLeft:-4 }}>Mensaje</label>
@@ -351,7 +386,7 @@ const ContactForm3 = ({ property, compact = false, onClose }) => {
           style={{ background:"var(--tar)", color:"#fff", border:"none", padding:"14px 0", fontFamily:"var(--sans)", fontSize:15, fontWeight:600, cursor:"pointer", borderRadius:10, marginTop:6, display:"flex", alignItems:"center", justifyContent:"center", gap:8, transition:"background 0.15s" }}
           onMouseEnter={e => e.currentTarget.style.background="var(--tar-dark)"}
           onMouseLeave={e => e.currentTarget.style.background="var(--tar)"}>
-          Enviar solicitud <I3Mail s={16}/>
+          {mode==="cita" ? "Agendar visita" : "Enviar solicitud"} <I3Mail s={16}/>
         </button>
 
         <p style={{ fontFamily:"var(--sans)", fontSize:11, color:"#6B7280", marginTop:6, lineHeight:1.6 }}>
