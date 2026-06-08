@@ -18,16 +18,17 @@
 - **FASE A.2 — Propiedades COMPLETA** (`apps/api/src/modules/properties/`, `lib/{events,slug,pricing}.ts`): CRUD (borrador/patch/soft-delete), `publish` (valida geo+precio, slug inmutable, `property.published`), `PATCH /:id/status` (`property.status_changed`), `GET /properties` (filtros combinados sobre `price_*_mxn` + orden relevancia-premium/precio/recientes + paginación + full-text español), `GET /properties/map` (bbox `ST_Within`, SQL crudo, payload ligero, precio en moneda original), `GET /:slug` (detalle + imágenes + amenidades). Rutas públicas + protegidas (`requireRole`). Eventos vía `lib/events` (stub → pg-boss en A.4).
 - **FASE A.3 — Media COMPLETA** (`apps/api/src/modules/media/`, `lib/storage.ts`): `lib/storage` (interfaz abstracta + driver `local`, `MEDIA_DIR`); subida con **multer** (memoria, 10 MB) → **sharp re-encode a WebP (full ≤1600px) + thumbnail** (nunca confía en el archivo) → guardado con hash de contenido → `property_images`. PATCH (reordenar/cover/alt) y DELETE (borra disco+BD, promueve portada). Media servida en `/media` (dev). 5 tests.
 - **FASE A.4 — Leads + Webhooks COMPLETA** (`modules/{leads,tracking,webhooks}`, `lib/{mailer,webhooks,queue}.ts`): `POST /leads` público (honeypot + consentimiento LFPDPPP + rate-limit, emite `lead.created`, mailer SendGrid best-effort), `POST /events/track` (`property_events`), CRUD leads admin con bitácora `lead_events` (pipeline nuevo) + `lead.status_changed`; **pg-boss** entrega webhooks salientes (fan-out → `webhook_deliveries`, firma **HMAC-SHA256** `X-TAR-Signature`, backoff 5 intentos, reintento manual); CRUD `webhook_subscriptions`, `api_keys` (llave en claro solo al crear) y `POST /webhooks/inbound` (X-API-Key + scopes → `lead/property.update_status`). `lib/events` ya conectado a pg-boss; la cola arranca en `index.ts`.
-- **Herramienta de verificación**: `pnpm smoke` (checklist ✓/✗ end-to-end, **21 pasos** incl. entrega real de webhook por pg-boss con firma válida) + `docs/VERIFICACION.md` + `apps/api/requests.http` (REST Client). 
-- Verificado: `lint`, `typecheck`, `build`, **`test` (34: health+auth+properties+media+leads+webhooks)** en verde + `pnpm smoke` 21/21.
+- **FASE A.5 — Importador EasyBroker COMPLETA** (`apps/api/src/jobs/importer.ts`, `scripts/import-inventario.ts`): `pnpm import:inventario <csv> [--dry-run --no-images --no-geo --limit=N]`. Mapea columnas EB (precios $/comas, tipos→enum, **col `0`→recámaras**, medios baños, piso, CP, dirección, características→amenidades con creación), geocoding Google (sin geo→borrador), descarga imágenes→sharp WebP+thumb, **idempotente por `external_ref`**, reporte. Dry-run sobre el CSV real: **105 filas, 35/70 venta/renta** ✔ (§4.3). 7 tests (helpers + dry-run + idempotencia BD).
+- **Herramienta de verificación**: `pnpm smoke` (21 pasos, incl. webhook real) + `pnpm import:inventario … --dry-run` + `docs/VERIFICACION.md` + `apps/api/requests.http`. 
+- Verificado: `lint`, `typecheck`, `build`, **`test` (41)** en verde + `pnpm smoke` 21/21 + importador dry-run.
 
 ## En progreso
 - _(ninguna técnica — esperando insumos del cliente para el bloque de diseño)_
 
 ## Siguiente (máx. 3)
-1. **FASE A.5 — Importador EasyBroker:** `pnpm import:inventario <csv>` con el CSV real en `data/inventario/` (105 props): parseo ($/comas, tipos, medios baños, piso, CP, columna `0`→recámaras), geocoding (Google) → `geo`, descarga de imágenes EB → sharp WebP, mapeo características→amenidades, idempotente por `external_ref` + reporte.
-2. **A.6 OpenAPI/Swagger** en `/docs` (zod-to-openapi) + `docs/openapi.json`.
-3. Publicar el prototipo en Netlify (cliente) y abrir ronda de firma (desbloquea Fase B).
+1. **A.6 — OpenAPI/Swagger** en `/docs` (generado desde Zod con zod-to-openapi) + export a `docs/openapi.json`. Cierra la Fase A (backend §5).
+2. **A.7 — Pruebas backend**: ya hay 41 tests (auth, propiedades, media, leads, webhooks, importador); revisar cobertura de §10 y cerrar DoD de Fase A.
+3. Publicar el prototipo en Netlify (cliente) y abrir ronda de firma (desbloquea Fase B). Luego **FASE C (backoffice)** o **FASE B (público)** según firma.
 
 ## Decisiones / desviaciones respecto al PRD
 - 2026-06-07: **Decisiones de diseño del cliente (ronda 1, reflejadas en el prototipo)** que afectan la construcción:

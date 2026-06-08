@@ -81,12 +81,12 @@ _5 tests de integración (subida WebP+thumb, validación, portada, borrado). Mul
 _12 tests (7 leads + 5 webhooks, incl. firma HMAC). Entrega real verificada en `pnpm smoke` (pg-boss → receptor local → firma válida → bitácora "entregado")._
 
 ### A.5 Importador de inventario EasyBroker (§4.3)
-- [ ] Comando `pnpm import:inventario <csv>`: parseo + mapeo de columnas (precios $/comas, tipos, medios baños, piso, CP, **columna `0` → recámaras** ✔ confirmado).
-- [ ] Geocodificación de direcciones (Google Geocoding API) → `geo`; fallos quedan en `borrador` con bandera de revisión.
-- [ ] Descarga de imágenes EB → sharp WebP + thumb → volumen de media; manejo de URLs caídas.
-- [ ] Mapeo `características` → amenidades (match difuso, creación de faltantes).
-- [ ] Idempotencia por `external_ref` + reporte final (importadas / advertencias / fallidas).
-- [ ] Corrida de prueba con el CSV actual (105 propiedades) en local; validar muestra contra EasyBroker.
+- [x] Comando `pnpm import:inventario <csv>` (flags `--dry-run/--no-images/--no-geo/--limit`): parseo + mapeo de columnas (precios $/comas, tipos, medios baños, piso, CP, **columna `0` → recámaras** ✔ confirmado).
+- [x] Geocodificación de direcciones (Google Geocoding API) → `geo`; fallos quedan en `borrador` (= bandera de revisión: el admin ve los borradores).
+- [x] Descarga de imágenes EB → sharp WebP + thumb → volumen de media; manejo de URLs caídas (contador).
+- [x] Mapeo `características` → amenidades (normalización + creación de faltantes).
+- [x] Idempotencia por `external_ref` + reporte final (creadas/actualizadas/disponibles/borrador, advertencias, fallidas).
+- [x] Corrida de prueba (`--dry-run`) con el CSV actual: **105 filas · 35 venta / 70 renta** (coincide §4.3). _Geocoding/descarga reales requieren API key + red; corrida definitiva en Lanzamiento. 7 tests._
 
 ### A.6 Documentación API (§5.7)
 - [ ] OpenAPI 3.0 generado desde Zod (zod-to-openapi); servir Swagger UI en `/docs`; export a `docs/openapi.json`.

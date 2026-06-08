@@ -22,6 +22,7 @@
     "db:up": "docker compose -f infra/docker-compose.yml up -d",
     "db:down": "docker compose -f infra/docker-compose.yml down",
     "smoke": "pnpm --filter api smoke",
+    "import:inventario": "pnpm --filter api import:inventario",
     "prototipo": "python3 -m http.server 4173 --directory design-reference/prototipo-v3"
   },
   "devDependencies": {

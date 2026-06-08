@@ -57,6 +57,18 @@ pnpm dev          # API en http://localhost:4000  (+ web en :3000)
 > Una imagen subida queda en `apps/api/uploads/` y se sirve en
 > `http://localhost:4000/media/...` (en producción la sirve Caddy).
 
+## Importador de inventario (A.5)
+
+Verifica el parseo del CSV real **sin escribir nada**:
+
+```bash
+pnpm import:inventario data/inventario/INVENTARIO_DE_PROPIEDADES.csv --dry-run
+```
+
+Debe reportar **105 filas · 35 venta / 70 renta** (coincide con el PRD §4.3). Para
+una carga real: quita `--dry-run` (geocodifica si hay `GOOGLE_GEOCODING_API_KEY`,
+descarga imágenes EB → WebP). Es idempotente por `external_ref`.
+
 ## Prototipo visual (diseño)
 
 Independiente del backend:
@@ -73,3 +85,4 @@ pnpm prototipo    # http://localhost:4173
 | A.2 Propiedades | CRUD · publicar (slug, geo) · filtros · mapa bbox · estatus |
 | A.3 Media | subir (WebP+thumb) · portada · reordenar · borrar |
 | A.4 Leads/Webhooks | crear lead (honeypot/LFPDPPP) · CRUD admin · analítica · **webhooks salientes firmados (pg-boss)** · entrantes (X-API-Key) |
+| A.5 Importador | `pnpm import:inventario … --dry-run` (105 props, 35/70) · idempotente |

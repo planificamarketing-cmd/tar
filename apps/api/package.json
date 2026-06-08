@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "smoke": "tsx --env-file=../../.env scripts/smoke.ts"
+    "smoke": "tsx --env-file=../../.env scripts/smoke.ts",
+    "import:inventario": "tsx --env-file=../../.env scripts/import-inventario.ts"
   },
   "dependencies": {
     "@sendgrid/mail": "^8.1.4",
@@ -19,6 +20,7 @@
     "argon2": "^0.41.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "csv-parse": "^5.6.0",
     "drizzle-orm": "^0.38.3",
     "express": "^5.0.1",
     "express-rate-limit": "^7.4.1",

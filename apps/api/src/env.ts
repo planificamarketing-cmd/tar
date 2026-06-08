@@ -24,6 +24,9 @@ const EnvSchema = z
     USD_MXN_RATE: z.coerce.number().positive().default(18.5),
     SENDGRID_API_KEY: z.string().optional(),
     LEADS_NOTIFY_TO: z.string().email().optional(),
+    // Geocoding del importador (servidor). Sin key → las propiedades quedan en
+    // borrador para fijar el pin a mano (PRD §4.3).
+    GOOGLE_GEOCODING_API_KEY: z.string().optional(),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV !== 'production') return;
