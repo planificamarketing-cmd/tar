@@ -42,6 +42,21 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     return;
   }
 
+  // Errores de subida (multer): p.ej. archivo demasiado grande.
+  if (
+    err instanceof Error &&
+    err.name === 'MulterError'
+  ) {
+    res.status(400).json({
+      error: {
+        code: 'upload_error',
+        message: 'Error al subir el archivo (tamaño o cantidad excedidos).',
+        details: (err as { code?: string }).code,
+      },
+    });
+    return;
+  }
+
   logger.error({ err }, 'Error no controlado');
   res.status(500).json({
     error: { code: 'internal_error', message: 'Error interno del servidor.' },

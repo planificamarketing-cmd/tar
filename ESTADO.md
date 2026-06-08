@@ -16,14 +16,16 @@
 - **Datos del cliente resguardados** en `data/` (gitignored, PII): **CSV real de inventario (105 propiedades)** para el importador (Fase A.5), aviso de privacidad PDF (para `/aviso-privacidad`), capturas del diseño desplegado y contenido "Nosotros".
 - **FASE A.1 — Auth COMPLETA** (`apps/api/src/modules/auth/`, `lib/jwt.ts`, `lib/tokens.ts`, `middleware/require-auth.ts`): argon2 + login → access JWT (15m) + refresh rotativo (7d, hash SHA-256 en `refresh_tokens`, rotación con revocación), `requireAuth`/`requireRole(admin|editor)`, rate-limit estricto en `/auth/login`, cookie httpOnly + body. Endpoints en `/api/v1/auth/{login,refresh,logout,me}`.
 - **FASE A.2 — Propiedades COMPLETA** (`apps/api/src/modules/properties/`, `lib/{events,slug,pricing}.ts`): CRUD (borrador/patch/soft-delete), `publish` (valida geo+precio, slug inmutable, `property.published`), `PATCH /:id/status` (`property.status_changed`), `GET /properties` (filtros combinados sobre `price_*_mxn` + orden relevancia-premium/precio/recientes + paginación + full-text español), `GET /properties/map` (bbox `ST_Within`, SQL crudo, payload ligero, precio en moneda original), `GET /:slug` (detalle + imágenes + amenidades). Rutas públicas + protegidas (`requireRole`). Eventos vía `lib/events` (stub → pg-boss en A.4).
-- Verificado: `lint`, `typecheck`, `build`, **`test` (17: health+auth+properties)** en verde + smoke en vivo (listado/mapa/filtros).
+- **FASE A.3 — Media COMPLETA** (`apps/api/src/modules/media/`, `lib/storage.ts`): `lib/storage` (interfaz abstracta + driver `local`, `MEDIA_DIR`); subida con **multer** (memoria, 10 MB) → **sharp re-encode a WebP (full ≤1600px) + thumbnail** (nunca confía en el archivo) → guardado con hash de contenido → `property_images`. PATCH (reordenar/cover/alt) y DELETE (borra disco+BD, promueve portada). Media servida en `/media` (dev). 5 tests.
+- **Herramienta de verificación**: `pnpm smoke` (checklist ✓/✗ end-to-end, 14 pasos) + `docs/VERIFICACION.md` (guía) + `apps/api/requests.http` (REST Client). 
+- Verificado: `lint`, `typecheck`, `build`, **`test` (22: health+auth+properties+media)** en verde + `pnpm smoke` 14/14.
 
 ## En progreso
 - _(ninguna técnica — esperando insumos del cliente para el bloque de diseño)_
 
 ## Siguiente (máx. 3)
-1. **FASE A.3 — Media:** `lib/storage` (driver `local`, `MEDIA_DIR`), subida de imágenes con **sharp → WebP + thumbnail + tamaños responsive** (re-encode obligatorio), registro en `property_images`, reordenar/cover/alt/delete.
-2. **FASE A.4 — Leads + Webhooks:** `POST /leads` (honeypot + LFPDPPP), `POST /events/track`, `lib/mailer` (SendGrid), CRUD leads admin con el pipeline; **pg-boss** + HMAC + backoff para webhooks salientes; `/webhooks/inbound` con `X-API-Key`. Aquí se conecta `lib/events`.
+1. **FASE A.4 — Leads + Webhooks:** `POST /leads` (honeypot + LFPDPPP), `POST /events/track`, `lib/mailer` (SendGrid), CRUD leads admin con el pipeline; **pg-boss** + HMAC + backoff para webhooks salientes; `/webhooks/inbound` con `X-API-Key` + CRUD api_keys. Aquí se conecta `lib/events` a pg-boss.
+2. A.5 Importador EasyBroker (con el CSV real en `data/`) y A.6 OpenAPI/Swagger en `/docs`.
 3. Publicar el prototipo en Netlify (cliente) y abrir ronda de firma (desbloquea Fase B).
 
 ## Decisiones / desviaciones respecto al PRD

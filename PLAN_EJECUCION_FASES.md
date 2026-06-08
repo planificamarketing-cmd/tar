@@ -64,9 +64,11 @@ Mapeado al roadmap de 16 semanas del documento comercial. Cada fase tiene **tare
 _Eventos `property.published`/`property.status_changed` emitidos vía `lib/events` (stub que A.4 conecta a pg-boss). 9 tests de integración en verde._
 
 ### A.3 Media (§5.3)
-- [ ] `lib/storage` con driver `local` (disco del VPS, `MEDIA_DIR`); interfaz abstraída para que un futuro driver S3 sea adenda y no reescritura.
-- [ ] Subida de imágenes: validar mimetype/tamaño → sharp re-encode a WebP + thumbnail + tamaños responsive → volumen de media (nombre con hash de contenido) → registro en `property_images`.
-- [ ] Reordenar / set cover / alt / delete.
+- [x] `lib/storage` con driver `local` (disco del VPS, `MEDIA_DIR`); interfaz abstraída para que un futuro driver S3 sea adenda y no reescritura.
+- [x] Subida de imágenes: validar mimetype/tamaño → sharp re-encode a WebP + thumbnail → volumen de media (nombre con hash de contenido) → registro en `property_images`. _(re-encode WebP full + thumbnail, que son las dos columnas del esquema; variantes responsive adicionales = adenda.)_
+- [x] Reordenar / set cover / alt / delete (borra del disco). _Media servida en `/media` (dev) por el API; en prod por Caddy._
+
+_5 tests de integración (subida WebP+thumb, validación, portada, borrado). Multer (memoria, 10 MB) + sharp._
 
 ### A.4 Leads + Webhooks (§5.4, §5.5, §6.7)
 - [ ] `POST /leads` público (`type` contacto/cita + `preferred_at` + consentimiento): rate-limit + honeypot + Zod; crea lead; emite `lead.created`.

@@ -1,0 +1,107 @@
+### Peticiones de la API TAR — ábrelo con la extensión "REST Client" de VS Code.
+### Dale "Send Request" sobre cada bloque. Primero el login: guarda el token y
+### las demás peticiones lo reutilizan solas.
+
+@base = http://localhost:4000/api/v1
+
+### Salud
+GET http://localhost:4000/health
+
+### Login (admin seedeado) — guarda el token
+# @name login
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@tarinternacional.com",
+  "password": "admin123"
+}
+
+###
+@token = {{login.response.body.accessToken}}
+@refresh = {{login.response.body.refreshToken}}
+
+### Usuario autenticado
+GET {{base}}/auth/me
+Authorization: Bearer {{token}}
+
+### Refrescar el access token (rota el refresh)
+POST {{base}}/auth/refresh
+Content-Type: application/json
+
+{ "refreshToken": "{{refresh}}" }
+
+### --- Propiedades (lectura pública) ---
+
+### Listado con filtros + orden
+GET {{base}}/properties?operation=venta&minPrice=1000000&sort=relevancia&limit=5
+
+### Mapa por bbox (CDMX)
+GET {{base}}/properties/map?bbox=-99.40,19.20,-99.00,19.60
+
+### Detalle por slug (usa un slug real del listado)
+GET {{base}}/properties/departamento-de-lujo-en-polanco-1
+
+### --- Propiedades (admin) ---
+
+### Crear borrador — guarda el id
+# @name nueva
+POST {{base}}/properties
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Departamento de prueba (REST Client)",
+  "propertyType": "departamento",
+  "priceSale": 4500000,
+  "currencySale": "MXN",
+  "bedrooms": 2,
+  "bathrooms": 2,
+  "areaM2": 95,
+  "estado": "Ciudad de México",
+  "municipio": "Cuauhtémoc",
+  "colonia": "Roma Norte"
+}
+
+###
+@propId = {{nueva.response.body.data.id}}
+
+### Fijar ubicación (geocoding daría estas coords) + premium
+PATCH {{base}}/properties/{{propId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "lat": 19.4145, "lng": -99.1700, "featured": "premium" }
+
+### Publicar (genera slug, valida geo)
+POST {{base}}/properties/{{propId}}/publish
+Authorization: Bearer {{token}}
+
+### Cambiar estatus comercial
+PATCH {{base}}/properties/{{propId}}/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "status": "apartado" }
+
+### Subir imagen(es) — selecciona un archivo real en tu disco
+POST {{base}}/properties/{{propId}}/images
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----tar
+
+------tar
+Content-Disposition: form-data; name="images"; filename="foto.jpg"
+Content-Type: image/jpeg
+
+< ./uploads/foto.jpg
+------tar--
+
+### Soft delete
+DELETE {{base}}/properties/{{propId}}
+Authorization: Bearer {{token}}
+
+### Logout
+POST {{base}}/auth/logout
+Content-Type: application/json
+
+{ "refreshToken": "{{refresh}}" }

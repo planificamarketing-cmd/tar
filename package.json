@@ -21,6 +21,7 @@
     "db:seed": "pnpm --filter @tar/db db:seed",
     "db:up": "docker compose -f infra/docker-compose.yml up -d",
     "db:down": "docker compose -f infra/docker-compose.yml down",
+    "smoke": "pnpm --filter api smoke",
     "prototipo": "python3 -m http.server 4173 --directory design-reference/prototipo-v3"
   },
   "devDependencies": {

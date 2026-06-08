@@ -5,12 +5,13 @@ import hpp from 'hpp';
 import cookieParser from 'cookie-parser';
 import { rateLimit } from 'express-rate-limit';
 import { pinoHttp } from 'pino-http';
-import { corsOrigins } from './env';
+import { corsOrigins, env } from './env';
 import { logger } from './lib/logger';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
 import { healthRouter } from './modules/health/health.routes';
 import { authRouter } from './modules/auth/auth.routes';
 import { propertiesRouter } from './modules/properties/properties.routes';
+import { mediaRouter } from './modules/media/media.routes';
 
 // Construye la app Express sin ponerla a escuchar (testeable con supertest).
 export function createApp(): Express {
@@ -41,9 +42,13 @@ export function createApp(): Express {
     }),
   );
 
+  // Media servida en dev por el API; en prod la sirve Caddy desde MEDIA_DIR.
+  app.use('/media', express.static(env.MEDIA_DIR));
+
   app.use('/health', healthRouter);
   app.use('/api/v1/auth', authRouter);
   app.use('/api/v1/properties', propertiesRouter);
+  app.use('/api/v1/properties', mediaRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

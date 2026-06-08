@@ -157,3 +157,15 @@ export const updateStatusSchema = z.object({
   status: commercialStatusSchema,
 });
 export type UpdateStatusInput = z.infer<typeof updateStatusSchema>;
+
+// PATCH /properties/:id/images/:imgId — reordenar / set cover / alt (§5.3).
+export const updateImageSchema = z
+  .object({
+    position: z.coerce.number().int().nonnegative().optional(),
+    isCover: z.boolean().optional(),
+    alt: z.string().trim().max(200).nullable().optional(),
+  })
+  .refine((d) => Object.keys(d).length > 0, {
+    message: 'Debe especificar al menos un campo a actualizar.',
+  });
+export type UpdateImageInput = z.infer<typeof updateImageSchema>;
