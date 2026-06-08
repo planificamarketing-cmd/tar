@@ -72,4 +72,4 @@ pnpm prototipo    # http://localhost:4173
 | A.1 Auth | login / refresh (rotación) / logout / me · roles |
 | A.2 Propiedades | CRUD · publicar (slug, geo) · filtros · mapa bbox · estatus |
 | A.3 Media | subir (WebP+thumb) · portada · reordenar · borrar |
-| A.4 Leads/Webhooks | _(pendiente)_ |
+| A.4 Leads/Webhooks | crear lead (honeypot/LFPDPPP) · CRUD admin · analítica · **webhooks salientes firmados (pg-boss)** · entrantes (X-API-Key) |

@@ -71,12 +71,14 @@ _Eventos `property.published`/`property.status_changed` emitidos vía `lib/event
 _5 tests de integración (subida WebP+thumb, validación, portada, borrado). Multer (memoria, 10 MB) + sharp._
 
 ### A.4 Leads + Webhooks (§5.4, §5.5, §6.7)
-- [ ] `POST /leads` público (`type` contacto/cita + `preferred_at` + consentimiento): rate-limit + honeypot + Zod; crea lead; emite `lead.created`.
-- [ ] `POST /events/track` público rate-limited: registra `view` en `property_events`.
-- [ ] `lib/mailer` (SendGrid): notificación de nuevo lead a `LEADS_NOTIFY_TO`.
-- [ ] CRUD leads admin + cambio de status/asignación → registra `lead_event` + emite `lead.status_changed`.
-- [ ] CRUD `webhook_subscriptions`; sistema de entrega con **pg-boss**: firma HMAC SHA-256, backoff exponencial (5 intentos), bitácora en `webhook_deliveries`, reintento manual. Eventos: `lead.created`, `lead.status_changed`, `property.published`, `property.status_changed`.
-- [ ] **Webhooks entrantes**: `POST /webhooks/inbound` con `X-API-Key` (scopes en `api_keys`), acciones `lead.update_status` / `property.update_status` + CRUD de API keys.
+- [x] `POST /leads` público (`type` contacto/cita + `preferred_at` + consentimiento): rate-limit + honeypot + Zod; crea lead; emite `lead.created`.
+- [x] `POST /events/track` público rate-limited: registra `view` en `property_events`.
+- [x] `lib/mailer` (SendGrid): notificación de nuevo lead a `LEADS_NOTIFY_TO` (best-effort; no-op sin API key).
+- [x] CRUD leads admin + cambio de status/asignación → registra `lead_event` + emite `lead.status_changed`. _(pipeline nuevo: nuevo/cita_agendada/cita_concretada/apartado/firma_contrato/descartado.)_
+- [x] CRUD `webhook_subscriptions`; sistema de entrega con **pg-boss**: firma HMAC SHA-256, backoff exponencial (5 intentos), bitácora en `webhook_deliveries`, reintento manual. Eventos: `lead.created`, `lead.status_changed`, `property.published`, `property.status_changed`.
+- [x] **Webhooks entrantes**: `POST /webhooks/inbound` con `X-API-Key` (scopes en `api_keys`), acciones `lead.update_status` / `property.update_status` + CRUD de API keys.
+
+_12 tests (7 leads + 5 webhooks, incl. firma HMAC). Entrega real verificada en `pnpm smoke` (pg-boss → receptor local → firma válida → bitácora "entregado")._
 
 ### A.5 Importador de inventario EasyBroker (§4.3)
 - [ ] Comando `pnpm import:inventario <csv>`: parseo + mapeo de columnas (precios $/comas, tipos, medios baños, piso, CP, **columna `0` → recámaras** ✔ confirmado).

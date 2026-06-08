@@ -1,4 +1,5 @@
 import { logger } from './logger';
+import { dispatchEvent } from './queue';
 
 export type DomainEvent =
   | 'lead.created'
@@ -6,14 +7,13 @@ export type DomainEvent =
   | 'property.published'
   | 'property.status_changed';
 
-// Punto ÚNICO de emisión de eventos de dominio.
-// En la Fase A.4 esto encolará en pg-boss para la entrega de webhooks (firma
-// HMAC-SHA256 + backoff). Por ahora registra el evento; la firma de la función
-// no cambiará, así que los emisores no se tocan al cablear pg-boss.
+// Punto ÚNICO de emisión de eventos de dominio. Encola la entrega de webhooks
+// vía pg-boss (firma HMAC + backoff). Si la cola no está iniciada (p.ej. tests),
+// `dispatchEvent` es no-op y solo se registra el evento.
 export async function emitEvent(
   event: DomainEvent,
   payload: Record<string, unknown>,
 ): Promise<void> {
   logger.info({ event, payload }, `evento de dominio: ${event}`);
-  // TODO(A.4): await boss.send('webhook-deliveries', { event, payload });
+  await dispatchEvent(event, payload);
 }
