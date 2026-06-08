@@ -3,7 +3,7 @@
 > **Partida guardada del proyecto.** Este archivo (+ `CLAUDE.md` + `git log`) es lo ÚNICO que se lee al iniciar sesión. NO releer el PRD, el plan ni el código completos: consultar solo la sección puntual que toque la tarea en curso. Se regenera (se sobrescribe) al final de cada sesión.
 
 **Última actualización:** 2026-06-07 · sesión Fase 1→A
-**Fase actual:** FASE A — Core & Backend (iniciada). Fase 1 técnica COMPLETA; resta firma de diseño (cliente) para Fase B. **Avance global:** ~28%
+**Fase actual:** FASE A — Core & Backend **COMPLETA y CERRADA** (API §5 + docs + 44 tests). Siguiente: FASE C (backoffice) y/o FASE B (público, tras firma del diseño). **Avance global:** ~50%
 **Prototipo:** revisado (rondas del cliente); listo para publicar en Netlify (zip `tar-prototipo-v3.zip`).
 
 ## Hecho
@@ -20,15 +20,16 @@
 - **FASE A.4 — Leads + Webhooks COMPLETA** (`modules/{leads,tracking,webhooks}`, `lib/{mailer,webhooks,queue}.ts`): `POST /leads` público (honeypot + consentimiento LFPDPPP + rate-limit, emite `lead.created`, mailer SendGrid best-effort), `POST /events/track` (`property_events`), CRUD leads admin con bitácora `lead_events` (pipeline nuevo) + `lead.status_changed`; **pg-boss** entrega webhooks salientes (fan-out → `webhook_deliveries`, firma **HMAC-SHA256** `X-TAR-Signature`, backoff 5 intentos, reintento manual); CRUD `webhook_subscriptions`, `api_keys` (llave en claro solo al crear) y `POST /webhooks/inbound` (X-API-Key + scopes → `lead/property.update_status`). `lib/events` ya conectado a pg-boss; la cola arranca en `index.ts`.
 - **FASE A.5 — Importador EasyBroker COMPLETA** (`apps/api/src/jobs/importer.ts`, `scripts/import-inventario.ts`): `pnpm import:inventario <csv> [--dry-run --no-images --no-geo --limit=N]`. Mapea columnas EB (precios $/comas, tipos→enum, **col `0`→recámaras**, medios baños, piso, CP, dirección, características→amenidades con creación), geocoding Google (sin geo→borrador), descarga imágenes→sharp WebP+thumb, **idempotente por `external_ref`**, reporte. Dry-run sobre el CSV real: **105 filas, 35/70 venta/renta** ✔ (§4.3). 7 tests (helpers + dry-run + idempotencia BD).
 - **Herramienta de verificación**: `pnpm smoke` (21 pasos, incl. webhook real) + `pnpm import:inventario … --dry-run` + `docs/VERIFICACION.md` + `apps/api/requests.http`. 
-- Verificado: `lint`, `typecheck`, `build`, **`test` (41)** en verde + `pnpm smoke` 21/21 + importador dry-run.
+- **FASE A.6 — OpenAPI/Swagger COMPLETA** (`apps/api/src/openapi/`): spec OpenAPI 3.0 generado desde los Zod compartidos (`@asteasolutions/zod-to-openapi`), Swagger UI en **`/docs`**, export `pnpm openapi` → `docs/openapi.json` (23 rutas). A.7: 44 tests (unit + integración). **Fase A cerrada (DoD §5/§10).**
+- Verificado: `lint`, `typecheck`, `build`, **`test` (44)** en verde + `pnpm smoke` 21/21 + importador dry-run + `/docs` 200.
 
 ## En progreso
 - _(ninguna técnica — esperando insumos del cliente para el bloque de diseño)_
 
 ## Siguiente (máx. 3)
-1. **A.6 — OpenAPI/Swagger** en `/docs` (generado desde Zod con zod-to-openapi) + export a `docs/openapi.json`. Cierra la Fase A (backend §5).
-2. **A.7 — Pruebas backend**: ya hay 41 tests (auth, propiedades, media, leads, webhooks, importador); revisar cobertura de §10 y cerrar DoD de Fase A.
-3. Publicar el prototipo en Netlify (cliente) y abrir ronda de firma (desbloquea Fase B). Luego **FASE C (backoffice)** o **FASE B (público)** según firma.
+1. **FASE C — Backoffice** (Next.js admin, route group `(admin)`): consume la API ya lista (login/refresh, CRUD propiedades con LocationPicker + ImageUploader, gestión de leads/usuarios/scripts, webhooks). NO depende de la firma del diseño.
+2. **FASE B — Frontend público**: bloqueada hasta la **firma del prototipo v3** (cliente). Publicar el prototipo en Netlify y abrir la ronda de firma.
+3. Portar tokens del diseño a `tailwind.config` tras la firma.
 
 ## Decisiones / desviaciones respecto al PRD
 - 2026-06-07: **Decisiones de diseño del cliente (ronda 1, reflejadas en el prototipo)** que afectan la construcción:

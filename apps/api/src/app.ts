@@ -15,6 +15,7 @@ import { mediaRouter } from './modules/media/media.routes';
 import { leadsRouter } from './modules/leads/leads.routes';
 import { trackingRouter } from './modules/tracking/tracking.routes';
 import { webhooksRouter } from './modules/webhooks/webhooks.routes';
+import { docsRouter } from './openapi/openapi.routes';
 
 // Construye la app Express sin ponerla a escuchar (testeable con supertest).
 export function createApp(): Express {
@@ -55,6 +56,7 @@ export function createApp(): Express {
   app.use('/api/v1/leads', leadsRouter);
   app.use('/api/v1/events', trackingRouter);
   app.use('/api/v1/webhooks', webhooksRouter);
+  app.use('/docs', docsRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

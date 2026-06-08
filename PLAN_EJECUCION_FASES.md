@@ -89,14 +89,14 @@ _12 tests (7 leads + 5 webhooks, incl. firma HMAC). Entrega real verificada en `
 - [x] Corrida de prueba (`--dry-run`) con el CSV actual: **105 filas · 35 venta / 70 renta** (coincide §4.3). _Geocoding/descarga reales requieren API key + red; corrida definitiva en Lanzamiento. 7 tests._
 
 ### A.6 Documentación API (§5.7)
-- [ ] OpenAPI 3.0 generado desde Zod (zod-to-openapi); servir Swagger UI en `/docs`; export a `docs/openapi.json`.
+- [x] OpenAPI 3.0 generado desde Zod (`@asteasolutions/zod-to-openapi`); Swagger UI en `/docs`; export a `docs/openapi.json` (`pnpm openapi`). 23 rutas.
 
 ### A.7 Pruebas backend (§10)
-- [ ] Vitest unit: generación de slug, ordenamiento premium, firma de webhook, filtros.
-- [ ] Supertest: auth, CRUD propiedades, lead→webhook (con mock del target), paginación.
+- [x] Vitest unit: generación de slug, firma de webhook (HMAC), helpers del importador; ordenamiento premium + filtros (integración/smoke).
+- [x] Supertest: auth (rotación), CRUD propiedades, media, leads, lead→webhook (entrega real con receptor local), webhooks entrantes, paginación. **44 tests en verde.**
 
-**Entregable:** API v1 completa y documentada en `/docs`, con pruebas en verde.
-**DoD:** todos los endpoints de §5 implementados, validados, seguros, probados; webhooks entregan y reintentan; OpenAPI exportado.
+**Entregable:** API v1 completa y documentada en `/docs`, con pruebas en verde. ✅
+**DoD:** todos los endpoints de §5 implementados, validados (Zod), seguros (argon2/JWT/helmet/rate-limit/scopes), probados (44 tests); webhooks entregan y reintentan (pg-boss + HMAC + backoff); OpenAPI exportado. ✅ **FASE A CERRADA.**
 
 ---
 

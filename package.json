@@ -26,6 +26,7 @@
     "db:web:down": "docker compose -f infra/docker-compose.yml --profile tools stop pgweb",
     "smoke": "pnpm --filter api smoke",
     "import:inventario": "pnpm --filter api import:inventario",
+    "openapi": "pnpm --filter api openapi",
     "prototipo": "python3 -m http.server 4173 --directory design-reference/prototipo-v3"
   },
   "devDependencies": {
