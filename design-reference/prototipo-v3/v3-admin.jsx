@@ -7,6 +7,19 @@ const {
   I3Heart, I3Map, I3Mail, I3Wapp, I3User, I3Plus, I3Check, I3Grid, I3List, I3Edit, I3Verif, I3Share,
 } = window;
 
+// ── Pipeline de leads (CRM) — estatus del negocio inmobiliario ─────────────────
+// Configurable; cada cambio se sincroniza por webhook con el CRM (en ambos sentidos).
+const LEAD_PIPELINE = [
+  { key:"nuevo",           label:"Nuevo",             color:"#2563EB" },
+  { key:"cita_agendada",   label:"Cita agendada",     color:"#CA8A04" },
+  { key:"cita_concretada", label:"Cita concretada",   color:"#7C3AED" },
+  { key:"apartado",        label:"Apartado",          color:"#EA580C" },
+  { key:"firma_contrato",  label:"Firma de contrato", color:"#16A34A" },
+  { key:"descartado",      label:"Descartado",        color:"#9CA3AF" },
+];
+const leadLabel = k => (LEAD_PIPELINE.find(p => p.key === k) || {}).label || k;
+const leadColor = k => (LEAD_PIPELINE.find(p => p.key === k) || {}).color || "#6B7280";
+
 // ── Sidebar Icons (rich nav set) ──────────────────────────────────────────────
 const A = ({ d, s = 18, f = "none", sw = 1.7 }) => (
   <svg width={s} height={s} viewBox="0 0 24 24" fill={f} stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}>
@@ -249,7 +262,6 @@ const DashboardTab = () => {
             </thead>
             <tbody>
               {recentLeads.map(l => {
-                const cmap = { nuevo:"var(--tar)", contactado:"#2563EB", seguimiento:"#CA8A04", cerrado:"#16A34A" };
                 return (
                   <tr key={l.id} style={{ borderBottom:"1px solid #F7F7F6" }}>
                     <td style={{ padding:"10px 8px" }}>
@@ -264,7 +276,7 @@ const DashboardTab = () => {
                     <td style={{ padding:"10px 8px", color:"#374151", fontSize:12 }}>{l.property}</td>
                     <td style={{ padding:"10px 8px", color:"#9CA3AF", fontSize:12 }}>{l.date}</td>
                     <td style={{ padding:"10px 8px" }}>
-                      <span style={{ fontSize:11, padding:"3px 10px", background:cmap[l.status]+"22", color:cmap[l.status], borderRadius:14, fontWeight:600, textTransform:"capitalize" }}>{l.status}</span>
+                      <span style={{ fontSize:11, padding:"3px 10px", background:leadColor(l.status)+"22", color:leadColor(l.status), borderRadius:14, fontWeight:600 }}>{leadLabel(l.status)}</span>
                     </td>
                   </tr>
                 );
@@ -1047,49 +1059,116 @@ fbq('track', 'PageView');
   );
 };
 
-// ── LEADS TAB ─────────────────────────────────────────────────────────────────
+// ── LEADS TAB · CRM funcional ─────────────────────────────────────────────────
 const LeadsTab = () => {
-  const cmap = { nuevo:"var(--tar)", contactado:"#2563EB", seguimiento:"#CA8A04", cerrado:"#16A34A" };
+  // Remapea estatus de muestra al pipeline del negocio.
+  const remap = { nuevo:"nuevo", cita_agendada:"cita_agendada", cita_concretada:"cita_concretada", apartado:"apartado", firma_contrato:"firma_contrato", descartado:"descartado", contactado:"cita_agendada", seguimiento:"cita_concretada", cerrado:"firma_contrato" };
+  const [leads, setLeads] = React.useState(() => LEADS.map(l => ({ ...l, status: remap[l.status] || "nuevo" })));
+  const [activity, setActivity] = React.useState([
+    { id:1, dir:"out", text:"lead.created → HubSpot/CRM", meta:"Nuevo prospecto · 200 OK", when:"hace 12 min" },
+  ]);
+  const [flash, setFlash] = React.useState(null);
+
+  const log = (entry) => setActivity(a => [{ id: a.length ? a[0].id + 1 : 1, when:"justo ahora", ...entry }, ...a].slice(0, 10));
+  const order = LEAD_PIPELINE.filter(p => p.key !== "descartado").map(p => p.key);
+
+  // Cambio desde la plataforma → webhook SALIENTE hacia el CRM.
+  const changeStatus = (lead, newStatus) => {
+    setLeads(ls => ls.map(l => l.id === lead.id ? { ...l, status:newStatus } : l));
+    setFlash(lead.id);
+    log({ dir:"out", text:"lead.status_changed → CRM", meta:`${lead.name} → “${leadLabel(newStatus)}” · 200 OK` });
+  };
+
+  // Actualización ENTRANTE simulada (el CRM mueve un lead vía POST /webhooks/inbound).
+  const simulateInbound = () => {
+    const target = leads.find(l => l.status !== "firma_contrato") || leads[0];
+    const next = order[Math.min(order.indexOf(target.status) + 1, order.length - 1)];
+    setLeads(ls => ls.map(l => l.id === target.id ? { ...l, status:next } : l));
+    setFlash(target.id);
+    log({ dir:"in", text:"POST /webhooks/inbound (X-API-Key)", meta:`${target.name} → “${leadLabel(next)}” · aplicado` });
+  };
+
+  const funnel = LEAD_PIPELINE.filter(p => p.key !== "descartado").map(p => ({ ...p, n: leads.filter(l => l.status === p.key).length }));
+
   return (
     <div>
-      <div style={{ marginBottom:24 }}>
-        <h1 style={{ fontFamily:"var(--display)", fontSize:30, fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5 }}>Leads</h1>
-        <p style={{ fontFamily:"var(--sans)", fontSize:14, color:"#6B7280", marginTop:4 }}>Captura y seguimiento de prospectos interesados.</p>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:18, gap:16, flexWrap:"wrap" }}>
+        <div>
+          <h1 style={{ fontFamily:"var(--display)", fontSize:30, fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5 }}>Leads · CRM</h1>
+          <p style={{ fontFamily:"var(--sans)", fontSize:14, color:"#6B7280", marginTop:4, maxWidth:600, lineHeight:1.6 }}>Cada cambio de estatus se sincroniza con tu CRM por <strong>webhook en ambos sentidos</strong>: lo que cambias aquí sale al CRM, y lo que cambia el CRM entra aquí.</p>
+        </div>
+        <button onClick={simulateInbound} style={{ display:"inline-flex", alignItems:"center", gap:7, background:"#0F1B2D", color:"#fff", border:"none", padding:"10px 18px", borderRadius:24, fontFamily:"var(--sans)", fontSize:13, fontWeight:600, cursor:"pointer" }}>
+          <A s={14} d={["M23 4v6h-6","M1 20v-6h6","M3.51 9a9 9 0 0114.85-3.36L23 10","M1 14l4.64 4.36A9 9 0 0020.49 15"]} /> Simular actualización del CRM
+        </button>
       </div>
-      <div style={{ background:"#fff", borderRadius:14, overflow:"hidden", border:"1px solid #F1F1F0" }}>
-        <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--sans)", fontSize:13 }}>
-          <thead>
-            <tr style={{ borderBottom:"1px solid #F1F1F0", background:"#FAFAF8" }}>
-              {["Cliente","Contacto","Propiedad de interés","Fecha","Estado","Acciones"].map(h => (
-                <th key={h} style={{ padding:"14px 18px", textAlign:"left", fontSize:11, color:"#6B7280", textTransform:"uppercase", letterSpacing:1, fontWeight:600 }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {LEADS.map(l => (
-              <tr key={l.id} style={{ borderBottom:"1px solid #F7F7F6" }}>
-                <td style={{ padding:"12px 18px" }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                    <div style={{ width:36, height:36, borderRadius:"50%", background:"linear-gradient(135deg, #FFF0F2, #E5E5E4)", display:"flex", alignItems:"center", justifyContent:"center", color:"var(--tar)", fontFamily:"var(--display)", fontSize:13, fontWeight:700 }}>{l.name.split(" ").map(n=>n[0]).join("")}</div>
-                    <div style={{ fontWeight:600, color:"#0F1B2D" }}>{l.name}</div>
-                  </div>
-                </td>
-                <td style={{ padding:"12px 18px" }}>
-                  <div style={{ color:"#6B7280", fontSize:12 }}>{l.email}</div>
-                  <div style={{ color:"#9CA3AF", fontSize:11 }}>{l.phone}</div>
-                </td>
-                <td style={{ padding:"12px 18px", color:"#374151" }}>{l.property}</td>
-                <td style={{ padding:"12px 18px", color:"#9CA3AF", fontSize:12 }}>{l.date}</td>
-                <td style={{ padding:"12px 18px" }}>
-                  <span style={{ fontFamily:"var(--sans)", fontSize:11, padding:"3px 10px", background:cmap[l.status]+"22", color:cmap[l.status], borderRadius:14, fontWeight:600, textTransform:"capitalize" }}>{l.status}</span>
-                </td>
-                <td style={{ padding:"12px 18px" }}>
-                  <button style={{ background:"#fff", border:"1px solid #E5E5E4", padding:"5px 12px", fontFamily:"var(--sans)", fontSize:12, cursor:"pointer", color:"#6B7280", borderRadius:14, fontWeight:500 }}>Contactar</button>
-                </td>
+
+      {/* Embudo por etapa */}
+      <div style={{ display:"grid", gridTemplateColumns:`repeat(${funnel.length},1fr)`, gap:10, marginBottom:18 }}>
+        {funnel.map(s => (
+          <div key={s.key} style={{ background:"#fff", border:"1px solid #F1F1F0", borderTop:`3px solid ${s.color}`, borderRadius:12, padding:"14px 16px" }}>
+            <div style={{ fontFamily:"var(--display)", fontSize:26, fontWeight:700, color:"#0F1B2D", lineHeight:1 }}>{s.n}</div>
+            <div style={{ fontFamily:"var(--sans)", fontSize:12, color:"#6B7280", marginTop:6 }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display:"grid", gridTemplateColumns:"1.7fr 1fr", gap:16, alignItems:"flex-start" }}>
+        {/* Tabla de leads con estatus editable */}
+        <div style={{ background:"#fff", borderRadius:14, overflow:"hidden", border:"1px solid #F1F1F0" }}>
+          <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--sans)", fontSize:13 }}>
+            <thead>
+              <tr style={{ borderBottom:"1px solid #F1F1F0", background:"#FAFAF8" }}>
+                {["Cliente","Propiedad de interés","Fecha","Estatus (CRM)"].map(h => (
+                  <th key={h} style={{ padding:"13px 16px", textAlign:"left", fontSize:11, color:"#6B7280", textTransform:"uppercase", letterSpacing:1, fontWeight:600 }}>{h}</th>
+                ))}
               </tr>
+            </thead>
+            <tbody>
+              {leads.map(l => (
+                <tr key={l.id} style={{ borderBottom:"1px solid #F7F7F6", background: flash===l.id ? "#FFFBEB" : "transparent", transition:"background 0.4s" }}>
+                  <td style={{ padding:"12px 16px" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                      <div style={{ width:34, height:34, borderRadius:"50%", background:"linear-gradient(135deg, #FFF0F2, #E5E5E4)", display:"flex", alignItems:"center", justifyContent:"center", color:"var(--tar)", fontFamily:"var(--display)", fontSize:12, fontWeight:700, flexShrink:0 }}>{l.name.split(" ").map(n=>n[0]).join("")}</div>
+                      <div style={{ minWidth:0 }}>
+                        <div style={{ fontWeight:600, color:"#0F1B2D" }}>{l.name}</div>
+                        <div style={{ color:"#9CA3AF", fontSize:11 }}>{l.email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td style={{ padding:"12px 16px", color:"#374151", maxWidth:220 }}>{l.property}</td>
+                  <td style={{ padding:"12px 16px", color:"#9CA3AF", fontSize:12, whiteSpace:"nowrap" }}>{l.date}</td>
+                  <td style={{ padding:"12px 16px" }}>
+                    <select value={l.status} onChange={e => changeStatus(l, e.target.value)}
+                      style={{ fontFamily:"var(--sans)", fontSize:12, fontWeight:600, color: leadColor(l.status), background: leadColor(l.status)+"18", border:`1px solid ${leadColor(l.status)}55`, borderRadius:14, padding:"6px 10px", cursor:"pointer", outline:"none" }}>
+                      {LEAD_PIPELINE.map(p => <option key={p.key} value={p.key} style={{ color:"#0F1B2D" }}>{p.label}</option>)}
+                    </select>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Feed de webhooks en vivo */}
+        <div style={{ background:"#fff", borderRadius:14, border:"1px solid #F1F1F0", padding:"18px 20px", position:"sticky", top:20 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+            <span style={{ width:8, height:8, borderRadius:"50%", background:"#16A34A", boxShadow:"0 0 0 3px rgba(22,163,74,0.18)" }} />
+            <span style={{ fontFamily:"var(--display)", fontSize:16, fontWeight:700, color:"#0F1B2D" }}>Actividad de webhooks</span>
+          </div>
+          <p style={{ fontFamily:"var(--sans)", fontSize:12, color:"#6B7280", marginBottom:14, lineHeight:1.5 }}>Salientes (<span style={{ color:"#2563EB", fontWeight:700 }}>→</span> al CRM) y entrantes (<span style={{ color:"#16A34A", fontWeight:700 }}>←</span> del CRM) en tiempo real.</p>
+          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+            {activity.map(a => (
+              <div key={a.id} style={{ display:"flex", gap:10, padding:"10px 12px", background:"#FAFAF8", borderRadius:10, border:"1px solid #F1F1F0" }}>
+                <span style={{ fontFamily:"var(--mono)", fontSize:15, fontWeight:700, color: a.dir==="out" ? "#2563EB" : "#16A34A", lineHeight:1.2 }}>{a.dir==="out" ? "→" : "←"}</span>
+                <div style={{ minWidth:0, flex:1 }}>
+                  <div style={{ fontFamily:"var(--mono)", fontSize:11, color:"#0F1B2D" }}>{a.text}</div>
+                  <div style={{ fontFamily:"var(--sans)", fontSize:11, color:"#6B7280", marginTop:2 }}>{a.meta}</div>
+                  <div style={{ fontFamily:"var(--sans)", fontSize:10, color:"#9CA3AF", marginTop:3 }}>{a.when}</div>
+                </div>
+              </div>
             ))}
-          </tbody>
-        </table>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1152,7 +1231,7 @@ const AjustesTab = () => {
   // Catálogo de eventos disponibles para los webhooks salientes (qué los dispara).
   const EVENTS = [
     ["lead.created",            "Entra un nuevo lead (contacto o cita)."],
-    ["lead.status_changed",     "Cambia el estatus de un lead (nuevo → contactado, calificado…)."],
+    ["lead.status_changed",     "Cambia el estatus de un lead en el pipeline (Nuevo → Cita agendada → Cita concretada → Apartado → Firma de contrato)."],
     ["property.published",      "Se publica una propiedad (pasa a “disponible”)."],
     ["property.status_changed", "Cambia el estatus comercial (apartado, vendido, rentado…)."],
   ];

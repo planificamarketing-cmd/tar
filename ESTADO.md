@@ -30,6 +30,8 @@
   - **Alta de propiedad por dirección con geocoding** (Google Geocoding, ya en §4.3), sin captura manual de coordenadas; pin arrastrable como fallback (LocationPicker).
   - **Sin WhatsApp** en el sitio público: los leads entran solo por formulario (contacto/cita). El campo se mantiene en la BD para datos de contacto, pero no hay botón/integración de WhatsApp.
   - **"Guardar / favoritos"** queda como UI preparada pero **diferida**: requiere cuentas de usuario público (no contemplado en el alcance actual; sería adenda). 
+  - **Sin "Agendar visita"** como pestaña en el formulario público (se quitó); el lead entra solo como contacto.
+  - **Pipeline de leads (CRM) redefinido** a estatus inmobiliarios: `nuevo`, `cita_agendada`, `cita_concretada`, `apartado`, `firma_contrato` (+ `descartado`). → al construir (Fase A.4) cambiar el enum `lead_status` en `packages/db` y `packages/shared` (hoy es `nuevo/contactado/calificado/descartado/cerrado`). Cada cambio de estatus emite/recibe `lead.status_changed` por webhook (bidireccional: plataforma↔CRM, vía `/webhooks/inbound` con `X-API-Key`). El CRM del admin se prototipó **funcional** (estatus editable + feed de webhooks en vivo).
   - Estas decisiones se formalizan al **firmar** el prototipo; recién entonces se actualiza el PRD si aplica.
 - 2026-06-07: el **seed usa datos de muestra sintéticos** representativos (no el CSV real, que es entrega del cliente para el Lanzamiento). La carga real será vía `pnpm import:inventario` (Fase A.5).
 - 2026-06-07: el tipo `geography(Point,4326)` requiere **quitar las comillas** que drizzle-kit añade al modificador en el SQL generado (nota en `schema.ts`). Migración ya corregida.
