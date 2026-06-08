@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// Env tipado y validado (CLAUDE.md regla 4/5; PRD §12). Defaults solo para dev;
+// Env tipado y validado (la guía del proyecto regla 4/5; PRD §12). Defaults solo para dev;
 // en producción se exige configuración real (ver superRefine).
 const DEV_ACCESS_PLACEHOLDER = 'dev-access-secret-cambia-esto';
 const DEV_REFRESH_PLACEHOLDER = 'dev-refresh-secret-cambia-esto';

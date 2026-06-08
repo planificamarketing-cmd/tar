@@ -4,7 +4,7 @@ import { env } from '../env';
 
 // Interfaz de almacenamiento de media. El driver `local` guarda en el disco del
 // VPS (`MEDIA_DIR`). La interfaz queda abstraída para que un futuro driver S3
-// sea adenda y no una reescritura (CLAUDE.md / PRD §5.3, A.3).
+// sea adenda y no una reescritura (la guía del proyecto / PRD §5.3, A.3).
 export interface StorageDriver {
   save(key: string, data: Buffer): Promise<string>; // devuelve la URL pública
   remove(key: string): Promise<void>;

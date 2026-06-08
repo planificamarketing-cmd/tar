@@ -1,6 +1,6 @@
 # ESTADO — Plataforma TAR Internacional
 
-> **Partida guardada del proyecto.** Este archivo (+ `CLAUDE.md` + `git log`) es lo ÚNICO que se lee al iniciar sesión. NO releer el PRD, el plan ni el código completos: consultar solo la sección puntual que toque la tarea en curso. Se regenera (se sobrescribe) al final de cada sesión.
+> **Partida guardada del proyecto.** Este archivo (+ `git log`) es lo ÚNICO que se lee al iniciar sesión. NO releer el PRD, el plan ni el código completos: consultar solo la sección puntual que toque la tarea en curso. Se regenera (se sobrescribe) al final de cada sesión.
 
 **Última actualización:** 2026-06-07 · sesión Fase 1→A
 **Fase actual:** FASE A — Core & Backend **COMPLETA y CERRADA** (API §5 + docs + 44 tests). Siguiente: FASE C (backoffice) y/o FASE B (público, tras firma del diseño). **Avance global:** ~50%
@@ -22,8 +22,7 @@
 - **Herramienta de verificación**: `pnpm smoke` (21 pasos, incl. webhook real) + `pnpm import:inventario … --dry-run` + `docs/VERIFICACION.md` + `apps/api/requests.http`. 
 - **FASE A.6 — OpenAPI/Swagger COMPLETA** (`apps/api/src/openapi/`): spec OpenAPI 3.0 generado desde los Zod compartidos (`@asteasolutions/zod-to-openapi`), Swagger UI en **`/docs`**, export `pnpm openapi` → `docs/openapi.json` (23 rutas). A.7: 44 tests (unit + integración). **Fase A cerrada (DoD §5/§10).**
 - Verificado: `lint`, `typecheck`, `build`, **`test` (44)** en verde + `pnpm smoke` 21/21 + importador dry-run + `/docs` 200.
-- **Documentación de entrega + sistema de reportes** creados (`docs/`): `README` (índice), `ARQUITECTURA`, `GLOSARIO`, `PUESTA-EN-MARCHA`, `VERIFICACION`, `ERD`, `openapi.json`; `docs/reportes/` con semanales (1–6) + quincenales (1–3) + **INFORME-EJECUTIVO** (para el cliente) + plantillas, alineados al cronograma. Protocolo añadido a CLAUDE.md (mantener al día de forma continua). Memoria del proyecto poblada.
-- **Continuidad arreglada:** los hooks estaban mal ubicados (`settings.json` en la raíz apuntando a `.claude/hooks/` inexistente → el SessionStart NO inyectaba contexto). Movidos a `.claude/hooks/` + `.claude/settings.json` correcto y **verificado** (el arranque ya emite git + ESTADO).
+- **Documentación de entrega + sistema de reportes** creados (`docs/`): `README` (índice), `ARQUITECTURA`, `GLOSARIO`, `PUESTA-EN-MARCHA`, `VERIFICACION`, `ERD`, `openapi.json`; `docs/reportes/` con semanales (1–6) + quincenales (1–3) + **INFORME-EJECUTIVO** (para el cliente) + plantillas, alineados al cronograma.
 
 ## En progreso
 - _(ninguna técnica — esperando insumos del cliente para el bloque de diseño)_

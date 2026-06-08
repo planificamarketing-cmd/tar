@@ -2,7 +2,7 @@ import type { ErrorRequestHandler, RequestHandler } from 'express';
 import { ZodError } from 'zod';
 import { logger } from '../lib/logger';
 
-// Forma de error de la API (CLAUDE.md → Convenciones): { error: { code, message, details? } }
+// Forma de error de la API (la guía del proyecto → Convenciones): { error: { code, message, details? } }
 export class ApiError extends Error {
   constructor(
     public status: number,

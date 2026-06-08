@@ -19,7 +19,7 @@ module.exports = {
     'next-env.d.ts',
   ],
   rules: {
-    // §6 CLAUDE.md: cero `any` sin justificar → warn para no bloquear, revisar en PR.
+    // §6 la guía del proyecto: cero `any` sin justificar → warn para no bloquear, revisar en PR.
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unused-vars': [
       'error',

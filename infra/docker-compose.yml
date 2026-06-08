@@ -1,4 +1,4 @@
-# BD local en Docker con la MISMA imagen que producción (paridad VPS, CLAUDE.md).
+# BD local en Docker con la MISMA imagen que producción (paridad VPS, la guía del proyecto).
 # En dev se expone 5432 al host para conectarse desde la API/Drizzle locales.
 # En producción NO se exponen los puertos de Postgres: solo Caddy (80/443) es público.
 services:

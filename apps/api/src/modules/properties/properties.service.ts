@@ -549,7 +549,7 @@ export async function updateStatus(
   return getPropertyByIdAdmin(id);
 }
 
-// DELETE /properties/:id — soft delete (CLAUDE.md: nunca hard delete).
+// DELETE /properties/:id — soft delete (la guía del proyecto: nunca hard delete).
 export async function softDeleteProperty(id: string) {
   const [p] = await db
     .select({ id: properties.id })

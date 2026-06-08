@@ -1,5 +1,5 @@
 // Esquemas Zod y tipos compartidos entre API y Web (packages/shared).
-// La validación de TODA entrada de API vive aquí (CLAUDE.md, regla de oro 4; PRD §5).
+// La validación de TODA entrada de API vive aquí (la guía del proyecto, regla de oro 4; PRD §5).
 
 export * from './enums';
 export * from './common';

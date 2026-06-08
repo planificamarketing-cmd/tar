@@ -6,9 +6,9 @@
 
 ---
 
-## 0. Cómo usar este PRD en Claude Code
+## 0. Cómo usar este PRD
 
-1. Coloca en la raíz del repo: este archivo, `CLAUDE.md`, `PLAN_EJECUCION_FASES.md`, `SETUP_SERVIDOR_UBUNTU.md`, `ESTADO.md`, `.gitignore` y la carpeta `.claude/` (hooks de sesión).
+1. Coloca en la raíz del repo: este archivo, `PLAN_EJECUCION_FASES.md`, `SETUP_SERVIDOR_UBUNTU.md`, `ESTADO.md` y `.gitignore`.
 2. Trabaja **fase por fase** siguiendo `PLAN_EJECUCION_FASES.md`. No avances de fase hasta cumplir la *Definición de Hecho* (DoD).
 3. Toda funcionalidad debe mapear a una sección de este PRD. Si no mapea, es cambio de alcance.
 4. Las **métricas de rendimiento (§9)** son condición contractual de entrega. El código fuente **no se libera** hasta alcanzarlas en producción.
@@ -114,10 +114,8 @@ tar-internacional/
 ├── .github/workflows/       # CI: lint, test, lighthouse
 ├── turbo.json
 ├── pnpm-workspace.yaml
-├── .claude/                 # hooks de sesión (start/end/precompact) + settings.json
 ├── .gitignore
 ├── ESTADO.md                # "partida guardada" del avance (se regenera cada sesión)
-├── CLAUDE.md
 ├── PRD_Plataforma_TAR.md
 ├── PLAN_EJECUCION_FASES.md
 └── SETUP_SERVIDOR_UBUNTU.md
@@ -311,7 +309,7 @@ Base: `/api/v1`. Respuestas JSON. Errores con formato `{ error: { code, message,
 
 ### 7.0 Sistema de diseño (propuesta v3 — PENDIENTE de aprobación del cliente)
 
-La propuesta de diseño vigente es el **prototipo v3** generado en Claude Design. **No está aprobado**: debe presentarse a TAR como prototipo interactivo navegable, recibir sus correcciones (hasta 3 rondas formales, §13) y firmarse en la Fase 1. Hasta entonces, los tokens y mapeos de esta sección son la *propuesta base*, no la referencia final. Los archivos fuente se versionan en el repo bajo `design-reference/`: `TAR_Internacional_v3.html` (tokens + shell), `v3-ui.jsx` (componentes), `v3-pages.jsx` (Home, Listado, Mapa, Detalle), `v3-admin.jsx` (backoffice), `v3-content.jsx` (contenido), `assets/tar-logo.svg`.
+La propuesta de diseño vigente es el **prototipo v3** (referencia de diseño en `design-reference/`). **No está aprobado**: debe presentarse a TAR como prototipo interactivo navegable, recibir sus correcciones (hasta 3 rondas formales, §13) y firmarse en la Fase 1. Hasta entonces, los tokens y mapeos de esta sección son la *propuesta base*, no la referencia final. Los archivos fuente se versionan en el repo bajo `design-reference/`: `TAR_Internacional_v3.html` (tokens + shell), `v3-ui.jsx` (componentes), `v3-pages.jsx` (Home, Listado, Mapa, Detalle), `v3-admin.jsx` (backoffice), `v3-content.jsx` (contenido), `assets/tar-logo.svg`.
 
 **Tokens propuestos (se portan a `tailwind.config` como única fuente de verdad SOLO tras la firma del diseño):**
 

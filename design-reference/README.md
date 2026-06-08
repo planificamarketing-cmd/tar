@@ -2,9 +2,9 @@
 
 Referencia de diseño obligatoria del frontend (PRD §7.0). Replica este look con
 **Tailwind** en la Fase B — NO copies sus estilos inline, su Leaflet ni sus CDNs;
-el mapa real es **Google Maps** con marcadores *price-pill* (CLAUDE.md → Diseño).
+el mapa real es **Google Maps** con marcadores *price-pill* (la guía del proyecto → Diseño).
 
-## `prototipo-v3/` — prototipo v3 (handoff de Claude Design)
+## `prototipo-v3/` — prototipo v3 (handoff de diseño)
 
 SPA React servida por CDN (React + Babel standalone + Leaflet). Páginas:
 `Home · Listings · Map · Detail · Nosotros · Privacidad · Admin` (+ Header, Modal).
@@ -18,7 +18,7 @@ SPA React servida por CDN (React + Babel standalone + Leaflet). Páginas:
 ### Cambios aplicados sobre el handoff original
 - **Rojo de marca → `#D2103E`** (+ hover `#A80D32`), tomado del logo (`tar-logo.svg`
   contiene exactamente `#D2103E`). Sustituye el `#C41930`/`#A01428` del prototipo,
-  tal como exige CLAUDE.md / PLAN Fase 1.
+  tal como exige la guía del proyecto / PLAN Fase 1.
 
 ### Verlo / publicarlo
 Necesita servirse por HTTP (carga los `.jsx` por `fetch`; `file://` no funciona):

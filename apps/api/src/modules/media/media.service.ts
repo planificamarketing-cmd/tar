@@ -30,7 +30,7 @@ async function assertProperty(id: string): Promise<void> {
 
 // Sube imágenes: valida mimetype → sharp re-encode a WebP (full + thumb) →
 // almacenamiento (nombre con hash de contenido) → registro en property_images.
-// NUNCA confía en el archivo subido: siempre re-codifica (CLAUDE.md).
+// NUNCA confía en el archivo subido: siempre re-codifica (la guía del proyecto).
 export async function uploadImages(propertyId: string, files: UploadFile[]) {
   await assertProperty(propertyId);
   if (!files.length) {

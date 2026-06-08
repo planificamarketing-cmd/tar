@@ -19,10 +19,6 @@ build/
 # Artefacto de deploy del prototipo (se regenera)
 /tar-prototipo-v3.zip
 
-# Estado de Claude Code (logs y transcripts locales)
-.claude/session.log
-.claude/transcripts/
-
 # Media local en dev (las imágenes no van al repo)
 /srv/tar/media/
 apps/api/uploads/
