@@ -20,5 +20,20 @@ services:
       timeout: 5s
       retries: 10
 
+  # Visor web de la BD (solo dev). Se levanta con `pnpm db:web` (perfil "tools");
+  # NO arranca con `pnpm db:up`. Abre en el navegador y muestra las tablas sin login.
+  pgweb:
+    image: sosedoff/pgweb:latest
+    container_name: tar-pgweb
+    restart: unless-stopped
+    profiles: ['tools']
+    environment:
+      PGWEB_DATABASE_URL: postgres://${POSTGRES_USER:-tar}:${POSTGRES_PASSWORD:-tar}@db:5432/${POSTGRES_DB:-tar_portal}?sslmode=disable
+    ports:
+      - '8081:8081'
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   tar-db-data:
