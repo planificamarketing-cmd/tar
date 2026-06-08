@@ -2,12 +2,14 @@ import express, { type Express } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import hpp from 'hpp';
+import cookieParser from 'cookie-parser';
 import { rateLimit } from 'express-rate-limit';
 import { pinoHttp } from 'pino-http';
 import { corsOrigins } from './env';
 import { logger } from './lib/logger';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
 import { healthRouter } from './modules/health/health.routes';
+import { authRouter } from './modules/auth/auth.routes';
 
 // Construye la app Express sin ponerla a escuchar (testeable con supertest).
 export function createApp(): Express {
@@ -24,10 +26,11 @@ export function createApp(): Express {
   );
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true }));
+  app.use(cookieParser());
   app.use(hpp());
 
-  // Rate-limit global (los límites estrictos por ruta —p.ej. /auth/login— se
-  // añaden en la Fase A).
+  // Rate-limit global (los límites estrictos por ruta —p.ej. /auth/login— viven
+  // en cada router).
   app.use(
     rateLimit({
       windowMs: 15 * 60 * 1000,
@@ -38,6 +41,7 @@ export function createApp(): Express {
   );
 
   app.use('/health', healthRouter);
+  app.use('/api/v1/auth', authRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

@@ -14,14 +14,15 @@
 - **ERD borrador**: `docs/ERD.md` (Mermaid) + `docs/schema.sql` (dump del esquema aplicado).
 - **Prototipo v3 ingerido + revisado (ronda 1 del cliente)** en `design-reference/prototipo-v3/`: HTML + 4 JSX + logo. Rojo corregido a **`#D2103E`**. Cambios aplicados (commit `9776f25`): Home sin badge/destacada, mapa real (Leaflet), FAQ animado; sin WhatsApp; Nosotros con foto + valores en tarjetas; Admin: Brokers→Usuarios, alta por geocoding (sin GPS manual), filtros ricos + Exportar CSV, Scripts proveedor→nombre, Ajustes sin Marca/Facturación + Integraciones/Webhooks visibles, sin emojis, acceso oculto. Navegable: `pnpm prototipo` (http://localhost:4173). Falta deploy público (GitHub Pages, repo aparte).
 - **Datos del cliente resguardados** en `data/` (gitignored, PII): **CSV real de inventario (105 propiedades)** para el importador (Fase A.5), aviso de privacidad PDF (para `/aviso-privacidad`), capturas del diseño desplegado y contenido "Nosotros".
+- **FASE A.1 — Auth COMPLETA** (`apps/api/src/modules/auth/`, `lib/jwt.ts`, `lib/tokens.ts`, `middleware/require-auth.ts`): argon2 + login → access JWT (15m) + refresh rotativo (7d, hash SHA-256 en `refresh_tokens`, rotación con revocación), `requireAuth`/`requireRole(admin|editor)`, rate-limit estricto en `/auth/login`, cookie httpOnly + body. Endpoints en `/api/v1/auth/{login,refresh,logout,me}`. 8 tests Supertest verdes + smoke con el admin seedeado.
 - Verificado: `lint`, `typecheck`, `build`, `test` en verde.
 
 ## En progreso
 - _(ninguna técnica — esperando insumos del cliente para el bloque de diseño)_
 
 ## Siguiente (máx. 3)
-1. **FASE A.1 — Auth:** argon2 + login → access (15m) + refresh rotativo (7d, `token_hash`), `requireAuth`/`requireRole(admin|editor)`, rate-limit estricto en `/auth/login`, endpoints `/auth/{login,refresh,logout,me}` + tests (sobre el esquema y los Zod ya listos).
-2. A.2 Propiedades: CRUD + `publish` (slug inmutable, valida geo) + `GET /properties` (filtros sobre `price_*_mxn`, sort premium) + `GET /properties/map` (bbox `ST_Within`, SQL crudo).
+1. **FASE A.2 — Propiedades:** CRUD (crear borrador, patch, soft delete) + `POST /properties/:id/publish` (slug inmutable, valida geo, emite `property.published`) + `PATCH /:id/status` + `GET /properties` (filtros sobre `price_*_mxn`, sort premium) + `GET /properties/map` (bbox `ST_Within`, SQL crudo). Protegido con `requireAuth`/`requireRole`.
+2. A.3 Media (sharp→WebP) y A.4 Leads + Webhooks (pg-boss, HMAC) con el pipeline ya definido.
 3. Publicar el prototipo en Netlify (cliente) y abrir ronda de firma (desbloquea Fase B).
 
 ## Decisiones / desviaciones respecto al PRD

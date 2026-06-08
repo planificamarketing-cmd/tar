@@ -48,10 +48,10 @@ Mapeado al roadmap de 16 semanas del documento comercial. Cada fase tiene **tare
 **Objetivo:** API RESTful completa, segura, documentada, con webhooks y lógica premium.
 
 ### A.1 Autenticación y seguridad (§5.1, §8)
-- [ ] argon2 para passwords; login → access (15m) + refresh rotativo (7d, `token_hash` en BD).
-- [ ] Middleware `requireAuth` + `requireRole(admin|broker)`.
-- [ ] `helmet`, `cors` (whitelist), `hpp`, `express-rate-limit` (global + estricto en `/auth/login`).
-- [ ] Endpoints `/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/me`.
+- [x] argon2 para passwords; login → access (15m) + refresh rotativo (7d, `token_hash` SHA-256 en BD).
+- [x] Middleware `requireAuth` + `requireRole(admin|editor)`. _(rol broker→editor por decisión del cliente.)_
+- [x] `helmet`, `cors` (whitelist), `hpp`, `express-rate-limit` (global + estricto en `/auth/login`).
+- [x] Endpoints `/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/me` (base `/api/v1`; refresh por cookie httpOnly o body). Tests Supertest (8) en verde.
 
 ### A.2 Propiedades (§5.2, §6.3, §6.4)
 - [ ] CRUD propiedades (crear borrador, patch, soft delete).
