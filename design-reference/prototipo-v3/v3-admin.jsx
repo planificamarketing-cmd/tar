@@ -1141,14 +1141,26 @@ const UsuariosTab = () => {
 const AjustesTab = () => {
   // Webhooks salientes y llaves de API entrantes (PRD §5.5).
   const webhooksOut = [
-    { name:"HubSpot — Leads",      url:"https://api.hubspot.com/webhooks/ingest",  events:["lead.created","lead.status_changed"], active:true },
-    { name:"Zapier — Propiedades", url:"https://hooks.zapier.com/hooks/catch/123",  events:["property.published","property.status_changed"], active:true },
-    { name:"CRM interno",          url:"https://crm.tarinternacional.mx/webhooks",  events:["lead.created"], active:false },
+    { name:"HubSpot — Leads",      url:"https://api.hubspot.com/webhooks/ingest",  events:["lead.created","lead.status_changed"], active:true,  desc:"Envía cada lead a HubSpot en tiempo real para darle seguimiento desde tu CRM.", delivery:{ ok:true, text:"Última entrega: hace 5 min · 200 OK" } },
+    { name:"Zapier — Propiedades", url:"https://hooks.zapier.com/hooks/catch/123",  events:["property.published","property.status_changed"], active:true,  desc:"Dispara automatizaciones en Zapier al publicar o cambiar el estatus de una propiedad.", delivery:{ ok:true, text:"Última entrega: hace 1 h · 200 OK" } },
+    { name:"CRM interno",          url:"https://crm.tarinternacional.mx/webhooks",  events:["lead.created"], active:false, desc:"Avisa a tu CRM cada vez que entra un lead nuevo.", delivery:{ ok:null, text:"Sin entregas — webhook inactivo" } },
   ];
   const apiKeys = [
     { name:"Zapier (entrante)",  scopes:["leads:write"], lastUsed:"hace 2 h" },
     { name:"Integración CRM",    scopes:["leads:write","properties:write"], lastUsed:"hace 3 d" },
   ];
+  // Catálogo de eventos disponibles para los webhooks salientes (qué los dispara).
+  const EVENTS = [
+    ["lead.created",            "Entra un nuevo lead (contacto o cita)."],
+    ["lead.status_changed",     "Cambia el estatus de un lead (nuevo → contactado, calificado…)."],
+    ["property.published",      "Se publica una propiedad (pasa a “disponible”)."],
+    ["property.status_changed", "Cambia el estatus comercial (apartado, vendido, rentado…)."],
+  ];
+  // Qué permite hacer cada scope a un tercero (webhooks entrantes).
+  const SCOPE_DESC = {
+    "leads:write":      "Actualizar el estatus de leads",
+    "properties:write": "Actualizar el estatus de propiedades",
+  };
   const eventChip = (e) => (
     <span key={e} style={{ fontFamily:"var(--mono)", fontSize:10, color:"#374151", background:"#F1F1F0", padding:"2px 8px", borderRadius:10 }}>{e}</span>
   );
@@ -1171,7 +1183,19 @@ const AjustesTab = () => {
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6 }}>
           <div>
             <h2 style={{ fontFamily:"var(--display)", fontSize:19, fontWeight:700, color:"#0F1B2D" }}>Integraciones · Webhooks</h2>
-            <p style={{ fontFamily:"var(--sans)", fontSize:13, color:"#6B7280", marginTop:3, maxWidth:560, lineHeight:1.6 }}>Conecta TAR con tus herramientas (CRM, Zapier, HubSpot…) mediante <strong>webhooks salientes</strong> y <strong>llaves de API entrantes</strong>, sin intermediarios de pago.</p>
+            <p style={{ fontFamily:"var(--sans)", fontSize:13, color:"#6B7280", marginTop:3, maxWidth:620, lineHeight:1.6 }}>Conecta TAR con tus herramientas (CRM, Zapier, HubSpot…) sin intermediarios de pago. Hay dos direcciones:</p>
+          </div>
+        </div>
+
+        {/* Explicación de qué pasa en cada dirección */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginTop:14 }}>
+          <div style={{ background:"#FAFAF8", border:"1px solid #F1F1F0", borderRadius:12, padding:"14px 16px" }}>
+            <div style={{ fontFamily:"var(--sans)", fontSize:13, fontWeight:700, color:"#0F1B2D", marginBottom:4 }}>→ Salientes (TAR avisa a terceros)</div>
+            <div style={{ fontFamily:"var(--sans)", fontSize:12, color:"#6B7280", lineHeight:1.6 }}>Cuando ocurre un evento en TAR (p. ej. entra un lead), la plataforma <strong>envía un aviso (POST)</strong> a la URL que configures, para que tu CRM o Zapier reaccionen automáticamente.</div>
+          </div>
+          <div style={{ background:"#FAFAF8", border:"1px solid #F1F1F0", borderRadius:12, padding:"14px 16px" }}>
+            <div style={{ fontFamily:"var(--sans)", fontSize:13, fontWeight:700, color:"#0F1B2D", marginBottom:4 }}>← Entrantes (terceros actualizan TAR)</div>
+            <div style={{ fontFamily:"var(--sans)", fontSize:12, color:"#6B7280", lineHeight:1.6 }}>Con una <strong>llave de API</strong>, un sistema externo puede actualizar datos en TAR (p. ej. marcar un lead como cerrado) llamando a la plataforma de forma segura.</div>
           </div>
         </div>
 
@@ -1183,14 +1207,39 @@ const AjustesTab = () => {
           </div>
           <div style={{ border:"1px solid #F1F1F0", borderRadius:12, overflow:"hidden" }}>
             {webhooksOut.map((w, i) => (
-              <div key={w.name} style={{ display:"flex", alignItems:"center", gap:14, padding:"14px 16px", borderTop: i>0 ? "1px solid #F7F7F6" : "none" }}>
+              <div key={w.name} style={{ display:"flex", alignItems:"flex-start", gap:14, padding:"16px", borderTop: i>0 ? "1px solid #F7F7F6" : "none" }}>
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontFamily:"var(--sans)", fontSize:14, fontWeight:600, color:"#0F1B2D" }}>{w.name}</div>
-                  <div style={{ fontFamily:"var(--mono)", fontSize:11, color:"#9CA3AF", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", marginTop:2 }}>{w.url}</div>
-                  <div style={{ display:"flex", gap:6, marginTop:8, flexWrap:"wrap" }}>{w.events.map(eventChip)}</div>
+                  <div style={{ fontFamily:"var(--sans)", fontSize:12, color:"#6B7280", lineHeight:1.5, marginTop:3 }}>{w.desc}</div>
+                  <div style={{ fontFamily:"var(--mono)", fontSize:11, color:"#9CA3AF", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", marginTop:8 }}>{w.url}</div>
+                  <div style={{ fontFamily:"var(--sans)", fontSize:11, color:"#9CA3AF", marginTop:8, marginBottom:5 }}>Se dispara con:</div>
+                  <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>{w.events.map(eventChip)}</div>
+                  <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginTop:10, fontFamily:"var(--sans)", fontSize:11, color: w.delivery.ok ? "#16A34A" : "#9CA3AF" }}>
+                    <span style={{ width:7, height:7, borderRadius:"50%", background: w.delivery.ok ? "#16A34A" : "#D1D5DB" }} />{w.delivery.text}
+                  </div>
                 </div>
-                <span style={{ fontFamily:"var(--sans)", fontSize:11, fontWeight:600, color: w.active ? "#16A34A" : "#9CA3AF" }}>{w.active ? "Activo" : "Inactivo"}</span>
-                <button style={{ background:"none", border:"1px solid #E5E5E4", padding:"6px 10px", cursor:"pointer", color:"#6B7280", borderRadius:14 }}><I3Edit s={12}/></button>
+                <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:8, flexShrink:0 }}>
+                  <span style={{ fontFamily:"var(--sans)", fontSize:11, fontWeight:600, color: w.active ? "#16A34A" : "#9CA3AF" }}>{w.active ? "Activo" : "Inactivo"}</span>
+                  <button title="Editar" style={{ background:"none", border:"1px solid #E5E5E4", padding:"6px 10px", cursor:"pointer", color:"#6B7280", borderRadius:14 }}><I3Edit s={12}/></button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Cómo se entregan los webhooks salientes */}
+        <div style={{ marginTop:14, background:"#FFF8E1", border:"1px solid #FCD34D", borderRadius:12, padding:"12px 16px", fontFamily:"var(--sans)", fontSize:12, color:"#92400E", lineHeight:1.7 }}>
+          <strong>¿Qué pasa al dispararse?</strong> TAR envía un <strong>POST</strong> con los datos del evento, firmado con <strong>HMAC-SHA256</strong> (header <span style={{ fontFamily:"var(--mono)", background:"rgba(0,0,0,0.06)", padding:"1px 5px", borderRadius:4 }}>X-TAR-Signature</span>) para que el receptor verifique que viene de TAR. Si el destino no responde, se <strong>reintenta hasta 5 veces</strong> con espera creciente (30s, 2m, 10m, 1h, 6h) y queda registro de cada intento.
+        </div>
+
+        {/* Catálogo de eventos */}
+        <div style={{ marginTop:16 }}>
+          <div style={{ fontFamily:"var(--sans)", fontSize:12, fontWeight:700, color:"#374151", textTransform:"uppercase", letterSpacing:1, marginBottom:10 }}>Eventos disponibles</div>
+          <div style={{ border:"1px solid #F1F1F0", borderRadius:12, overflow:"hidden" }}>
+            {EVENTS.map(([ev, d], i) => (
+              <div key={ev} style={{ display:"flex", alignItems:"center", gap:12, padding:"11px 16px", borderTop: i>0 ? "1px solid #F7F7F6" : "none", flexWrap:"wrap" }}>
+                <span style={{ fontFamily:"var(--mono)", fontSize:11, color:"#0F1B2D", background:"#F1F1F0", padding:"3px 9px", borderRadius:10, flexShrink:0, minWidth:172 }}>{ev}</span>
+                <span style={{ fontFamily:"var(--sans)", fontSize:12, color:"#6B7280" }}>{d}</span>
               </div>
             ))}
           </div>
@@ -1204,15 +1253,21 @@ const AjustesTab = () => {
           </div>
           <div style={{ border:"1px solid #F1F1F0", borderRadius:12, overflow:"hidden" }}>
             {apiKeys.map((k, i) => (
-              <div key={k.name} style={{ display:"flex", alignItems:"center", gap:14, padding:"14px 16px", borderTop: i>0 ? "1px solid #F7F7F6" : "none" }}>
+              <div key={k.name} style={{ display:"flex", alignItems:"flex-start", gap:14, padding:"16px", borderTop: i>0 ? "1px solid #F7F7F6" : "none" }}>
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontFamily:"var(--sans)", fontSize:14, fontWeight:600, color:"#0F1B2D" }}>{k.name}</div>
                   <div style={{ display:"flex", gap:6, marginTop:6, flexWrap:"wrap" }}>{k.scopes.map(eventChip)}</div>
+                  <div style={{ fontFamily:"var(--sans)", fontSize:12, color:"#6B7280", marginTop:8, lineHeight:1.5 }}>Puede: {k.scopes.map(sc => SCOPE_DESC[sc] || sc).join(" · ")}.</div>
                 </div>
-                <span style={{ fontFamily:"var(--sans)", fontSize:11, color:"#9CA3AF" }}>Último uso: {k.lastUsed}</span>
-                <button style={{ background:"none", border:"1px solid #FECACA", padding:"6px 12px", cursor:"pointer", color:"#DC2626", borderRadius:14, fontFamily:"var(--sans)", fontSize:12, fontWeight:500 }}>Revocar</button>
+                <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:8, flexShrink:0 }}>
+                  <span style={{ fontFamily:"var(--sans)", fontSize:11, color:"#9CA3AF" }}>Último uso: {k.lastUsed}</span>
+                  <button style={{ background:"none", border:"1px solid #FECACA", padding:"6px 12px", cursor:"pointer", color:"#DC2626", borderRadius:14, fontFamily:"var(--sans)", fontSize:12, fontWeight:500 }}>Revocar</button>
+                </div>
               </div>
             ))}
+          </div>
+          <div style={{ marginTop:10, fontFamily:"var(--sans)", fontSize:12, color:"#6B7280", lineHeight:1.7 }}>
+            El sistema externo llama a <span style={{ fontFamily:"var(--mono)", background:"#F1F1F0", padding:"1px 5px", borderRadius:4, color:"#0F1B2D" }}>POST /webhooks/inbound</span> con su llave en el header <span style={{ fontFamily:"var(--mono)", background:"#F1F1F0", padding:"1px 5px", borderRadius:4, color:"#0F1B2D" }}>X-API-Key</span>. La llave completa solo se muestra <strong>una vez</strong>, al crearla; después se guarda cifrada.
           </div>
         </div>
       </div>
