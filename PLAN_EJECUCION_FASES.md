@@ -54,12 +54,14 @@ Mapeado al roadmap de 16 semanas del documento comercial. Cada fase tiene **tare
 - [x] Endpoints `/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/me` (base `/api/v1`; refresh por cookie httpOnly o body). Tests Supertest (8) en verde.
 
 ### A.2 Propiedades (§5.2, §6.3, §6.4)
-- [ ] CRUD propiedades (crear borrador, patch, soft delete).
-- [ ] `POST /properties/:id/publish`: valida `geo` y campos requeridos, genera `slug` inmutable, status → `disponible`, set `published_at`, emite **`property.published`**.
-- [ ] `PATCH /properties/:id/status`: estatus comercial (disponible/apartado/rentado/vendido/pausado), emite **`property.status_changed`**.
-- [ ] `GET /properties`: filtros combinados (precio, recámaras, baños, **estacionamientos, m² construcción, m² terreno**, amenidades, colonia, texto) + paginación + param `sort` (relevancia premium / precio asc-desc / recientes).
-- [ ] `GET /properties/map`: consulta geoespacial por `bbox` (`ST_MakeEnvelope`/`ST_Within`, SQL crudo) con filtros, payload ligero.
-- [ ] `GET /properties/:slug`: detalle con imágenes + amenidades.
+- [x] CRUD propiedades (crear borrador, patch, soft delete).
+- [x] `POST /properties/:id/publish`: valida `geo` y campos requeridos, genera `slug` inmutable, status → `disponible`, set `published_at`, emite **`property.published`**.
+- [x] `PATCH /properties/:id/status`: estatus comercial (disponible/apartado/rentado/vendido/pausado), emite **`property.status_changed`**.
+- [x] `GET /properties`: filtros combinados (precio, recámaras, baños, **estacionamientos, m² construcción, m² terreno**, amenidades, colonia, texto) + paginación + param `sort` (relevancia premium / precio asc-desc / recientes).
+- [x] `GET /properties/map`: consulta geoespacial por `bbox` (`ST_MakeEnvelope`/`ST_Within`, SQL crudo) con filtros, payload ligero.
+- [x] `GET /properties/:slug`: detalle con imágenes + amenidades.
+
+_Eventos `property.published`/`property.status_changed` emitidos vía `lib/events` (stub que A.4 conecta a pg-boss). 9 tests de integración en verde._
 
 ### A.3 Media (§5.3)
 - [ ] `lib/storage` con driver `local` (disco del VPS, `MEDIA_DIR`); interfaz abstraída para que un futuro driver S3 sea adenda y no reescritura.

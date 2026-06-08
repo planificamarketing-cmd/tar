@@ -10,6 +10,7 @@ import { logger } from './lib/logger';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
 import { healthRouter } from './modules/health/health.routes';
 import { authRouter } from './modules/auth/auth.routes';
+import { propertiesRouter } from './modules/properties/properties.routes';
 
 // Construye la app Express sin ponerla a escuchar (testeable con supertest).
 export function createApp(): Express {
@@ -42,6 +43,7 @@ export function createApp(): Express {
 
   app.use('/health', healthRouter);
   app.use('/api/v1/auth', authRouter);
+  app.use('/api/v1/properties', propertiesRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

@@ -14,15 +14,16 @@
 - **ERD borrador**: `docs/ERD.md` (Mermaid) + `docs/schema.sql` (dump del esquema aplicado).
 - **Prototipo v3 ingerido + revisado (ronda 1 del cliente)** en `design-reference/prototipo-v3/`: HTML + 4 JSX + logo. Rojo corregido a **`#D2103E`**. Cambios aplicados (commit `9776f25`): Home sin badge/destacada, mapa real (Leaflet), FAQ animado; sin WhatsApp; Nosotros con foto + valores en tarjetas; Admin: Brokers→Usuarios, alta por geocoding (sin GPS manual), filtros ricos + Exportar CSV, Scripts proveedor→nombre, Ajustes sin Marca/Facturación + Integraciones/Webhooks visibles, sin emojis, acceso oculto. Navegable: `pnpm prototipo` (http://localhost:4173). Falta deploy público (GitHub Pages, repo aparte).
 - **Datos del cliente resguardados** en `data/` (gitignored, PII): **CSV real de inventario (105 propiedades)** para el importador (Fase A.5), aviso de privacidad PDF (para `/aviso-privacidad`), capturas del diseño desplegado y contenido "Nosotros".
-- **FASE A.1 — Auth COMPLETA** (`apps/api/src/modules/auth/`, `lib/jwt.ts`, `lib/tokens.ts`, `middleware/require-auth.ts`): argon2 + login → access JWT (15m) + refresh rotativo (7d, hash SHA-256 en `refresh_tokens`, rotación con revocación), `requireAuth`/`requireRole(admin|editor)`, rate-limit estricto en `/auth/login`, cookie httpOnly + body. Endpoints en `/api/v1/auth/{login,refresh,logout,me}`. 8 tests Supertest verdes + smoke con el admin seedeado.
-- Verificado: `lint`, `typecheck`, `build`, `test` en verde.
+- **FASE A.1 — Auth COMPLETA** (`apps/api/src/modules/auth/`, `lib/jwt.ts`, `lib/tokens.ts`, `middleware/require-auth.ts`): argon2 + login → access JWT (15m) + refresh rotativo (7d, hash SHA-256 en `refresh_tokens`, rotación con revocación), `requireAuth`/`requireRole(admin|editor)`, rate-limit estricto en `/auth/login`, cookie httpOnly + body. Endpoints en `/api/v1/auth/{login,refresh,logout,me}`.
+- **FASE A.2 — Propiedades COMPLETA** (`apps/api/src/modules/properties/`, `lib/{events,slug,pricing}.ts`): CRUD (borrador/patch/soft-delete), `publish` (valida geo+precio, slug inmutable, `property.published`), `PATCH /:id/status` (`property.status_changed`), `GET /properties` (filtros combinados sobre `price_*_mxn` + orden relevancia-premium/precio/recientes + paginación + full-text español), `GET /properties/map` (bbox `ST_Within`, SQL crudo, payload ligero, precio en moneda original), `GET /:slug` (detalle + imágenes + amenidades). Rutas públicas + protegidas (`requireRole`). Eventos vía `lib/events` (stub → pg-boss en A.4).
+- Verificado: `lint`, `typecheck`, `build`, **`test` (17: health+auth+properties)** en verde + smoke en vivo (listado/mapa/filtros).
 
 ## En progreso
 - _(ninguna técnica — esperando insumos del cliente para el bloque de diseño)_
 
 ## Siguiente (máx. 3)
-1. **FASE A.2 — Propiedades:** CRUD (crear borrador, patch, soft delete) + `POST /properties/:id/publish` (slug inmutable, valida geo, emite `property.published`) + `PATCH /:id/status` + `GET /properties` (filtros sobre `price_*_mxn`, sort premium) + `GET /properties/map` (bbox `ST_Within`, SQL crudo). Protegido con `requireAuth`/`requireRole`.
-2. A.3 Media (sharp→WebP) y A.4 Leads + Webhooks (pg-boss, HMAC) con el pipeline ya definido.
+1. **FASE A.3 — Media:** `lib/storage` (driver `local`, `MEDIA_DIR`), subida de imágenes con **sharp → WebP + thumbnail + tamaños responsive** (re-encode obligatorio), registro en `property_images`, reordenar/cover/alt/delete.
+2. **FASE A.4 — Leads + Webhooks:** `POST /leads` (honeypot + LFPDPPP), `POST /events/track`, `lib/mailer` (SendGrid), CRUD leads admin con el pipeline; **pg-boss** + HMAC + backoff para webhooks salientes; `/webhooks/inbound` con `X-API-Key`. Aquí se conecta `lib/events`.
 3. Publicar el prototipo en Netlify (cliente) y abrir ronda de firma (desbloquea Fase B).
 
 ## Decisiones / desviaciones respecto al PRD
