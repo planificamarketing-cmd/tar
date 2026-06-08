@@ -22,7 +22,8 @@
 - **Herramienta de verificación**: `pnpm smoke` (21 pasos, incl. webhook real) + `pnpm import:inventario … --dry-run` + `docs/VERIFICACION.md` + `apps/api/requests.http`. 
 - **FASE A.6 — OpenAPI/Swagger COMPLETA** (`apps/api/src/openapi/`): spec OpenAPI 3.0 generado desde los Zod compartidos (`@asteasolutions/zod-to-openapi`), Swagger UI en **`/docs`**, export `pnpm openapi` → `docs/openapi.json` (23 rutas). A.7: 44 tests (unit + integración). **Fase A cerrada (DoD §5/§10).**
 - Verificado: `lint`, `typecheck`, `build`, **`test` (44)** en verde + `pnpm smoke` 21/21 + importador dry-run + `/docs` 200.
-- **Documentación de entrega + sistema de reportes** creados (`docs/`): `README` (índice), `ARQUITECTURA`, `GLOSARIO`, `PUESTA-EN-MARCHA`, `VERIFICACION`, `ERD`, `openapi.json`; `docs/reportes/` con semanales (1–6) + quincenales (1–3) + plantillas, alineados al cronograma. Protocolo añadido a CLAUDE.md (mantener al día de forma continua). Memoria del proyecto poblada.
+- **Documentación de entrega + sistema de reportes** creados (`docs/`): `README` (índice), `ARQUITECTURA`, `GLOSARIO`, `PUESTA-EN-MARCHA`, `VERIFICACION`, `ERD`, `openapi.json`; `docs/reportes/` con semanales (1–6) + quincenales (1–3) + **INFORME-EJECUTIVO** (para el cliente) + plantillas, alineados al cronograma. Protocolo añadido a CLAUDE.md (mantener al día de forma continua). Memoria del proyecto poblada.
+- **Continuidad arreglada:** los hooks estaban mal ubicados (`settings.json` en la raíz apuntando a `.claude/hooks/` inexistente → el SessionStart NO inyectaba contexto). Movidos a `.claude/hooks/` + `.claude/settings.json` correcto y **verificado** (el arranque ya emite git + ESTADO).
 
 ## En progreso
 - _(ninguna técnica — esperando insumos del cliente para el bloque de diseño)_

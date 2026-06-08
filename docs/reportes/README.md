@@ -4,6 +4,10 @@ Reportes para presentar el avance al cliente, **alineados al cronograma de 16
 semanas** (`PLAN_EJECUCION_FASES.md`). Aunque la ejecución va **adelantada**, el
 avance se organiza por la semana del cronograma a la que corresponde cada entrega.
 
+> 📊 **Para presentar al cliente:** el [**INFORME-EJECUTIVO.md**](INFORME-EJECUTIVO.md)
+> es el consolidado limpio y sin jerga (tablero de estado, hitos, pendientes). Incluye
+> al final cómo exportarlo a **PDF**.
+
 ## Cadencia
 - **Semanal** (`semana-NN.md`): qué se hizo esa semana del cronograma, entregables,
   evidencia de que funciona, decisiones, riesgos y lo que sigue.

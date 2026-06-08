@@ -1,0 +1,73 @@
+# Informe ejecutivo de avance — Plataforma TAR Internacional
+
+**Preparado por:** GBS Digital · **Para:** TAR Internacional · **Corte:** 2026-06-07
+
+---
+
+## Resumen en una línea
+La plataforma ya tiene **todo su “motor” (backend) terminado y probado** y el **diseño
+revisado con el cliente**; vamos **muy adelantados** al cronograma.
+
+## Tablero de avance
+
+```
+Avance global  ██████████░░░░░░░░░░  ~50%
+```
+
+| # | Fase | Qué incluye | Estado |
+|---|---|---|:---:|
+| 0 | Cimientos | Entorno, base de datos, CI | ✅ Completa |
+| 1 | Datos + Prototipo | Modelo de datos · prototipo de diseño revisado | ✅ Completa (técnica) |
+| A | **Backend (motor)** | Login, propiedades, imágenes, leads/CRM, webhooks, importador, documentación | ✅ **Completa** |
+| C | Panel de administración | Donde el equipo publica y gestiona | 🔄 En curso |
+| B | Sitio público | El portal que ven los clientes finales | ⛔ Espera **firma del diseño** |
+| QA | Pruebas y rendimiento | Auditorías, optimización | ⏳ Pendiente |
+| — | Lanzamiento | Servidor, respaldos, capacitación | ⏳ Pendiente |
+
+> **Estado vs cronograma:** según el contrato, a estas alturas íbamos por la semana 6;
+> el trabajo de las semanas 1–6 ya está **completo y probado**. Adelanto sin costo (§13).
+
+## Hitos logrados
+- **Base sólida y segura:** base de datos geográfica profesional, login cifrado de
+  operadores con roles, y todas las medidas de seguridad estándar.
+- **Catálogo completo:** alta/edición/publicación de propiedades, **buscador con
+  filtros**, **mapa por zona**, fichas, e **imágenes que se optimizan solas**.
+- **Captación de clientes (leads) + CRM:** formulario con anti-spam y aviso de
+  privacidad, y un **CRM con el pipeline del negocio** (Nuevo → Cita → Apartado →
+  Firma).
+- **Integraciones (webhooks):** la plataforma avisa a sistemas externos (CRM/Zapier) y
+  también puede recibir actualizaciones de ellos, de forma **segura y confiable**.
+- **Migración del inventario:** herramienta lista y probada con el **archivo real de
+  105 propiedades** del cliente.
+- **Diseño:** prototipo revisado contigo y ajustado (panel, CRM, mapa, etc.), listo
+  para publicar y firmar.
+
+## Lo que el cliente ya puede ver / probar
+- **Prototipo de diseño** navegable (para revisión y firma).
+- **Documentación interactiva de la plataforma** (se puede “probar” cada función).
+- **Base de datos** y un recorrido automático que demuestra que todo funciona.
+> *(Instrucciones técnicas para mostrarlo: `docs/PUESTA-EN-MARCHA.md`.)*
+
+## Pendientes y lo que necesitamos del cliente
+| Pendiente | ¿Para qué? | ¿Bloquea? |
+|---|---|---|
+| **Firmar el prototipo de diseño** | Construir el sitio público | Sí (Fase B) |
+| API key de **Google Maps** | Mapa real + ubicar propiedades al importar | Parcial |
+| Cuenta de **SendGrid** | Enviar emails de nuevos prospectos | No (mientras tanto, no envía) |
+| **Dominio**, **servidor** y respaldos (R2) | Salir a producción | En Lanzamiento |
+
+## Próximos pasos
+1. **Panel de administración (Fase C)** — en curso; no depende de la firma.
+2. **Publicar el prototipo** para que TAR lo revise y firme → desbloquea el sitio público.
+3. Tras la firma: construir el **sitio público (Fase B)**.
+
+---
+
+### Detalle por semana
+Reportes semanales y quincenales con el detalle completo en esta misma carpeta
+(`docs/reportes/`). El backlog completo y su estado están en `PLAN_EJECUCION_FASES.md`.
+
+### Cómo exportar este informe a PDF (para presentarlo)
+- En **VS Code**: instala la extensión *“Markdown PDF”* (yzane) → clic derecho sobre
+  este archivo → *“Markdown PDF: Export (pdf)”*.
+- O abre el archivo en GitHub/visor Markdown y usa **Imprimir → Guardar como PDF**.
