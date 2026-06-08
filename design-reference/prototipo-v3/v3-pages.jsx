@@ -9,6 +9,60 @@ const {
 
 const DEF_F3 = { operation:"all", type:"all", maxPrice:"all", zone:"all", minBeds:"0", search:"" };
 
+// Texto compacto del price-pill (igual que en Map3).
+const pillText3 = p => p.operation === "renta"
+  ? `$${(p.price/1000).toFixed(0)}k/mes`
+  : (p.price >= 1000000 ? `$${(p.price/1000000).toFixed(1).replace(".0","")} MDP` : `$${(p.price/1000).toFixed(0)}k`);
+
+// ── Mini-mapa real (Leaflet) para el Home ────────────────────────────────────
+// Refleja el mapa de producción (Google Maps + marcadores price-pill); ya no es
+// un dibujo SVG. En la app real el tile provider es Google Maps.
+const MiniMap3 = ({ onNavigate }) => {
+  const ref  = React.useRef(null);
+  const inst = React.useRef(null);
+  React.useEffect(() => {
+    if (inst.current || !ref.current || !window.L) return;
+    const L = window.L;
+    const m = L.map(ref.current, { zoomControl:false, scrollWheelZoom:false, attributionControl:false }).setView([19.40, -99.17], 11);
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", { maxZoom:19 }).addTo(m);
+    inst.current = m;
+    const pts = [];
+    PROPERTIES.filter(p => p.lat && p.lng).slice(0, 12).forEach(p => {
+      const html = `<div class="price-pill ${p.premium ? "premium" : ""}">${p.premium ? '<span class="pp-star">★</span>' : ''}<span>${pillText3(p)}</span><div class="pip"></div></div>`;
+      const icon = L.divIcon({ className:"", html, iconSize:[80,32], iconAnchor:[40,32] });
+      L.marker([p.lat, p.lng], { icon }).addTo(m).on("click", () => onNavigate && onNavigate("detail", p.id));
+      pts.push([p.lat, p.lng]);
+    });
+    if (pts.length) m.fitBounds(pts, { padding:[40,40], maxZoom:13 });
+    return () => { inst.current?.remove(); inst.current = null; };
+  }, []);
+  return <div ref={ref} style={{ position:"absolute", inset:0 }} />;
+};
+
+// ── FAQ acordeón con animación suave (sustituye al <details> brusco) ──────────
+const Faq3 = ({ items }) => {
+  const [open, setOpen] = React.useState(0);
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+      {items.map((f, i) => {
+        const isOpen = open === i;
+        return (
+          <div key={i} style={{ border:"1px solid #E5E5E4", borderRadius:14, background:"#fff", overflow:"hidden", transition:"border-color 0.2s" }}>
+            <button onClick={() => setOpen(isOpen ? null : i)}
+              style={{ width:"100%", textAlign:"left", padding:"18px 22px", background:"none", border:"none", cursor:"pointer", fontFamily:"var(--sans)", fontSize:15, fontWeight:600, color:"#0F1B2D", display:"flex", justifyContent:"space-between", alignItems:"center", gap:12 }}>
+              {f.q}
+              <span style={{ color:"#9CA3AF", fontSize:22, fontWeight:300, lineHeight:1, flexShrink:0, transition:"transform 0.25s ease", transform: isOpen ? "rotate(45deg)" : "rotate(0deg)" }}>+</span>
+            </button>
+            <div style={{ maxHeight: isOpen ? 260 : 0, opacity: isOpen ? 1 : 0, overflow:"hidden", transition:"max-height 0.32s ease, opacity 0.32s ease" }}>
+              <p style={{ fontFamily:"var(--sans)", fontSize:14, color:"#6B7280", lineHeight:1.7, padding:"0 22px 18px" }}>{f.a}</p>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 // ── HOME ─────────────────────────────────────────────────────────────────────
 const Home3 = ({ onNavigate }) => {
   const [op, setOp] = React.useState("venta");
@@ -37,30 +91,10 @@ const Home3 = ({ onNavigate }) => {
               <div style={{ position:"absolute", inset:0, backgroundImage:"repeating-linear-gradient(135deg,transparent,transparent 60px,rgba(255,255,255,0.02) 60px,rgba(255,255,255,0.02) 120px)" }} />
             </div>
 
-            {/* Top row: eyebrow + floating featured card */}
-            <div style={{ position:"relative", padding:"46px 48px 0", zIndex:2, display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:24 }}>
-              <div style={{ display:"inline-flex", alignItems:"center", gap:10, background:"rgba(255,255,255,0.1)", border:"1px solid rgba(255,255,255,0.22)", borderRadius:30, padding:"8px 16px", backdropFilter:"blur(8px)" }}>
-                <span style={{ width:7, height:7, borderRadius:"50%", background:"var(--tar)" }} />
-                <span style={{ fontFamily:"var(--sans)", fontSize:12, color:"#fff", letterSpacing:1.5, textTransform:"uppercase", fontWeight:600 }}>60 años · México &amp; EUA</span>
-              </div>
-              {featured[1] && (
-                <div onClick={() => onNavigate("detail", featured[1].id)} style={{ display:"flex", alignItems:"center", gap:12, background:"rgba(255,255,255,0.12)", border:"1px solid rgba(255,255,255,0.2)", borderRadius:16, padding:"10px 16px 10px 10px", backdropFilter:"blur(10px)", cursor:"pointer", transition:"background 0.15s" }}
-                  onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.2)"}
-                  onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.12)"}>
-                  <div style={{ width:52, height:52, borderRadius:10, overflow:"hidden", flexShrink:0, background:featured[1].color }}>
-                    {featured[1].image && <img src={featured[1].image} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }} />}
-                  </div>
-                  <div style={{ minWidth:0 }}>
-                    <div style={{ fontFamily:"var(--sans)", fontSize:10, color:"var(--tar)", letterSpacing:1.2, textTransform:"uppercase", fontWeight:700, marginBottom:1 }}>Destacada</div>
-                    <div style={{ fontFamily:"var(--sans)", fontSize:12, color:"rgba(255,255,255,0.85)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", maxWidth:160 }}>{featured[1].location}</div>
-                    <div style={{ fontFamily:"var(--display)", fontSize:16, color:"#fff", fontWeight:700 }}>{formatPrice(featured[1].price, featured[1].currency, featured[1].operation)}</div>
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* (Badge "60 años" y tarjeta destacada del hero retirados a pedido del cliente.) */}
 
             {/* Headline */}
-            <div style={{ position:"relative", padding:"48px 48px 40px", zIndex:2 }}>
+            <div style={{ position:"relative", padding:"96px 48px 40px", zIndex:2 }}>
               <h1 style={{ fontFamily:"var(--display)", fontSize:"clamp(40px,5vw,68px)", fontWeight:600, color:"#fff", lineHeight:1.05, letterSpacing:-1.5, maxWidth:860, marginBottom:22 }}>
                 Bienes raíces que <span style={{ fontStyle:"italic", color:"rgba(255,255,255,0.62)" }}>construyen</span> patrimonio.
               </h1>
@@ -191,32 +225,13 @@ const Home3 = ({ onNavigate }) => {
       {/* ─── DISCOVER w/ map snippet ─── */}
       <section style={{ padding:"40px 24px 80px", background:"#fff" }}>
         <div style={{ maxWidth:1400, margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1fr", gap:48, alignItems:"center" }}>
-          {/* Map preview card */}
-          <div onClick={() => onNavigate("map")} style={{ position:"relative", height:380, borderRadius:18, overflow:"hidden", cursor:"pointer", background:"#E8EDE5" }}>
-            <div style={{ position:"absolute", inset:0, backgroundImage:`
-              repeating-linear-gradient(0deg, transparent, transparent 30px, rgba(15,27,45,0.06) 30px, rgba(15,27,45,0.06) 31px),
-              repeating-linear-gradient(90deg, transparent, transparent 30px, rgba(15,27,45,0.06) 30px, rgba(15,27,45,0.06) 31px)
-            `, opacity:0.6 }} />
-            {/* Mock streets */}
-            <svg style={{ position:"absolute", inset:0, width:"100%", height:"100%" }}>
-              <path d="M 0 200 Q 200 180 400 220 T 800 200" stroke="rgba(15,27,45,0.15)" strokeWidth="2" fill="none" />
-              <path d="M 100 0 Q 150 200 200 380" stroke="rgba(15,27,45,0.15)" strokeWidth="2" fill="none" />
-              <path d="M 400 0 Q 450 200 500 380" stroke="rgba(15,27,45,0.15)" strokeWidth="2" fill="none" />
-              <path d="M 0 100 L 800 130" stroke="rgba(15,27,45,0.1)" strokeWidth="1.5" fill="none" />
-            </svg>
-            {/* Pin */}
-            <div style={{ position:"absolute", top:"40%", left:"42%", display:"flex", flexDirection:"column", alignItems:"center" }}>
-              <div style={{ background:"var(--tar)", color:"#fff", padding:"8px 14px 8px 12px", borderRadius:24, fontFamily:"var(--sans)", fontSize:13, fontWeight:600, display:"flex", alignItems:"center", gap:6, boxShadow:"0 4px 12px rgba(0,0,0,0.2)" }}>
-                <div style={{ width:22, height:22, borderRadius:"50%", background:"#fff", display:"flex", alignItems:"center", justifyContent:"center", color:"var(--tar)" }}>🏠</div>
-                Tu hogar
-              </div>
-              <div style={{ width:2, height:14, background:"var(--tar)" }} />
-            </div>
-            {/* Mini pins */}
-            {[[20,30],[75,55],[15,70],[85,28],[55,75]].map(([x,y],i) => (
-              <div key={i} style={{ position:"absolute", top:`${y}%`, left:`${x}%`, width:14, height:14, borderRadius:"50%", background:"#fff", border:"2px solid var(--tar)" }} />
-            ))}
-            <div style={{ position:"absolute", bottom:14, right:14, background:"rgba(255,255,255,0.95)", padding:"6px 12px", borderRadius:20, fontFamily:"var(--sans)", fontSize:11, fontWeight:600, color:"#0F1B2D" }}>Ver mapa completo →</div>
+          {/* Map preview — mapa real (Leaflet); en producción será Google Maps */}
+          <div style={{ position:"relative", height:380, borderRadius:18, overflow:"hidden", background:"#E8EDE5", border:"1px solid #F1F1F0" }}>
+            <MiniMap3 onNavigate={onNavigate} />
+            <button onClick={() => onNavigate("map")}
+              style={{ position:"absolute", bottom:14, right:14, zIndex:500, background:"rgba(255,255,255,0.96)", border:"none", padding:"9px 15px", borderRadius:20, fontFamily:"var(--sans)", fontSize:12, fontWeight:600, color:"#0F1B2D", cursor:"pointer", boxShadow:"0 2px 12px rgba(0,0,0,0.18)", display:"inline-flex", alignItems:"center", gap:6 }}>
+              Ver mapa completo <I3ChevR s={13}/>
+            </button>
           </div>
 
           <div>
@@ -259,21 +274,12 @@ const Home3 = ({ onNavigate }) => {
             <h2 style={{ fontFamily:"var(--display)", fontSize:"clamp(28px,3.5vw,40px)", fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5, lineHeight:1.1, marginBottom:16 }}>Preguntas<br />frecuentes</h2>
             <p style={{ fontFamily:"var(--sans)", fontSize:14, color:"#6B7280", lineHeight:1.7 }}>Nuestros expertos te guían en cada decisión basados en insights del mercado.</p>
           </div>
-          <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-            {[
-              { q:"¿Qué tipo de propiedades manejan?", a:"Departamentos residenciales, oficinas corporativas y locales comerciales en venta y renta, distribuidos en las mejores zonas de México." },
-              { q:"¿Cómo agendar una visita?", a:"Contacta directamente al asesor responsable desde la ficha de cada propiedad, o usa el botón de WhatsApp para una respuesta inmediata." },
-              { q:"¿Atienden compradores internacionales?", a:"Sí, contamos con experiencia atendiendo clientes internacionales y procesos de inversión extranjera." },
-              { q:"¿Cuánto tiempo toma cerrar una operación?", a:"En promedio entre 30 y 60 días, dependiendo del tipo de propiedad y forma de pago." },
-            ].map((f,i) => (
-              <details key={i} style={{ border:"1px solid #E5E5E4", borderRadius:14, padding:"18px 22px", background:"#fff", cursor:"pointer" }}>
-                <summary style={{ fontFamily:"var(--sans)", fontSize:15, fontWeight:600, color:"#0F1B2D", listStyle:"none", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  {f.q} <span style={{ color:"#9CA3AF", fontSize:20, fontWeight:300 }}>+</span>
-                </summary>
-                <p style={{ fontFamily:"var(--sans)", fontSize:14, color:"#6B7280", lineHeight:1.7, marginTop:12 }}>{f.a}</p>
-              </details>
-            ))}
-          </div>
+          <Faq3 items={[
+            { q:"¿Qué tipo de propiedades manejan?", a:"Departamentos residenciales, oficinas corporativas, locales, bodegas y terrenos en venta y renta, distribuidos en las mejores zonas de México." },
+            { q:"¿Cómo agendar una visita?", a:"Desde la ficha de cada propiedad puedes enviar una solicitud de contacto o de cita con la fecha y hora que prefieras; un asesor de TAR Internacional se pondrá en contacto contigo." },
+            { q:"¿Atienden compradores internacionales?", a:"Sí, contamos con experiencia atendiendo clientes internacionales y procesos de inversión extranjera." },
+            { q:"¿Cuánto tiempo toma cerrar una operación?", a:"En promedio entre 30 y 60 días, dependiendo del tipo de propiedad y forma de pago." },
+          ]} />
         </div>
       </section>
 
@@ -514,15 +520,15 @@ const Map3 = ({ onNavigate }) => {
       <div class="map-card">
         <div class="map-card-img" style="background:${showFor.color}">
           ${showFor.image ? `<img src="${showFor.image}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />` : `<div class="map-card-tex"></div>`}
-          <button class="map-card-save" data-saveid="${showFor.id}">♡</button>
+          <button class="map-card-save" data-saveid="${showFor.id}" title="Guardar — próximamente"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
         </div>
         <div class="map-card-body">
           <div class="map-card-price">${formatPrice(showFor.price, showFor.currency, showFor.operation)}</div>
-          <div class="map-card-loc">📍 ${showFor.location}</div>
+          <div class="map-card-loc"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg> ${showFor.location}</div>
           <div class="map-card-stats">
-            ${showFor.bedrooms > 0 ? `<span>🛏 ${showFor.bedrooms}</span>` : ""}
-            ${showFor.bathrooms > 0 ? `<span>🚿 ${showFor.bathrooms}</span>` : ""}
-            <span>📐 ${showFor.area} m²</span>
+            ${showFor.bedrooms > 0 ? `<span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7a2 2 0 012-2h16a2 2 0 012 2v10H2V7z"/><path d="M2 13h20"/><path d="M7 13V9"/><path d="M17 13V9"/></svg> ${showFor.bedrooms}</span>` : ""}
+            ${showFor.bathrooms > 0 ? `<span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M4 12V7a1 1 0 011-1h3m-4 6v5a2 2 0 002 2h12a2 2 0 002-2v-5M15 6a2 2 0 012 2v4"/></svg> ${showFor.bathrooms}</span>` : ""}
+            <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3L3 21M9.5 14.5l5-5M7 7l2 2M15 11l2 2"/></svg> ${showFor.area} m²</span>
           </div>
         </div>
       </div>
@@ -783,7 +789,7 @@ const Detail3 = ({ propertyId, onNavigate }) => {
                   <h1 style={{ fontFamily:"var(--display)", fontSize:"clamp(26px,3vw,38px)", fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5, lineHeight:1.15, marginBottom:8 }}>{p.title}</h1>
                   <div style={{ display:"flex", alignItems:"center", gap:5, fontFamily:"var(--sans)", fontSize:14, color:"#6B7280" }}><I3Pin s={13}/>{p.location}</div>
                 </div>
-                <button onClick={() => setSaved(s => !s)} style={{ background:"#fff", border:"1px solid #E5E5E4", borderRadius:24, padding:"8px 16px", cursor:"pointer", color:saved?"var(--tar)":"#6B7280", display:"flex", alignItems:"center", gap:6, fontFamily:"var(--sans)", fontSize:13, fontWeight:500 }}>
+                <button onClick={() => setSaved(s => !s)} title="Guardar — disponible próximamente (requiere cuenta)" style={{ background:"#fff", border:"1px solid #E5E5E4", borderRadius:24, padding:"8px 16px", cursor:"pointer", color:saved?"var(--tar)":"#6B7280", display:"flex", alignItems:"center", gap:6, fontFamily:"var(--sans)", fontSize:13, fontWeight:500 }}>
                   <I3Heart s={15} on={saved}/> {saved?"Guardado":"Guardar"}
                 </button>
               </div>

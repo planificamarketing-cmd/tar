@@ -39,7 +39,7 @@ const AdminShell = ({ tab, setTab, onNavigate, children }) => {
     ]},
     { label: "CRM", items: [
       ["leads", "Leads", NTenant],
-      ["brokers", "Brokers", NUser],
+      ["usuarios", "Usuarios", NUser],
       ["scripts", "Scripts", NScript],
     ]},
     { label: "Configuración", items: [
@@ -130,8 +130,8 @@ const DashboardTab = () => {
           <h1 style={{ fontFamily:"var(--display)", fontSize:34, fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5, lineHeight:1.2 }}>Bienvenido, <span style={{ color:"#9CA3AF", fontStyle:"italic" }}>Martín</span></h1>
           <p style={{ fontFamily:"var(--sans)", fontSize:14, color:"#6B7280", marginTop:6 }}>Resumen general de actividad — Mayo 2026</p>
         </div>
-        <button style={{ background:"#fff", color:"#374151", border:"1px solid #E5E5E4", padding:"10px 18px", borderRadius:24, fontFamily:"var(--sans)", fontSize:13, fontWeight:500, cursor:"pointer", display:"flex", alignItems:"center", gap:6 }}>
-          <NUpload s={14}/> Exportar reporte
+        <button title="Descarga un CSV con el resumen del periodo" style={{ background:"#fff", color:"#374151", border:"1px solid #E5E5E4", padding:"10px 18px", borderRadius:24, fontFamily:"var(--sans)", fontSize:13, fontWeight:500, cursor:"pointer", display:"flex", alignItems:"center", gap:6 }}>
+          <NUpload s={14}/> Exportar CSV
         </button>
       </div>
 
@@ -157,7 +157,7 @@ const DashboardTab = () => {
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18 }}>
             <div>
               <div style={{ fontFamily:"var(--display)", fontSize:17, fontWeight:700, color:"#0F1B2D" }}>Leads por mes</div>
-              <div style={{ fontFamily:"var(--sans)", fontSize:12, color:"#6B7280", marginTop:2 }}>Últimos 12 meses · Total: <strong style={{ color:"#0F1B2D" }}>{monthlyLeads.reduce((a,b)=>a+b,0)}</strong></div>
+              <div style={{ fontFamily:"var(--sans)", fontSize:12, color:"#6B7280", marginTop:2 }}>Por fecha de registro · últimos 12 meses · Total: <strong style={{ color:"#0F1B2D" }}>{monthlyLeads.reduce((a,b)=>a+b,0)}</strong></div>
             </div>
             <select style={{ border:"1px solid #E5E5E4", padding:"7px 12px", borderRadius:18, fontFamily:"var(--sans)", fontSize:12, color:"#374151", background:"#fff", outline:"none", fontWeight:500 }}>
               <option>Mensual</option>
@@ -281,12 +281,41 @@ const DashboardTab = () => {
 const PropertiesTab = ({ onNavigate, setTab }) => {
   const [search, setSearch] = React.useState("");
   const [filterOp, setFilterOp] = React.useState("all");
-  const items = PROPERTIES.filter(p => {
-    if (filterOp !== "all" && p.operation !== filterOp) return false;
-    return p.title.toLowerCase().includes(search.toLowerCase()) || p.location.toLowerCase().includes(search.toLowerCase());
-  });
+  const [typeF, setTypeF] = React.useState("all");
+  const [statusF, setStatusF] = React.useState("all");
+  const [sort, setSort] = React.useState("recent");
+
   const statusC = { activa:"#16A34A", pausada:"#CA8A04", reservada:"#2563EB" };
   const st = p => p.isNew ? "activa" : p.id%4===0 ? "pausada" : p.id%5===0 ? "reservada" : "activa";
+
+  let items = PROPERTIES.filter(p => {
+    if (filterOp !== "all" && p.operation !== filterOp) return false;
+    if (typeF !== "all" && p.type !== typeF) return false;
+    if (statusF !== "all" && st(p) !== statusF) return false;
+    const q = search.toLowerCase();
+    return p.title.toLowerCase().includes(q) || p.location.toLowerCase().includes(q);
+  });
+  items = [...items].sort((a, b) => {
+    if (sort === "price-asc") return a.price - b.price;
+    if (sort === "price-desc") return b.price - a.price;
+    if (sort === "title") return a.title.localeCompare(b.title);
+    return 0;
+  });
+
+  // Exportación real a CSV de lo que está filtrado (así se exportarían los datos).
+  const exportCSV = () => {
+    const headers = ["Título","Tipo","Operación","Precio","Moneda","Ubicación","Estatus","Responsable"];
+    const rows = items.map(p => [p.title, TYPE_LABELS[p.type], p.operation, p.price, p.currency, p.location, st(p), p.broker?.name || ""]);
+    const esc = v => `"${String(v).replace(/"/g, '""')}"`;
+    const csv = [headers, ...rows].map(r => r.map(esc).join(",")).join("\n");
+    const blob = new Blob(["﻿" + csv], { type:"text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "propiedades-tar.csv"; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const selStyle = { padding:"8px 12px", borderRadius:18, border:"1px solid #E5E5E4", fontFamily:"var(--sans)", fontSize:12, color:"#374151", background:"#fff", outline:"none", fontWeight:500, cursor:"pointer" };
 
   return (
     <div>
@@ -296,8 +325,8 @@ const PropertiesTab = ({ onNavigate, setTab }) => {
           <p style={{ fontFamily:"var(--sans)", fontSize:14, color:"#6B7280", marginTop:4 }}>{items.length} propiedades en el inventario</p>
         </div>
         <div style={{ display:"flex", gap:10 }}>
-          <button style={{ background:"#fff", color:"#374151", border:"1px solid #E5E5E4", padding:"10px 18px", borderRadius:24, fontFamily:"var(--sans)", fontSize:13, fontWeight:500, cursor:"pointer", display:"flex", alignItems:"center", gap:6 }}>
-            <NUpload s={14}/> Exportar
+          <button onClick={exportCSV} title="Descarga un CSV con las propiedades filtradas" style={{ background:"#fff", color:"#374151", border:"1px solid #E5E5E4", padding:"10px 18px", borderRadius:24, fontFamily:"var(--sans)", fontSize:13, fontWeight:500, cursor:"pointer", display:"flex", alignItems:"center", gap:6 }}>
+            <NUpload s={14}/> Exportar CSV
           </button>
           <button onClick={() => setTab("nueva")}
             style={{ display:"flex", alignItems:"center", gap:6, background:"var(--tar)", color:"#fff", border:"none", padding:"10px 20px", borderRadius:24, fontFamily:"var(--sans)", fontSize:13, fontWeight:600, cursor:"pointer" }}>
@@ -307,18 +336,40 @@ const PropertiesTab = ({ onNavigate, setTab }) => {
       </div>
 
       {/* Filters bar */}
-      <div style={{ background:"#fff", borderRadius:14, padding:"14px 18px", border:"1px solid #F1F1F0", marginBottom:14, display:"flex", justifyContent:"space-between", alignItems:"center", gap:12 }}>
-        <div style={{ position:"relative", flex:1, maxWidth:340 }}>
+      <div style={{ background:"#fff", borderRadius:14, padding:"14px 18px", border:"1px solid #F1F1F0", marginBottom:14, display:"flex", justifyContent:"space-between", alignItems:"center", gap:12, flexWrap:"wrap" }}>
+        <div style={{ position:"relative", flex:1, minWidth:240, maxWidth:340 }}>
           <input placeholder="Buscar por título o ubicación…" value={search} onChange={e => setSearch(e.target.value)}
             style={{ width:"100%", padding:"9px 14px 9px 36px", border:"1px solid #E5E5E4", borderRadius:22, fontFamily:"var(--sans)", fontSize:13, outline:"none", background:"#FAFAF8", boxSizing:"border-box" }} />
           <span style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", color:"#9CA3AF" }}><I3Search s={14}/></span>
         </div>
-        <div style={{ display:"flex", gap:6 }}>
-          {[["all","Todas"],["venta","Venta"],["renta","Renta"]].map(([v,l]) => (
-            <button key={v} onClick={() => setFilterOp(v)}
-              style={{ padding:"7px 14px", borderRadius:18, border:"none", cursor:"pointer", fontFamily:"var(--sans)", fontSize:12, fontWeight:500,
-                background: filterOp===v ? "#0F1B2D" : "#F7F7F6", color: filterOp===v ? "#fff" : "#374151" }}>{l}</button>
-          ))}
+        <div style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
+          {/* Operación */}
+          <div style={{ display:"flex", gap:6 }}>
+            {[["all","Todas"],["venta","Venta"],["renta","Renta"]].map(([v,l]) => (
+              <button key={v} onClick={() => setFilterOp(v)}
+                style={{ padding:"7px 14px", borderRadius:18, border:"none", cursor:"pointer", fontFamily:"var(--sans)", fontSize:12, fontWeight:500,
+                  background: filterOp===v ? "#0F1B2D" : "#F7F7F6", color: filterOp===v ? "#fff" : "#374151" }}>{l}</button>
+            ))}
+          </div>
+          {/* Tipo */}
+          <select value={typeF} onChange={e => setTypeF(e.target.value)} style={selStyle}>
+            <option value="all">Todos los tipos</option>
+            {Object.entries(TYPE_LABELS).map(([k,l]) => <option key={k} value={k}>{l}</option>)}
+          </select>
+          {/* Estatus */}
+          <select value={statusF} onChange={e => setStatusF(e.target.value)} style={selStyle}>
+            <option value="all">Todos los estatus</option>
+            <option value="activa">Activa</option>
+            <option value="pausada">Pausada</option>
+            <option value="reservada">Reservada</option>
+          </select>
+          {/* Orden */}
+          <select value={sort} onChange={e => setSort(e.target.value)} style={selStyle}>
+            <option value="recent">Recientes</option>
+            <option value="price-asc">Precio ↑</option>
+            <option value="price-desc">Precio ↓</option>
+            <option value="title">Título A–Z</option>
+          </select>
         </div>
       </div>
 
@@ -326,7 +377,7 @@ const PropertiesTab = ({ onNavigate, setTab }) => {
         <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--sans)", fontSize:13 }}>
           <thead>
             <tr style={{ borderBottom:"1px solid #F1F1F0", background:"#FAFAF8" }}>
-              {["Propiedad","Tipo","Operación","Precio","Asesor","Estado","Acciones"].map(h => (
+              {["Propiedad","Tipo","Operación","Precio","Responsable","Estado","Acciones"].map(h => (
                 <th key={h} style={{ padding:"14px 18px", textAlign:"left", fontSize:11, color:"#6B7280", textTransform:"uppercase", letterSpacing:1, fontWeight:600 }}>{h}</th>
               ))}
             </tr>
@@ -389,6 +440,7 @@ const NewPropertyTab = ({ setTab }) => {
   });
   const [newFeature, setNewFeature] = React.useState("");
   const [submitted, setSubmitted] = React.useState(false);
+  const [geocoded, setGeocoded] = React.useState(false);
 
   const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -438,7 +490,7 @@ const NewPropertyTab = ({ setTab }) => {
         {steps.map((s, i) => (
           <React.Fragment key={s}>
             <button onClick={() => setStep(i+1)} style={{ display:"flex", alignItems:"center", gap:8, background:"none", border:"none", cursor:"pointer", padding:"4px 8px" }}>
-              <span style={{ width:24, height:24, borderRadius:"50%", background:step>=i+1?"var(--tar)":"#E5E5E4", color:step>=i+1?"#fff":"#9CA3AF", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"var(--sans)", fontSize:11, fontWeight:700 }}>{step>i+1?"✓":i+1}</span>
+              <span style={{ width:24, height:24, borderRadius:"50%", background:step>=i+1?"var(--tar)":"#E5E5E4", color:step>=i+1?"#fff":"#9CA3AF", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"var(--sans)", fontSize:11, fontWeight:700 }}>{step>i+1 ? <I3Check s={12}/> : i+1}</span>
               <span style={{ fontFamily:"var(--sans)", fontSize:12, color:step>=i+1?"#0F1B2D":"#9CA3AF", fontWeight:step===i+1?600:500 }}>{s}</span>
             </button>
             {i < steps.length-1 && <span style={{ flex:1, height:1, background:step>i+1?"var(--tar)":"#E5E5E4" }}/>}
@@ -487,7 +539,7 @@ const NewPropertyTab = ({ setTab }) => {
                   </div>
                 </div>
                 <div>
-                  <label style={lblStyle}>Broker asignado *</label>
+                  <label style={lblStyle}>Responsable (usuario) *</label>
                   <select value={form.broker} onChange={e => upd("broker", e.target.value)} style={inpStyle}>
                     {BROKERS.map(b => <option key={b.name} value={b.name}>{b.name}</option>)}
                   </select>
@@ -519,19 +571,26 @@ const NewPropertyTab = ({ setTab }) => {
                   <label style={lblStyle}>Código postal</label>
                   <input value={form.postalCode} onChange={e => upd("postalCode", e.target.value)} placeholder="11550" style={inpStyle} />
                 </div>
-                <div>
-                  <label style={lblStyle}>Coordenadas GPS</label>
-                  <div style={{ display:"flex", gap:6 }}>
-                    <input value={form.lat} onChange={e => upd("lat", e.target.value)} placeholder="Latitud" style={inpStyle} />
-                    <input value={form.lng} onChange={e => upd("lng", e.target.value)} placeholder="Longitud" style={inpStyle} />
-                  </div>
-                  <div style={helpStyle}>Opcional. Se usará para el mapa.</div>
+                <div style={{ gridColumn:"1/-1" }}>
+                  <label style={lblStyle}>Ubicación en el mapa</label>
+                  <button type="button" onClick={() => setGeocoded(true)}
+                    style={{ display:"inline-flex", alignItems:"center", gap:8, background:"#0F1B2D", color:"#fff", border:"none", padding:"11px 18px", borderRadius:10, fontFamily:"var(--sans)", fontSize:13, fontWeight:600, cursor:"pointer" }}>
+                    <I3Pin s={15}/> Ubicar desde la dirección
+                  </button>
+                  <div style={helpStyle}>Se geolocaliza automáticamente a partir de la dirección (Google Geocoding) — no necesitas capturar coordenadas. Si el pin no queda exacto, arrástralo en el mapa.</div>
                 </div>
               </div>
-              {/* Map placeholder */}
-              <div style={{ marginTop:18, height:180, background:"#F1F1F0", borderRadius:10, position:"relative", overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center", color:"#9CA3AF", fontFamily:"var(--sans)", fontSize:12 }}>
+              {/* Mapa: pin geolocalizado y ajustable (en la app es Google Maps / LocationPicker) */}
+              <div style={{ marginTop:18, height:180, background:"#E8EDE5", borderRadius:10, position:"relative", overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center", color:"#9CA3AF", fontFamily:"var(--sans)", fontSize:12 }}>
                 <div style={{ position:"absolute", inset:0, backgroundImage:"repeating-linear-gradient(0deg,transparent,transparent 24px,rgba(0,0,0,0.04) 24px,rgba(0,0,0,0.04) 25px),repeating-linear-gradient(90deg,transparent,transparent 24px,rgba(0,0,0,0.04) 24px,rgba(0,0,0,0.04) 25px)" }}/>
-                <span style={{ position:"relative", display:"flex", alignItems:"center", gap:6 }}><I3Pin s={14}/> Mapa de ubicación (se generará al guardar)</span>
+                {geocoded ? (
+                  <div style={{ position:"relative", display:"flex", flexDirection:"column", alignItems:"center", color:"var(--tar)" }}>
+                    <I3Pin s={30}/>
+                    <span style={{ fontFamily:"var(--sans)", fontSize:11, color:"#374151", marginTop:6, background:"rgba(255,255,255,0.9)", padding:"3px 10px", borderRadius:12 }}>Arrastra el pin para ajustar</span>
+                  </div>
+                ) : (
+                  <span style={{ position:"relative", display:"flex", alignItems:"center", gap:6 }}><I3Pin s={14}/> El pin se genera al ubicar desde la dirección</span>
+                )}
               </div>
             </Section>
           )}
@@ -696,10 +755,10 @@ const NewPropertyTab = ({ setTab }) => {
                 <div style={{ fontFamily:"var(--display)", fontSize:15, fontWeight:600, color:"#0F1B2D", marginBottom:6, lineHeight:1.3 }}>
                   {form.title || "Título de la propiedad"}
                 </div>
-                <div style={{ display:"flex", gap:10, fontFamily:"var(--sans)", fontSize:11, color:"#6B7280", paddingTop:10, marginTop:8, borderTop:"1px solid #F1F1F0" }}>
-                  {form.bedrooms && <span>🛏 {form.bedrooms}</span>}
-                  {form.bathrooms && <span>🚿 {form.bathrooms}</span>}
-                  <span style={{ marginLeft:"auto" }}>{form.area || "—"} m²</span>
+                <div style={{ display:"flex", gap:10, fontFamily:"var(--sans)", fontSize:11, color:"#6B7280", paddingTop:10, marginTop:8, borderTop:"1px solid #F1F1F0", alignItems:"center" }}>
+                  {form.bedrooms && <span style={{ display:"inline-flex", alignItems:"center", gap:4 }}><I3Bed s={12}/> {form.bedrooms}</span>}
+                  {form.bathrooms && <span style={{ display:"inline-flex", alignItems:"center", gap:4 }}><I3Bath s={12}/> {form.bathrooms}</span>}
+                  <span style={{ marginLeft:"auto", display:"inline-flex", alignItems:"center", gap:4 }}><I3Ruler s={12}/> {form.area || "—"} m²</span>
                 </div>
                 <div style={{ fontFamily:"var(--display)", fontSize:18, fontWeight:700, color:"#0F1B2D", marginTop:10, letterSpacing:-0.3 }}>
                   {form.price ? formatPrice(parseInt(form.price), form.currency, form.operation) : "—"}
@@ -707,8 +766,9 @@ const NewPropertyTab = ({ setTab }) => {
               </div>
             </div>
 
-            <div style={{ marginTop:14, padding:"12px 14px", background:"#FFF0F2", borderRadius:10, fontFamily:"var(--sans)", fontSize:11, color:"#0F1B2D", lineHeight:1.6 }}>
-              💡 <strong>Tip:</strong> los datos completos hacen que la propiedad aparezca antes en los resultados de búsqueda.
+            <div style={{ marginTop:14, padding:"12px 14px", background:"#FFF0F2", borderRadius:10, fontFamily:"var(--sans)", fontSize:11, color:"#0F1B2D", lineHeight:1.6, display:"flex", gap:8, alignItems:"flex-start" }}>
+              <span style={{ color:"var(--tar)", flexShrink:0, marginTop:1 }}><I3Verif s={15}/></span>
+              <span><strong>Tip:</strong> los datos completos hacen que la propiedad aparezca antes en los resultados de búsqueda.</span>
             </div>
           </div>
         </div>
@@ -825,7 +885,7 @@ fbq('track', 'PageView');
 
       {/* Warning bar */}
       <div style={{ background:"#FFF8E1", border:"1px solid #FCD34D", borderRadius:10, padding:"12px 16px", marginBottom:20, display:"flex", alignItems:"center", gap:10, fontFamily:"var(--sans)", fontSize:13, color:"#92400E" }}>
-          <span style={{ fontSize:18 }}>⚠️</span>
+          <span style={{ color:"#CA8A04", flexShrink:0, display:"flex" }}><A s={18} d={["M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z","M12 9v4","M12 17h.01"]} /></span>
           <span>Los scripts se ejecutan en producción. Verifica tu código antes de activar — un script con errores puede afectar el portal completo.</span>
       </div>
 
@@ -901,10 +961,8 @@ fbq('track', 'PageView');
                   </select>
                 </div>
                 <div>
-                  <label style={lblStyle}>Proveedor</label>
-                  <select value={current.provider} onChange={e => updateField(current.id, "provider", e.target.value)} disabled={!editing} style={{ ...inpStyle, opacity:editing?1:0.7 }}>
-                    {Object.entries(providers).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-                  </select>
+                  <label style={lblStyle}>Nombre <span style={{ color:"#9CA3AF", fontWeight:400, fontSize:11 }}>(para identificarlo)</span></label>
+                  <input value={current.name} onChange={e => updateField(current.id, "name", e.target.value)} disabled={!editing} placeholder="Ej. GTM principal, Pixel campaña verano…" style={{ ...inpStyle, opacity:editing?1:0.7 }} />
                 </div>
               </div>
 
@@ -913,8 +971,8 @@ fbq('track', 'PageView');
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
                   <label style={lblStyle}>Código del script</label>
                   <button onClick={() => navigator.clipboard?.writeText(current.code)}
-                    style={{ background:"none", border:"none", cursor:"pointer", fontFamily:"var(--sans)", fontSize:11, color:"var(--tar)", fontWeight:600 }}>
-                    📋 Copiar
+                    style={{ display:"inline-flex", alignItems:"center", gap:5, background:"none", border:"none", cursor:"pointer", fontFamily:"var(--sans)", fontSize:11, color:"var(--tar)", fontWeight:600 }}>
+                    <I3Share s={13}/> Copiar
                   </button>
                 </div>
                 <textarea
@@ -1037,65 +1095,143 @@ const LeadsTab = () => {
   );
 };
 
-// ── BROKERS TAB ───────────────────────────────────────────────────────────────
-const BrokersTab = () => (
-  <div>
-    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:24 }}>
-      <div>
-        <h1 style={{ fontFamily:"var(--display)", fontSize:30, fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5 }}>Brokers</h1>
-        <p style={{ fontFamily:"var(--sans)", fontSize:14, color:"#6B7280", marginTop:4 }}>{BROKERS.length} brokers activos en el equipo</p>
+// ── USUARIOS TAB ──────────────────────────────────────────────────────────────
+// (Antes "Brokers". Ahora son usuarios administrativos con acceso al panel.)
+const UsuariosTab = () => {
+  // El primero es Administrador; el resto, Editores (sample). En la app el rol sale de la BD.
+  const roleOf = (i) => (i === 0 ? "Administrador" : "Editor");
+  return (
+    <div>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:24 }}>
+        <div>
+          <h1 style={{ fontFamily:"var(--display)", fontSize:30, fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5 }}>Usuarios</h1>
+          <p style={{ fontFamily:"var(--sans)", fontSize:14, color:"#6B7280", marginTop:4 }}>{BROKERS.length} usuarios con acceso al panel administrativo</p>
+        </div>
+        <button style={{ display:"flex", alignItems:"center", gap:6, background:"var(--tar)", color:"#fff", border:"none", padding:"10px 20px", borderRadius:24, fontFamily:"var(--sans)", fontSize:13, fontWeight:600, cursor:"pointer" }}>
+          <I3Plus s={14}/> Nuevo usuario
+        </button>
       </div>
-      <button style={{ display:"flex", alignItems:"center", gap:6, background:"var(--tar)", color:"#fff", border:"none", padding:"10px 20px", borderRadius:24, fontFamily:"var(--sans)", fontSize:13, fontWeight:600, cursor:"pointer" }}>
-        <I3Plus s={14}/> Invitar broker
-      </button>
-    </div>
-    <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
-      {BROKERS.map(b => (
-        <div key={b.name} style={{ background:"#fff", padding:"24px", borderRadius:14, border:"1px solid #F1F1F0", display:"flex", gap:16, alignItems:"center" }}>
-          <div style={{ width:60, height:60, background:"linear-gradient(135deg, #FFF0F2, #FFD3DA)", color:"var(--tar)", display:"flex", alignItems:"center", justifyContent:"center", borderRadius:"50%", flexShrink:0, fontFamily:"var(--display)", fontSize:20, fontWeight:700 }}>
-            {b.name.split(" ").map(n=>n[0]).join("")}
-          </div>
-          <div style={{ flex:1 }}>
-            <div style={{ fontFamily:"var(--display)", fontSize:17, fontWeight:700, color:"#0F1B2D", marginBottom:3 }}>{b.name}</div>
-            <div style={{ fontFamily:"var(--sans)", fontSize:12, color:"#6B7280", marginBottom:12 }}>{b.email} · {b.phone}</div>
-            <div style={{ display:"flex", gap:20 }}>
-              <div><span style={{ fontFamily:"var(--display)", fontSize:22, fontWeight:700, color:"var(--tar)" }}>{b.listings}</span> <span style={{ fontFamily:"var(--sans)", fontSize:11, color:"#6B7280", textTransform:"uppercase", letterSpacing:1, fontWeight:500 }}>listados</span></div>
-              <div><span style={{ fontFamily:"var(--display)", fontSize:22, fontWeight:700, color:"#0F1B2D" }}>{b.closed}</span> <span style={{ fontFamily:"var(--sans)", fontSize:11, color:"#6B7280", textTransform:"uppercase", letterSpacing:1, fontWeight:500 }}>cierres</span></div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+        {BROKERS.map((b, i) => (
+          <div key={b.name} style={{ background:"#fff", padding:"22px 24px", borderRadius:14, border:"1px solid #F1F1F0", display:"flex", gap:16, alignItems:"center" }}>
+            <div style={{ width:54, height:54, background:"linear-gradient(135deg, #FFF0F2, #FFD3DA)", color:"var(--tar)", display:"flex", alignItems:"center", justifyContent:"center", borderRadius:"50%", flexShrink:0, fontFamily:"var(--display)", fontSize:19, fontWeight:700 }}>
+              {b.name.split(" ").map(n=>n[0]).join("")}
+            </div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
+                <span style={{ fontFamily:"var(--display)", fontSize:17, fontWeight:700, color:"#0F1B2D" }}>{b.name}</span>
+                <span style={{ fontFamily:"var(--sans)", fontSize:10, fontWeight:700, color: i===0 ? "var(--tar)" : "#2563EB", background: i===0 ? "#FFF0F2" : "#EFF6FF", padding:"2px 9px", borderRadius:12, textTransform:"uppercase", letterSpacing:0.5 }}>{roleOf(i)}</span>
+              </div>
+              <div style={{ fontFamily:"var(--sans)", fontSize:12, color:"#6B7280", marginBottom:14 }}>{b.email} · {b.phone}</div>
+              <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+                <span style={{ display:"inline-flex", alignItems:"center", gap:6, fontFamily:"var(--sans)", fontSize:12, color:"#16A34A", fontWeight:600 }}>
+                  <span style={{ width:7, height:7, borderRadius:"50%", background:"#16A34A" }} /> Activo
+                </span>
+                <button style={{ background:"none", border:"1px solid #E5E5E4", padding:"6px 14px", borderRadius:16, fontFamily:"var(--sans)", fontSize:12, color:"#6B7280", cursor:"pointer", fontWeight:500 }}>Editar acceso</button>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // ── AJUSTES TAB ───────────────────────────────────────────────────────────────
-const AjustesTab = () => (
-  <div>
-    <div style={{ marginBottom:24 }}>
-      <h1 style={{ fontFamily:"var(--display)", fontSize:30, fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5 }}>Ajustes</h1>
-      <p style={{ fontFamily:"var(--sans)", fontSize:14, color:"#6B7280", marginTop:4 }}>Configuración general de la plataforma.</p>
-    </div>
-    <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
-      {[
-        { title:"Marca y branding", desc:"Logo, colores, dominio personalizado" },
-        { title:"Integraciones",    desc:"WhatsApp Business, Mailchimp, HubSpot, Google Analytics" },
-        { title:"Notificaciones",   desc:"Emails automáticos a brokers y administradores" },
-        { title:"Equipo y permisos",desc:"Roles, accesos por broker, jerarquías" },
-        { title:"SEO global",       desc:"Sitemap, robots.txt, schema.org, meta tags" },
-        { title:"Facturación",      desc:"Plan, método de pago, historial de facturas" },
-      ].map(s => (
-        <div key={s.title} style={{ background:"#fff", padding:"20px 24px", borderRadius:14, border:"1px solid #F1F1F0", cursor:"pointer", transition:"box-shadow 0.15s" }}
-          onMouseEnter={e => e.currentTarget.style.boxShadow="0 6px 16px rgba(0,0,0,0.06)"}
-          onMouseLeave={e => e.currentTarget.style.boxShadow="none"}>
-          <div style={{ fontFamily:"var(--display)", fontSize:16, fontWeight:700, color:"#0F1B2D", marginBottom:6 }}>{s.title}</div>
-          <div style={{ fontFamily:"var(--sans)", fontSize:13, color:"#6B7280", lineHeight:1.6 }}>{s.desc}</div>
-          <div style={{ marginTop:14, fontFamily:"var(--sans)", fontSize:12, fontWeight:600, color:"var(--tar)" }}>Configurar →</div>
+const AjustesTab = () => {
+  // Webhooks salientes y llaves de API entrantes (PRD §5.5).
+  const webhooksOut = [
+    { name:"HubSpot — Leads",      url:"https://api.hubspot.com/webhooks/ingest",  events:["lead.created","lead.status_changed"], active:true },
+    { name:"Zapier — Propiedades", url:"https://hooks.zapier.com/hooks/catch/123",  events:["property.published","property.status_changed"], active:true },
+    { name:"CRM interno",          url:"https://crm.tarinternacional.mx/webhooks",  events:["lead.created"], active:false },
+  ];
+  const apiKeys = [
+    { name:"Zapier (entrante)",  scopes:["leads:write"], lastUsed:"hace 2 h" },
+    { name:"Integración CRM",    scopes:["leads:write","properties:write"], lastUsed:"hace 3 d" },
+  ];
+  const eventChip = (e) => (
+    <span key={e} style={{ fontFamily:"var(--mono)", fontSize:10, color:"#374151", background:"#F1F1F0", padding:"2px 8px", borderRadius:10 }}>{e}</span>
+  );
+  const cards = [
+    { title:"Notificaciones",     desc:"Emails automáticos a los usuarios del panel ante nuevos leads y cambios de estatus." },
+    { title:"Usuarios y permisos",desc:"Altas, bajas y roles (Administrador / Editor) de los usuarios del panel." },
+    { title:"SEO global",         desc:"Sitemap, robots.txt, schema.org y meta tags por defecto." },
+  ];
+  const card = { background:"#fff", borderRadius:14, border:"1px solid #F1F1F0", padding:"22px 24px" };
+
+  return (
+    <div>
+      <div style={{ marginBottom:24 }}>
+        <h1 style={{ fontFamily:"var(--display)", fontSize:30, fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5 }}>Ajustes</h1>
+        <p style={{ fontFamily:"var(--sans)", fontSize:14, color:"#6B7280", marginTop:4 }}>Configuración general de la plataforma.</p>
+      </div>
+
+      {/* Integraciones (Webhooks) — apartado visible */}
+      <div style={{ ...card, marginBottom:16 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6 }}>
+          <div>
+            <h2 style={{ fontFamily:"var(--display)", fontSize:19, fontWeight:700, color:"#0F1B2D" }}>Integraciones · Webhooks</h2>
+            <p style={{ fontFamily:"var(--sans)", fontSize:13, color:"#6B7280", marginTop:3, maxWidth:560, lineHeight:1.6 }}>Conecta TAR con tus herramientas (CRM, Zapier, HubSpot…) mediante <strong>webhooks salientes</strong> y <strong>llaves de API entrantes</strong>, sin intermediarios de pago.</p>
+          </div>
         </div>
-      ))}
+
+        {/* Salientes */}
+        <div style={{ marginTop:18 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+            <span style={{ fontFamily:"var(--sans)", fontSize:12, fontWeight:700, color:"#374151", textTransform:"uppercase", letterSpacing:1 }}>Salientes (TAR → terceros)</span>
+            <button style={{ display:"inline-flex", alignItems:"center", gap:6, background:"var(--tar)", color:"#fff", border:"none", padding:"8px 16px", borderRadius:20, fontFamily:"var(--sans)", fontSize:12, fontWeight:600, cursor:"pointer" }}><I3Plus s={13}/> Nuevo webhook</button>
+          </div>
+          <div style={{ border:"1px solid #F1F1F0", borderRadius:12, overflow:"hidden" }}>
+            {webhooksOut.map((w, i) => (
+              <div key={w.name} style={{ display:"flex", alignItems:"center", gap:14, padding:"14px 16px", borderTop: i>0 ? "1px solid #F7F7F6" : "none" }}>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontFamily:"var(--sans)", fontSize:14, fontWeight:600, color:"#0F1B2D" }}>{w.name}</div>
+                  <div style={{ fontFamily:"var(--mono)", fontSize:11, color:"#9CA3AF", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", marginTop:2 }}>{w.url}</div>
+                  <div style={{ display:"flex", gap:6, marginTop:8, flexWrap:"wrap" }}>{w.events.map(eventChip)}</div>
+                </div>
+                <span style={{ fontFamily:"var(--sans)", fontSize:11, fontWeight:600, color: w.active ? "#16A34A" : "#9CA3AF" }}>{w.active ? "Activo" : "Inactivo"}</span>
+                <button style={{ background:"none", border:"1px solid #E5E5E4", padding:"6px 10px", cursor:"pointer", color:"#6B7280", borderRadius:14 }}><I3Edit s={12}/></button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Entrantes (API keys) */}
+        <div style={{ marginTop:22 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+            <span style={{ fontFamily:"var(--sans)", fontSize:12, fontWeight:700, color:"#374151", textTransform:"uppercase", letterSpacing:1 }}>Entrantes · Llaves de API (terceros → TAR)</span>
+            <button style={{ display:"inline-flex", alignItems:"center", gap:6, background:"#fff", color:"#374151", border:"1px solid #E5E5E4", padding:"8px 16px", borderRadius:20, fontFamily:"var(--sans)", fontSize:12, fontWeight:600, cursor:"pointer" }}><I3Plus s={13}/> Nueva llave</button>
+          </div>
+          <div style={{ border:"1px solid #F1F1F0", borderRadius:12, overflow:"hidden" }}>
+            {apiKeys.map((k, i) => (
+              <div key={k.name} style={{ display:"flex", alignItems:"center", gap:14, padding:"14px 16px", borderTop: i>0 ? "1px solid #F7F7F6" : "none" }}>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontFamily:"var(--sans)", fontSize:14, fontWeight:600, color:"#0F1B2D" }}>{k.name}</div>
+                  <div style={{ display:"flex", gap:6, marginTop:6, flexWrap:"wrap" }}>{k.scopes.map(eventChip)}</div>
+                </div>
+                <span style={{ fontFamily:"var(--sans)", fontSize:11, color:"#9CA3AF" }}>Último uso: {k.lastUsed}</span>
+                <button style={{ background:"none", border:"1px solid #FECACA", padding:"6px 12px", cursor:"pointer", color:"#DC2626", borderRadius:14, fontFamily:"var(--sans)", fontSize:12, fontWeight:500 }}>Revocar</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Otros ajustes (sin Marca/Branding ni Facturación) */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }}>
+        {cards.map(s => (
+          <div key={s.title} style={{ ...card, cursor:"pointer", transition:"box-shadow 0.15s" }}
+            onMouseEnter={e => e.currentTarget.style.boxShadow="0 6px 16px rgba(0,0,0,0.06)"}
+            onMouseLeave={e => e.currentTarget.style.boxShadow="none"}>
+            <div style={{ fontFamily:"var(--display)", fontSize:16, fontWeight:700, color:"#0F1B2D", marginBottom:6 }}>{s.title}</div>
+            <div style={{ fontFamily:"var(--sans)", fontSize:13, color:"#6B7280", lineHeight:1.6 }}>{s.desc}</div>
+            <div style={{ marginTop:14, fontFamily:"var(--sans)", fontSize:12, fontWeight:600, color:"var(--tar)" }}>Configurar →</div>
+          </div>
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // ── ROOT Admin component ──────────────────────────────────────────────────────
 const Admin3 = ({ onNavigate }) => {
@@ -1106,7 +1242,7 @@ const Admin3 = ({ onNavigate }) => {
       {tab === "propiedades" && <PropertiesTab onNavigate={onNavigate} setTab={setTab} />}
       {tab === "nueva"       && <NewPropertyTab setTab={setTab} />}
       {tab === "leads"       && <LeadsTab />}
-      {tab === "brokers"     && <BrokersTab />}
+      {tab === "usuarios"    && <UsuariosTab />}
       {tab === "scripts"     && <ScriptsTab />}
       {tab === "ajustes"     && <AjustesTab />}
     </AdminShell>

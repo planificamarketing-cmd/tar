@@ -81,7 +81,9 @@ const PropCard3 = ({ property, onClick, saved, onSave }) => {
       {premium && <div style={{ position:"absolute", top:0, left:0, right:0, height:4, background:"linear-gradient(90deg, #E4C66A, #BE8C3C)", zIndex:3 }} />}
       <div style={{ position:"relative" }}>
         <PropImg3 property={property} height={220} />
+        {/* "Guardar" preparado para futuro (requiere cuenta de usuario). */}
         <button onClick={e => { e.stopPropagation(); onSave && onSave(property.id); }}
+          title="Guardar — disponible próximamente (requiere cuenta)"
           style={{ position:"absolute", bottom:14, right:14, background:"rgba(255,255,255,0.95)", border:"none", cursor:"pointer", width:36, height:36, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", color: saved ? "var(--tar)" : "#374151", boxShadow:"0 2px 8px rgba(0,0,0,0.1)" }}>
           <I3Heart s={16} on={saved} />
         </button>
@@ -146,7 +148,9 @@ const Header3 = ({ page, onNavigate }) => {
           {nav("listings","Propiedades")}
           {nav("map","Mapa")}
           {nav("nosotros","Nosotros")}
-          {nav("admin","Admin")}
+          {/* Admin NO se expone en la navegación pública. Acceso restringido:
+              en producción será un subdominio aparte (p.ej. panel.tarinternacional.com)
+              detrás de login. En el prototipo se entra con doble clic en el © del footer. */}
         </nav>
         {/* CTA */}
         <button onClick={() => onNavigate("contact")}
@@ -255,7 +259,7 @@ const Footer3 = ({ onNavigate }) => {
         ))}
       </div>
       <div style={{ borderTop:"1px solid rgba(255,255,255,0.08)", paddingTop:20, display:"flex", justifyContent:"space-between", fontFamily:"var(--sans)", fontSize:12 }}>
-        <span>© 2026 TAR Internacional · Grupo Inmobiliario</span>
+        <span onDoubleClick={() => go("admin")} title="" style={{ userSelect:"none" }}>© 2026 TAR Internacional · Grupo Inmobiliario</span>
         <span style={{ cursor:"pointer" }} onClick={() => go("privacidad")}>Aviso de Privacidad · Cédula AMPI</span>
       </div>
     </div>
@@ -263,7 +267,7 @@ const Footer3 = ({ onNavigate }) => {
   );
 };
 
-// ── CONTACT FORM (Inmuebles24 style) — Contactar + WhatsApp, sin info directa
+// ── CONTACT FORM (Inmuebles24 style) — solo Contactar (lead), sin info directa
 const ContactForm3 = ({ property, compact = false, onClose }) => {
   const [sent, setSent] = React.useState(false);
   const [form, setForm] = React.useState({
@@ -319,7 +323,7 @@ const ContactForm3 = ({ property, compact = false, onClose }) => {
               <div>
                 <div style={{ fontFamily:"var(--sans)", fontSize:10, color:"#9CA3AF" }}>País</div>
                 <div style={{ fontFamily:"var(--sans)", fontSize:14, color:"#0F1B2D", fontWeight:500, display:"flex", alignItems:"center", gap:4 }}>
-                  <span style={{ fontSize:16 }}>{sel.flag}</span> {sel.code}
+                  {sel.code}
                 </div>
               </div>
               <I3ChevD s={14}/>
@@ -329,7 +333,7 @@ const ContactForm3 = ({ property, compact = false, onClose }) => {
                 {countries.map(c => (
                   <div key={c.code} onClick={() => { setCountry(c.code); setOpen(false); }}
                     style={{ padding:"10px 14px", display:"flex", alignItems:"center", gap:8, cursor:"pointer", fontFamily:"var(--sans)", fontSize:13, color:"#0F1B2D", background: country===c.code?"#FFF0F2":"#fff" }}>
-                    <span style={{ fontSize:16 }}>{c.flag}</span> <span>{c.name}</span> <span style={{ marginLeft:"auto", color:"#6B7280" }}>{c.code}</span>
+                    <span>{c.name}</span> <span style={{ marginLeft:"auto", color:"#6B7280" }}>{c.code}</span>
                   </div>
                 ))}
               </div>
@@ -350,13 +354,7 @@ const ContactForm3 = ({ property, compact = false, onClose }) => {
           style={{ background:"var(--tar)", color:"#fff", border:"none", padding:"14px 0", fontFamily:"var(--sans)", fontSize:15, fontWeight:600, cursor:"pointer", borderRadius:10, marginTop:6, display:"flex", alignItems:"center", justifyContent:"center", gap:8, transition:"background 0.15s" }}
           onMouseEnter={e => e.currentTarget.style.background="var(--tar-dark)"}
           onMouseLeave={e => e.currentTarget.style.background="var(--tar)"}>
-          Contactar <I3Mail s={16}/>
-        </button>
-        <button onClick={e => { e.preventDefault(); setSent(true); }}
-          style={{ background:"#25D366", color:"#fff", border:"none", padding:"14px 0", fontFamily:"var(--sans)", fontSize:15, fontWeight:600, cursor:"pointer", borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", gap:8, transition:"background 0.15s" }}
-          onMouseEnter={e => e.currentTarget.style.background="#1FA855"}
-          onMouseLeave={e => e.currentTarget.style.background="#25D366"}>
-          Contactar por WhatsApp <I3Wapp s={17}/>
+          Enviar solicitud <I3Mail s={16}/>
         </button>
 
         <p style={{ fontFamily:"var(--sans)", fontSize:11, color:"#6B7280", marginTop:6, lineHeight:1.6 }}>

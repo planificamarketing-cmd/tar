@@ -1,12 +1,19 @@
 // TAR Internacional v3 — Content pages: Nosotros + Aviso de Privacidad
 
-const { Footer3, I3Check, I3ChevL, I3Pin, I3Verif } = window;
+const { Footer3, S, I3Check, I3ChevL, I3Pin, I3Verif } = window;
 
 // ── NOSOTROS ──────────────────────────────────────────────────────────────────
 const Nosotros3 = ({ onNavigate }) => {
+  // Foto real del inventario para el hero (en lugar de solo el degradado).
+  const heroImg = (window.PROPERTIES || []).find(p => p.image)?.image;
   const valores = [
-    "Honestidad", "Trabajo en equipo", "Innovación",
-    "Responsabilidad", "Lealtad", "Profesionalismo", "Respeto",
+    { name:"Honestidad",        desc:"Transparencia total en cada operación y trato con nuestros clientes.", d:["M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z","M9 12l2 2 4-4"] },
+    { name:"Trabajo en equipo", desc:"Especialistas coordinados para resolver cada necesidad inmobiliaria.", d:["M17 21v-2a4 4 0 00-3-3.87","M9 21v-2a4 4 0 013-3.87","M7 7a3 3 0 106 0 3 3 0 00-6 0z","M15 11a3 3 0 100-6"] },
+    { name:"Innovación",        desc:"Tecnología propia al servicio de tu patrimonio.", d:["M9 18h6","M10 22h4","M12 2a7 7 0 00-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0012 2z"] },
+    { name:"Responsabilidad",   desc:"Cuidamos el patrimonio de quienes confían en nosotros.", d:["M12 22a10 10 0 100-20 10 10 0 000 20z","M8 12l3 3 5-6"] },
+    { name:"Lealtad",           desc:"Relaciones de largo plazo construidas sobre la confianza.", d:"M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" },
+    { name:"Profesionalismo",   desc:"Seis décadas de conocimiento del mercado inmobiliario.", d:["M12 15a6 6 0 100-12 6 6 0 000 12z","M8.5 14l-1.5 7 5-3 5 3-1.5-7"] },
+    { name:"Respeto",           desc:"Atención a la medida para cada cliente y cada propiedad.", d:["M12 3v18","M3 7h18","M6 7l-3 6a3 3 0 006 0z","M18 7l-3 6a3 3 0 006 0z"] },
   ];
   const pilares = [
     {
@@ -38,9 +45,10 @@ const Nosotros3 = ({ onNavigate }) => {
     <div style={{ paddingTop:64, background:"#fff" }}>
       {/* Hero */}
       <section style={{ position:"relative", minHeight:"58vh", display:"flex", alignItems:"flex-end", overflow:"hidden", background:"#0F1B2D" }}>
-        <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg, #6B1820 0%, #8B1A28 30%, #0F1B2D 70%, #1A2B47 100%)" }}>
+        {heroImg && <img src={heroImg} alt="" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }} />}
+        <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg, rgba(107,24,32,0.86) 0%, rgba(139,26,40,0.6) 32%, rgba(15,27,45,0.82) 72%, rgba(26,43,71,0.9) 100%)" }}>
           <div style={{ position:"absolute", inset:0, backgroundImage:"repeating-linear-gradient(135deg,transparent,transparent 50px,rgba(255,255,255,0.025) 50px,rgba(255,255,255,0.025) 100px)" }} />
-          <div style={{ position:"absolute", inset:0, background:"linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, transparent 40%, rgba(0,0,0,0.5) 100%)" }} />
+          <div style={{ position:"absolute", inset:0, background:"linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, transparent 40%, rgba(0,0,0,0.55) 100%)" }} />
         </div>
         <div style={{ position:"relative", zIndex:1, maxWidth:1400, margin:"0 auto", padding:"100px 40px 56px", width:"100%" }}>
           <div style={{ fontFamily:"var(--mono)", fontSize:11, color:"rgba(255,255,255,0.6)", letterSpacing:3, textTransform:"uppercase", marginBottom:20, borderTop:"1px solid var(--tar)", paddingTop:10, display:"inline-block" }}>Nosotros</div>
@@ -119,11 +127,15 @@ const Nosotros3 = ({ onNavigate }) => {
         <div style={{ maxWidth:1400, margin:"0 auto", textAlign:"center" }}>
           <div style={{ fontFamily:"var(--mono)", fontSize:11, color:"rgba(255,255,255,0.5)", letterSpacing:2, textTransform:"uppercase", marginBottom:14 }}>Lo que nos define</div>
           <h2 style={{ fontFamily:"var(--display)", fontSize:"clamp(28px,3.5vw,42px)", fontWeight:600, color:"#fff", letterSpacing:-0.5, marginBottom:40 }}>Nuestros valores</h2>
-          <div style={{ display:"flex", flexWrap:"wrap", gap:12, justifyContent:"center", maxWidth:900, margin:"0 auto" }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))", gap:16, maxWidth:1120, margin:"0 auto", textAlign:"left" }}>
             {valores.map(v => (
-              <span key={v} style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.12)", color:"#fff", padding:"12px 22px", borderRadius:30, fontFamily:"var(--sans)", fontSize:15, fontWeight:500 }}>
-                <span style={{ width:6, height:6, borderRadius:"50%", background:"var(--tar)" }} />{v}
-              </span>
+              <div key={v.name} style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:16, padding:"26px 24px" }}>
+                <div style={{ width:44, height:44, borderRadius:12, background:"rgba(210,16,62,0.15)", border:"1px solid rgba(210,16,62,0.4)", color:"var(--tar)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>
+                  <S s={22} d={v.d}/>
+                </div>
+                <div style={{ fontFamily:"var(--display)", fontSize:19, fontWeight:700, color:"#fff", marginBottom:6 }}>{v.name}</div>
+                <p style={{ fontFamily:"var(--sans)", fontSize:13.5, color:"rgba(255,255,255,0.62)", lineHeight:1.6 }}>{v.desc}</p>
+              </div>
             ))}
           </div>
         </div>
@@ -165,7 +177,7 @@ const Privacidad3 = ({ onNavigate }) => {
     },
     {
       h: "2. Datos personales que recabamos",
-      p: ["Para las finalidades señaladas en el presente aviso, podemos recabar sus datos personales de distintas formas: cuando usted los proporciona directamente a través de nuestros formularios de contacto, vía WhatsApp, correo electrónico o teléfono."],
+      p: ["Para las finalidades señaladas en el presente aviso, podemos recabar sus datos personales de distintas formas: cuando usted los proporciona directamente a través de nuestros formularios de contacto, correo electrónico o teléfono."],
       list: ["Nombre completo", "Correo electrónico", "Número telefónico", "Propiedad o tipo de inmueble de interés", "Información financiera para procesos de compra, renta o financiamiento (cuando aplique)"],
     },
     {
@@ -176,7 +188,7 @@ const Privacidad3 = ({ onNavigate }) => {
     },
     {
       h: "4. Transferencia de datos",
-      p: ["Sus datos personales pueden ser compartidos con los brokers y asesores de TAR Internacional asignados a su solicitud, así como con terceros que nos presten servicios necesarios para concretar la operación inmobiliaria (notarías, instituciones financieras). En todos los casos exigimos el cumplimiento de las medidas de seguridad y confidencialidad correspondientes."],
+      p: ["Sus datos personales pueden ser compartidos con los asesores de TAR Internacional asignados a su solicitud, así como con terceros que nos presten servicios necesarios para concretar la operación inmobiliaria (notarías, instituciones financieras). En todos los casos exigimos el cumplimiento de las medidas de seguridad y confidencialidad correspondientes."],
     },
     {
       h: "5. Derechos ARCO",
