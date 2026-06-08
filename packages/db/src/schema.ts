@@ -30,7 +30,7 @@ const geography = customType<{ data: string }>({
 const tsvector = customType<{ data: string }>({ dataType: () => 'tsvector' });
 
 // --- Enums ---
-export const userRole = pgEnum('user_role', ['admin', 'broker']);
+export const userRole = pgEnum('user_role', ['admin', 'editor']);
 export const propertyType = pgEnum('property_type', [
   'casa',
   'departamento',
@@ -55,12 +55,14 @@ export const featuredLevel = pgEnum('featured_level', [
   'premium',
 ]);
 export const leadType = pgEnum('lead_type', ['contacto', 'cita']);
+// Pipeline de leads del negocio inmobiliario (decisión del cliente, ronda 1).
 export const leadStatus = pgEnum('lead_status', [
   'nuevo',
-  'contactado',
-  'calificado',
+  'cita_agendada',
+  'cita_concretada',
+  'apartado',
+  'firma_contrato',
   'descartado',
-  'cerrado',
 ]);
 export const deliveryStatus = pgEnum('delivery_status', [
   'pendiente',
@@ -89,7 +91,7 @@ export const users = pgTable('users', {
   email: citext('email').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   name: text('name').notNull(),
-  role: userRole('role').notNull().default('broker'),
+  role: userRole('role').notNull().default('editor'),
   isActive: boolean('is_active').notNull().default(true),
   ...timestamps,
 });

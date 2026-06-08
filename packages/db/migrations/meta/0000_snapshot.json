@@ -1,5 +1,5 @@
 {
-  "id": "0296d657-05d9-418c-b74f-16a1cd1b3184",
+  "id": "9554e7e8-343f-4644-8398-4b17599437a6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1304,7 +1304,7 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "default": "'broker'"
+          "default": "'editor'"
         },
         "is_active": {
           "name": "is_active",
@@ -1542,10 +1542,11 @@
       "schema": "public",
       "values": [
         "nuevo",
-        "contactado",
-        "calificado",
-        "descartado",
-        "cerrado"
+        "cita_agendada",
+        "cita_concretada",
+        "apartado",
+        "firma_contrato",
+        "descartado"
       ]
     },
     "public.lead_type": {
@@ -1603,7 +1604,7 @@
       "schema": "public",
       "values": [
         "admin",
-        "broker"
+        "editor"
       ]
     }
   },

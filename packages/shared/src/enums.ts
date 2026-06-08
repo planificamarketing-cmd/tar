@@ -2,7 +2,7 @@
 // Fuente única para validación Zod (API) y tipados del frontend.
 import { z } from 'zod';
 
-export const USER_ROLES = ['admin', 'broker'] as const;
+export const USER_ROLES = ['admin', 'editor'] as const;
 export const userRoleSchema = z.enum(USER_ROLES);
 export type UserRole = z.infer<typeof userRoleSchema>;
 
@@ -48,12 +48,14 @@ export const LEAD_TYPES = ['contacto', 'cita'] as const;
 export const leadTypeSchema = z.enum(LEAD_TYPES);
 export type LeadType = z.infer<typeof leadTypeSchema>;
 
+// Pipeline de leads del negocio inmobiliario (decisión del cliente, ronda 1).
 export const LEAD_STATUSES = [
   'nuevo',
-  'contactado',
-  'calificado',
+  'cita_agendada',
+  'cita_concretada',
+  'apartado',
+  'firma_contrato',
   'descartado',
-  'cerrado',
 ] as const;
 export const leadStatusSchema = z.enum(LEAD_STATUSES);
 export type LeadStatus = z.infer<typeof leadStatusSchema>;

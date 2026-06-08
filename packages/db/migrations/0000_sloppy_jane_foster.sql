@@ -1,16 +1,15 @@
--- Extensiones requeridas (citext para emails case-insensitive; postgis para geo).
--- La imagen postgis ya habilita postgis, pero lo dejamos idempotente para prod.
+-- Extensiones requeridas (citext + postgis). Idempotente para prod.
 CREATE EXTENSION IF NOT EXISTS postgis;--> statement-breakpoint
 CREATE EXTENSION IF NOT EXISTS citext;--> statement-breakpoint
 CREATE TYPE "public"."delivery_status" AS ENUM('pendiente', 'entregado', 'fallido');--> statement-breakpoint
 CREATE TYPE "public"."featured_level" AS ENUM('normal', 'destacada', 'premium');--> statement-breakpoint
-CREATE TYPE "public"."lead_status" AS ENUM('nuevo', 'contactado', 'calificado', 'descartado', 'cerrado');--> statement-breakpoint
+CREATE TYPE "public"."lead_status" AS ENUM('nuevo', 'cita_agendada', 'cita_concretada', 'apartado', 'firma_contrato', 'descartado');--> statement-breakpoint
 CREATE TYPE "public"."lead_type" AS ENUM('contacto', 'cita');--> statement-breakpoint
 CREATE TYPE "public"."property_event_type" AS ENUM('view');--> statement-breakpoint
 CREATE TYPE "public"."property_status" AS ENUM('borrador', 'disponible', 'apartado', 'rentado', 'vendido', 'pausado');--> statement-breakpoint
 CREATE TYPE "public"."property_type" AS ENUM('casa', 'departamento', 'oficina', 'local_comercial', 'bodega_industrial', 'terreno_industrial', 'edificio', 'terreno');--> statement-breakpoint
 CREATE TYPE "public"."script_placement" AS ENUM('head', 'body', 'footer');--> statement-breakpoint
-CREATE TYPE "public"."user_role" AS ENUM('admin', 'broker');--> statement-breakpoint
+CREATE TYPE "public"."user_role" AS ENUM('admin', 'editor');--> statement-breakpoint
 CREATE TABLE "amenities" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,
@@ -151,7 +150,7 @@ CREATE TABLE "users" (
 	"email" "citext" NOT NULL,
 	"password_hash" text NOT NULL,
 	"name" text NOT NULL,
-	"role" "user_role" DEFAULT 'broker' NOT NULL,
+	"role" "user_role" DEFAULT 'editor' NOT NULL,
 	"is_active" boolean DEFAULT true NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,

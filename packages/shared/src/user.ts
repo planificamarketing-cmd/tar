@@ -6,7 +6,7 @@ export const createUserSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
   name: z.string().min(1).max(120),
-  role: userRoleSchema.default('broker'),
+  role: userRoleSchema.default('editor'),
 });
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 
