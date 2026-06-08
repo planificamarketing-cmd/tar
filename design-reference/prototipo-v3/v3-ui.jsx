@@ -81,12 +81,8 @@ const PropCard3 = ({ property, onClick, saved, onSave }) => {
       {premium && <div style={{ position:"absolute", top:0, left:0, right:0, height:4, background:"linear-gradient(90deg, #E4C66A, #BE8C3C)", zIndex:3 }} />}
       <div style={{ position:"relative" }}>
         <PropImg3 property={property} height={220} />
-        {/* "Guardar" preparado para futuro (requiere cuenta de usuario). */}
-        <button onClick={e => { e.stopPropagation(); onSave && onSave(property.id); }}
-          title="Guardar — disponible próximamente (requiere cuenta)"
-          style={{ position:"absolute", bottom:14, right:14, background:"rgba(255,255,255,0.95)", border:"none", cursor:"pointer", width:36, height:36, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", color: saved ? "var(--tar)" : "#374151", boxShadow:"0 2px 8px rgba(0,0,0,0.1)" }}>
-          <I3Heart s={16} on={saved} />
-        </button>
+        {/* "Guardar"/favoritos oculto por ahora (requiere cuentas de usuario público,
+            fuera del alcance actual). El plumbing onSave/saved queda listo para reactivarlo. */}
       </div>
       <div style={{ padding:"18px 20px 20px" }}>
         <div style={{ display:"flex", alignItems:"center", gap:5, fontFamily:"var(--sans)", fontSize:12, color:"#6B7280", marginBottom:10 }}>
@@ -148,9 +144,10 @@ const Header3 = ({ page, onNavigate }) => {
           {nav("listings","Propiedades")}
           {nav("map","Mapa")}
           {nav("nosotros","Nosotros")}
-          {/* Admin NO se expone en la navegación pública. Acceso restringido:
-              en producción será un subdominio aparte (p.ej. panel.tarinternacional.com)
-              detrás de login. En el prototipo se entra con doble clic en el © del footer. */}
+          {/* "Admin" VISIBLE solo para la demo del prototipo (para que el cliente vea el panel).
+              En producción NO se enlaza desde la web pública: será un subdominio aparte
+              (p.ej. panel.tarinternacional.com) detrás de login. */}
+          {nav("admin","Admin")}
         </nav>
         {/* CTA */}
         <button onClick={() => onNavigate("contact")}

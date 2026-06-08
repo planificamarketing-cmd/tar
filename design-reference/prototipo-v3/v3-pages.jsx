@@ -520,7 +520,6 @@ const Map3 = ({ onNavigate }) => {
       <div class="map-card">
         <div class="map-card-img" style="background:${showFor.color}">
           ${showFor.image ? `<img src="${showFor.image}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />` : `<div class="map-card-tex"></div>`}
-          <button class="map-card-save" data-saveid="${showFor.id}" title="Guardar — próximamente"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
         </div>
         <div class="map-card-body">
           <div class="map-card-price">${formatPrice(showFor.price, showFor.currency, showFor.operation)}</div>
@@ -628,10 +627,7 @@ const Map3 = ({ onNavigate }) => {
                     <div style={{ position:"absolute", inset:0, background:"linear-gradient(to bottom,transparent 60%,rgba(0,0,0,0.4) 100%)" }}/>
                     {p.premium && <div style={{ position:"absolute", top:8, left:8, display:"inline-flex", alignItems:"center", gap:3, background:"linear-gradient(135deg, #E4C66A, #BE8C3C)", color:"#3A2A08", padding:"2px 8px", borderRadius:12, fontFamily:"var(--sans)", fontSize:10, fontWeight:700 }}>★ Destacado</div>}
                     {p.isNew && !p.premium && <div style={{ position:"absolute", top:8, left:8, background:"#fff", color:"#0F1B2D", padding:"2px 8px", borderRadius:12, fontFamily:"var(--sans)", fontSize:10, fontWeight:600 }}>Nuevo</div>}
-                    <button onClick={e => { e.stopPropagation(); toggleSave(p.id); }}
-                      style={{ position:"absolute", top:8, right:8, width:28, height:28, borderRadius:"50%", background:"rgba(255,255,255,0.95)", border:"none", cursor:"pointer", color:saved.has(p.id)?"var(--tar)":"#374151", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                      <I3Heart s={12} on={saved.has(p.id)}/>
-                    </button>
+                    {/* Guardar/favoritos oculto por ahora (requiere cuentas de usuario público). */}
                   </div>
                   {/* Info */}
                   <div style={{ padding: "10px 14px 14px" }}>
@@ -789,9 +785,7 @@ const Detail3 = ({ propertyId, onNavigate }) => {
                   <h1 style={{ fontFamily:"var(--display)", fontSize:"clamp(26px,3vw,38px)", fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5, lineHeight:1.15, marginBottom:8 }}>{p.title}</h1>
                   <div style={{ display:"flex", alignItems:"center", gap:5, fontFamily:"var(--sans)", fontSize:14, color:"#6B7280" }}><I3Pin s={13}/>{p.location}</div>
                 </div>
-                <button onClick={() => setSaved(s => !s)} title="Guardar — disponible próximamente (requiere cuenta)" style={{ background:"#fff", border:"1px solid #E5E5E4", borderRadius:24, padding:"8px 16px", cursor:"pointer", color:saved?"var(--tar)":"#6B7280", display:"flex", alignItems:"center", gap:6, fontFamily:"var(--sans)", fontSize:13, fontWeight:500 }}>
-                  <I3Heart s={15} on={saved}/> {saved?"Guardado":"Guardar"}
-                </button>
+                {/* Botón "Guardar" oculto por ahora (requiere cuentas de usuario público). */}
               </div>
 
               {/* Price + stats row */}
