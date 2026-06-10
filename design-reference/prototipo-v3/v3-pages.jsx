@@ -2,7 +2,7 @@
 
 const {
   PROPERTIES, TYPE_LABELS, LEADS, ADMIN_STATS, BROKERS, formatPrice,
-  PropCard3, PropImg3, Filter3, Footer3, ContactForm3, Modal3,
+  PropCard3, PropImg3, Filter3, Footer3, ContactForm3, Modal3, Autocomplete3, norm3,
   I3Search, I3Pin, I3Bed, I3Bath, I3Car, I3Ruler, I3Close, I3ChevL, I3ChevR, I3ChevD,
   I3Heart, I3Map, I3Mail, I3Wapp, I3User, I3Plus, I3Check, I3Grid, I3List, I3Edit, I3Verif,
 } = window;
@@ -10,9 +10,11 @@ const {
 const DEF_F3 = { operation:"all", type:"all", maxPrice:"all", zone:"all", minBeds:"0", search:"" };
 
 // Texto compacto del price-pill (igual que en Map3).
-const pillText3 = p => p.operation === "renta"
-  ? `$${(p.price/1000).toFixed(0)}k/mes`
-  : (p.price >= 1000000 ? `$${(p.price/1000000).toFixed(1).replace(".0","")} MDP` : `$${(p.price/1000).toFixed(0)}k`);
+const pillText3 = p => p.priceUnit === "m2"
+  ? `$${p.price.toLocaleString("es-MX")}/m²`
+  : p.operation === "renta"
+    ? `$${(p.price/1000).toFixed(0)}k/mes`
+    : (p.price >= 1000000 ? `$${(p.price/1000000).toFixed(1).replace(".0","")} MDP` : `$${(p.price/1000).toFixed(0)}k`);
 
 // ── Mini-mapa real (Leaflet) para el Home ────────────────────────────────────
 // Refleja el mapa de producción (Google Maps + marcadores price-pill); ya no es
@@ -134,20 +136,18 @@ const Home3 = ({ onNavigate }) => {
                     <select value={maxPrice} onChange={e => setMaxPrice(e.target.value)}
                       style={{ width:"100%", padding:"12px 14px", border:"1px solid #E5E5E4", borderRadius:10, fontFamily:"var(--sans)", fontSize:13, background:"#fff", outline:"none", color:"#0F1B2D", appearance:"none" }}>
                       <option value="">Cualquier precio</option>
-                      <option value="3000000">Hasta $3 MDP</option>
-                      <option value="6000000">Hasta $6 MDP</option>
-                      <option value="12000000">Hasta $12 MDP</option>
-                      <option value="30000">Hasta $30,000/mes</option>
+                      {(op === "renta"
+                        ? [["15000","Hasta $15,000/mes"],["30000","Hasta $30,000/mes"],["60000","Hasta $60,000/mes"],["120000","Hasta $120,000/mes"]]
+                        : [["3000000","Hasta $3 MDP"],["6000000","Hasta $6 MDP"],["12000000","Hasta $12 MDP"],["30000000","Hasta $30 MDP"]]
+                      ).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
                     </select>
                   </div>
                   <div>
                     <div style={{ fontFamily:"var(--sans)", fontSize:11, fontWeight:600, color:"#6B7280", marginBottom:6 }}>Ubicación</div>
-                    <div style={{ position:"relative" }}>
-                      <input placeholder="Colonia, zona…" value={q} onChange={e => setQ(e.target.value)}
-                        onKeyDown={e => e.key==="Enter" && onNavigate("listings",{search:q,operation:op,type,maxPrice,minBeds:beds})}
-                        style={{ width:"100%", padding:"12px 14px 12px 38px", border:"1px solid #E5E5E4", borderRadius:10, fontFamily:"var(--sans)", fontSize:13, background:"#fff", outline:"none", color:"#0F1B2D" }} />
-                      <span style={{ position:"absolute", left:13, top:"50%", transform:"translateY(-50%)", color:"#9CA3AF" }}><I3Pin s={15}/></span>
-                    </div>
+                    <Autocomplete3 value={q} onChange={setQ}
+                      onPick={(val) => onNavigate("listings",{search:val,operation:op,type,maxPrice,minBeds:beds||"0"})}
+                      placeholder="Colonia, alcaldía, zona…" leftIcon={<I3Pin s={15}/>}
+                      style={{ width:"100%", padding:"12px 14px 12px 38px", border:"1px solid #E5E5E4", borderRadius:10, fontFamily:"var(--sans)", fontSize:13, background:"#fff", outline:"none", color:"#0F1B2D", boxSizing:"border-box" }} />
                   </div>
                   <div>
                     <div style={{ fontFamily:"var(--sans)", fontSize:11, fontWeight:600, color:"#6B7280", marginBottom:6 }}>Recámaras</div>
@@ -165,7 +165,7 @@ const Home3 = ({ onNavigate }) => {
                   <div style={{ display:"flex", gap:8, alignItems:"center" }}>
                     <span style={{ fontFamily:"var(--sans)", fontSize:12, color:"#6B7280", fontWeight:600 }}>Filtros:</span>
                     {[["venta","Venta"],["renta","Renta"]].map(([v,l]) => (
-                      <button key={v} onClick={() => setOp(v)}
+                      <button key={v} onClick={() => { setOp(v); setMaxPrice(""); }}
                         style={{ background:op===v?"#0F1B2D":"#F7F7F6", color:op===v?"#fff":"#374151", border:"none", padding:"7px 16px", borderRadius:20, fontFamily:"var(--sans)", fontSize:12, fontWeight:500, cursor:"pointer", transition:"all 0.15s" }}>
                         {l}
                       </button>
@@ -301,10 +301,21 @@ const Listings3 = ({ onNavigate, initialFilters = {} }) => {
   const list = PROPERTIES.filter(p => {
     if (filters.operation !== "all" && p.operation !== filters.operation) return false;
     if (filters.type !== "all" && p.type !== filters.type) return false;
-    if (filters.zone !== "all" && p.zone !== filters.zone) return false;
+    if (filters.zone !== "all") {
+      // El valor viene codificado "kind::valor" (zone/city/colony) según el nivel elegido.
+      const sep = filters.zone.indexOf("::");
+      if (sep === -1) { if (p.zone !== filters.zone) return false; }
+      else {
+        const kind = filters.zone.slice(0, sep), val = norm3(filters.zone.slice(sep + 2));
+        const field = kind === "city" ? p.city : kind === "colony" ? p.colony : p.zone;
+        if (norm3(field) !== val) return false;
+      }
+    }
     if (filters.minBeds !== "0" && p.bedrooms < parseInt(filters.minBeds)) return false;
-    if (filters.maxPrice !== "all" && p.price > parseInt(filters.maxPrice)) return false;
-    if (filters.search) { const q = filters.search.toLowerCase(); if (!p.title.toLowerCase().includes(q) && !p.location.toLowerCase().includes(q)) return false; }
+    // Para inmuebles en $/m² se compara el total efectivo (precio × m²), así el
+    // umbral de precio filtra de forma coherente y no por el valor unitario.
+    if (filters.maxPrice !== "all") { const ep = p.priceUnit === "m2" ? p.price * (p.area || 0) : p.price; if (ep > parseInt(filters.maxPrice)) return false; }
+    if (filters.search) { const q = norm3(filters.search); const hay = norm3([p.title, p.location, p.colony, p.city, p.zone].join(" ")); if (!hay.includes(q)) return false; }
     return true;
   }).sort((a,b) => {
     if (!!a.premium !== !!b.premium) return a.premium ? -1 : 1;
@@ -383,7 +394,7 @@ const Listings3 = ({ onNavigate, initialFilters = {} }) => {
                         <span style={{ display:"flex", alignItems:"center", gap:5 }}><I3Ruler s={14}/>{p.area} m²</span>
                       </div>
                     </div>
-                    <div style={{ fontFamily:"var(--display)", fontSize:26, fontWeight:700, color:"#0F1B2D", letterSpacing:-0.5 }}>{formatPrice(p.price,p.currency,p.operation)}</div>
+                    <div style={{ fontFamily:"var(--display)", fontSize:26, fontWeight:700, color:"#0F1B2D", letterSpacing:-0.5 }}>{formatPrice(p.price,p.currency,p.operation,p.priceUnit)}</div>
                   </div>
                 </div>
               ))}
@@ -435,10 +446,11 @@ const Map3 = ({ onNavigate }) => {
       if (opTab !== "all" && p.operation !== opTab) return false;
       if (typeF !== "all" && p.type !== typeF) return false;
       if (bedsF !== "all" && p.bedrooms < parseInt(bedsF)) return false;
-      if (priceF !== "all" && p.price > parseInt(priceF)) return false;
+      if (priceF !== "all") { const ep = p.priceUnit === "m2" ? p.price * (p.area || 0) : p.price; if (ep > parseInt(priceF)) return false; }
       if (search) {
-        const q = search.toLowerCase();
-        if (!p.title.toLowerCase().includes(q) && !p.location.toLowerCase().includes(q)) return false;
+        const q = norm3(search);
+        const hay = norm3([p.title, p.location, p.colony, p.city, p.zone].join(" "));
+        if (!hay.includes(q)) return false;
       }
       return true;
     });
@@ -453,6 +465,7 @@ const Map3 = ({ onNavigate }) => {
 
   // ── Format price as compact pill text ──
   const pillText = p => {
+    if (p.priceUnit === "m2") return `$${p.price.toLocaleString("es-MX")}/m²`;
     if (p.operation === "renta") return `$${(p.price/1000).toFixed(0)}k/mes`;
     return p.price >= 1000000 ? `$${(p.price/1000000).toFixed(1).replace(".0","")} MDP` : `$${(p.price/1000).toFixed(0)}k`;
   };
@@ -522,7 +535,7 @@ const Map3 = ({ onNavigate }) => {
           ${showFor.image ? `<img src="${showFor.image}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />` : `<div class="map-card-tex"></div>`}
         </div>
         <div class="map-card-body">
-          <div class="map-card-price">${formatPrice(showFor.price, showFor.currency, showFor.operation)}</div>
+          <div class="map-card-price">${formatPrice(showFor.price, showFor.currency, showFor.operation, showFor.priceUnit)}</div>
           <div class="map-card-loc"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg> ${showFor.location}</div>
           <div class="map-card-stats">
             ${showFor.bedrooms > 0 ? `<span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7a2 2 0 012-2h16a2 2 0 012 2v10H2V7z"/><path d="M2 13h20"/><path d="M7 13V9"/><path d="M17 13V9"/></svg> ${showFor.bedrooms}</span>` : ""}
@@ -568,20 +581,17 @@ const Map3 = ({ onNavigate }) => {
         {/* Search */}
         <div style={{ padding: "20px 24px 14px", borderBottom: "1px solid #F1F1F0" }}>
           <div style={{ position: "relative" }}>
-            <input
-              placeholder="Departamentos en Polanco, Roma…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              style={{ width:"100%", padding:"13px 50px 13px 18px", border:"1px solid #E5E5E4", borderRadius:24, fontFamily:"var(--sans)", fontSize:14, outline:"none", boxSizing:"border-box", background:"#fff", color:"#0F1B2D" }}
-            />
-            <button style={{ position:"absolute", right:5, top:"50%", transform:"translateY(-50%)", background:"#0F1B2D", color:"#fff", border:"none", width:38, height:38, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer" }}>
+            <Autocomplete3 value={search} onChange={setSearch}
+              placeholder="Colonia, alcaldía, zona…"
+              style={{ width:"100%", padding:"13px 50px 13px 18px", border:"1px solid #E5E5E4", borderRadius:24, fontFamily:"var(--sans)", fontSize:14, outline:"none", boxSizing:"border-box", background:"#fff", color:"#0F1B2D" }} />
+            <button style={{ position:"absolute", right:5, top:"50%", transform:"translateY(-50%)", background:"#0F1B2D", color:"#fff", border:"none", width:38, height:38, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", zIndex:2 }}>
               <I3Search s={16}/>
             </button>
           </div>
           {/* Operation tabs */}
           <div style={{ display: "flex", gap: 6, marginTop: 12 }}>
             {[["all","Todo"],["venta","Venta"],["renta","Renta"]].map(([v,l]) => (
-              <button key={v} onClick={() => setOpTab(v)}
+              <button key={v} onClick={() => { setOpTab(v); setPriceF("all"); }}
                 style={{ padding:"6px 14px", borderRadius:20, border:"none", cursor:"pointer", fontFamily:"var(--sans)", fontSize:12, fontWeight:500,
                   background: opTab===v ? "#FFF0F2" : "#F7F7F6", color: opTab===v ? "var(--tar)" : "#6B7280" }}>{l}</button>
             ))}
@@ -632,7 +642,7 @@ const Map3 = ({ onNavigate }) => {
                   {/* Info */}
                   <div style={{ padding: "10px 14px 14px" }}>
                     <div style={{ fontFamily:"var(--display)", fontSize:18, fontWeight:700, color:"#0F1B2D", letterSpacing:-0.3, marginBottom:6 }}>
-                      $ {p.operation==="renta" ? (p.price/1000).toFixed(0)+"k" : (p.price/1000).toLocaleString("es-MX")}
+                      {pillText(p)}
                     </div>
                     <div style={{ display:"flex", alignItems:"flex-start", gap:3, fontFamily:"var(--sans)", fontSize:11, color:"#6B7280", marginBottom:10, lineHeight:1.3 }}>
                       <I3Pin s={11}/>
@@ -666,10 +676,10 @@ const Map3 = ({ onNavigate }) => {
           {/* Price pill (dropdown emulation) */}
           <select value={priceF} onChange={e => setPriceF(e.target.value)} style={{ ...filterPill(priceF!=="all"), appearance:"none", paddingRight:30, backgroundImage:"url(\"data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath stroke='%230F1B2D' stroke-width='1.5' fill='none' d='M4 6l4 4 4-4'/%3E%3C/svg%3E\")", backgroundRepeat:"no-repeat", backgroundPosition:"right 10px center", backgroundSize:"12px" }}>
             <option value="all">Cualquier precio</option>
-            <option value="3000000">Hasta $3 MDP</option>
-            <option value="6000000">Hasta $6 MDP</option>
-            <option value="12000000">Hasta $12 MDP</option>
-            <option value="30000">Hasta $30k/mes</option>
+            {(opTab === "renta"
+              ? [["15000","Hasta $15k/mes"],["30000","Hasta $30k/mes"],["60000","Hasta $60k/mes"],["120000","Hasta $120k/mes"]]
+              : [["3000000","Hasta $3 MDP"],["6000000","Hasta $6 MDP"],["12000000","Hasta $12 MDP"],["30000000","Hasta $30 MDP"]]
+            ).map(([v,l]) => <option key={v} value={v}>{l}</option>)}
           </select>
           {/* Type */}
           <select value={typeF} onChange={e => setTypeF(e.target.value)} style={{ ...filterPill(typeF!=="all"), appearance:"none", paddingRight:30, backgroundImage:"url(\"data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath stroke='%230F1B2D' stroke-width='1.5' fill='none' d='M4 6l4 4 4-4'/%3E%3C/svg%3E\")", backgroundRepeat:"no-repeat", backgroundPosition:"right 10px center", backgroundSize:"12px" }}>
@@ -805,7 +815,7 @@ const Detail3 = ({ propertyId, onNavigate }) => {
 
               {/* Price + stats row */}
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", paddingTop:18, borderTop:"1px solid #F1F1F0", gap:16, flexWrap:"wrap" }}>
-                <div style={{ fontFamily:"var(--display)", fontSize:36, fontWeight:700, color:"#0F1B2D", letterSpacing:-1 }}>{formatPrice(p.price,p.currency,p.operation)}</div>
+                <div style={{ fontFamily:"var(--display)", fontSize:36, fontWeight:700, color:"#0F1B2D", letterSpacing:-1 }}>{formatPrice(p.price,p.currency,p.operation,p.priceUnit)}</div>
                 <div style={{ display:"flex", gap:20, fontFamily:"var(--sans)", fontSize:14, color:"#374151" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:6 }}><I3Ruler s={16}/><strong>{p.area}</strong> m²</div>
                   {p.bedrooms>0 && <div style={{ display:"flex", alignItems:"center", gap:6 }}><I3Bed s={16}/><strong>{p.bedrooms}</strong> rec.</div>}
@@ -839,7 +849,9 @@ const Detail3 = ({ propertyId, onNavigate }) => {
               <h3 style={{ fontFamily:"var(--display)", fontSize:22, fontWeight:700, color:"#0F1B2D", marginBottom:18 }}>Datos</h3>
               <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:0 }}>
                 {[["Tipo",TYPE_LABELS[p.type]],["Operación",p.operation.charAt(0).toUpperCase()+p.operation.slice(1)],["Superficie",`${p.area} m²`],
-                  ...(p.area>0 ? [["Precio por m²",`$${Math.round(p.price/p.area).toLocaleString("es-MX")} ${p.currency}/m²${p.operation==="renta"?"/mes":""}`]] : []),
+                  ...(p.area>0 ? [["Precio por m²", p.priceUnit==="m2"
+                      ? `$${p.price.toLocaleString("es-MX")} ${p.currency}/m²${p.operation==="renta"?"/mes":""}`
+                      : `$${Math.round(p.price/p.area).toLocaleString("es-MX")} ${p.currency}/m²${p.operation==="renta"?"/mes":""}`]] : []),
                   ["Antigüedad",p.age>0?`${p.age} años`:"Nueva"],["Ubicación",p.location],["Estatus","Disponible"]].map(([k,v]) => (
                   <div key={k} style={{ padding:"12px 0", borderBottom:"1px solid #F1F1F0", display:"flex", justifyContent:"space-between", fontFamily:"var(--sans)", fontSize:14 }}>
                     <span style={{ color:"#6B7280" }}>{k}</span>

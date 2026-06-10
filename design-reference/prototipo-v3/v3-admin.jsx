@@ -417,7 +417,7 @@ const PropertiesTab = ({ onNavigate, setTab }) => {
                 <td style={{ padding:"12px 18px" }}>
                   <span style={{ fontSize:11, textTransform:"capitalize", padding:"3px 10px", background:p.operation==="venta"?"#FFF0F2":"#EFF6FF", color:p.operation==="venta"?"var(--tar)":"#2563EB", borderRadius:14, fontWeight:600 }}>{p.operation}</span>
                 </td>
-                <td style={{ padding:"12px 18px", fontFamily:"var(--display)", fontWeight:600, color:"#0F1B2D", fontSize:15 }}>{formatPrice(p.price,p.currency,p.operation)}</td>
+                <td style={{ padding:"12px 18px", fontFamily:"var(--display)", fontWeight:600, color:"#0F1B2D", fontSize:15 }}>{formatPrice(p.price,p.currency,p.operation,p.priceUnit)}</td>
                 <td style={{ padding:"12px 18px", color:"#6B7280" }}>{p.broker.name.split(" ")[0]}</td>
                 <td style={{ padding:"12px 18px" }}>
                   <span style={{ fontSize:11, padding:"3px 10px", background:statusC[st(p)]+"22", color:statusC[st(p)], borderRadius:14, fontWeight:600, textTransform:"capitalize" }}>{st(p)}</span>

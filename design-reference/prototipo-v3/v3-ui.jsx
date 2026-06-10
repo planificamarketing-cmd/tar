@@ -33,6 +33,84 @@ const I3Share  = ({s=16}) => <S s={s} d={["M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8
 const I3Verif  = ({s=16}) => <S s={s} d={["M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z","M9 12l2 2 4-4"]} />;
 const I3Camera = ({s=16}) => <S s={s} d={["M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z","M12 17a4 4 0 100-8 4 4 0 000 8z"]} />;
 
+// ── Búsqueda con autocompletado ──────────────────────────────────────────────
+// Normaliza acentos/mayúsculas para que "cuauhtemoc" encuentre "Cuauhtémoc".
+const norm3 = (s) => (s || "").toString().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+// Sugerencias derivadas del inventario real: colonias, ciudades/alcaldías y zonas.
+const SEARCH_SUGGESTIONS = (() => {
+  const P = window.PROPERTIES || [];
+  const map = new Map();
+  const add = (label, kind) => {
+    if (!label) return;
+    const k = kind + "|" + norm3(label);
+    if (!map.has(k)) map.set(k, { label: String(label).trim(), kind, n: 0 });
+    map.get(k).n += 1;
+  };
+  P.forEach(p => { add(p.colony, "Colonia"); add(p.city, "Ciudad"); add(p.zone, "Zona"); });
+  // Más frecuentes primero (colonias con más inventario arriba).
+  return [...map.values()].sort((a, b) => b.n - a.n);
+})();
+window.SEARCH_SUGGESTIONS = SEARCH_SUGGESTIONS;
+window.norm3 = norm3;
+
+// Opciones del filtro de ubicación, por granularidad: estado/zona, alcaldía o
+// municipio, y colonia. Alimenta el <select> de "Ubicación" del sidebar.
+const LOCATION_OPTIONS = (() => {
+  const byKind = { Zona: new Set(), Ciudad: new Set(), Colonia: new Set() };
+  SEARCH_SUGGESTIONS.forEach(s => byKind[s.kind] && byKind[s.kind].add(s.label));
+  const sortEs = (set) => [...set].sort((a, b) => a.localeCompare(b, "es"));
+  return { zonas: sortEs(byKind.Zona), ciudades: sortEs(byKind.Ciudad), colonias: sortEs(byKind.Colonia) };
+})();
+window.LOCATION_OPTIONS = LOCATION_OPTIONS;
+
+// Input de texto con dropdown de sugerencias (teclado + click). Reutilizable en
+// el hero, el sidebar de Propiedades y el buscador del mapa.
+const Autocomplete3 = ({ value, onChange, onPick, placeholder, style, leftIcon, suggestions, maxItems = 7 }) => {
+  const [open, setOpen] = React.useState(false);
+  const [hi, setHi] = React.useState(-1);
+  const wrapRef = React.useRef(null);
+  const sugs = suggestions || window.SEARCH_SUGGESTIONS || [];
+  const q = norm3(value);
+  const matches = q.length >= 1 ? sugs.filter(s => norm3(s.label).includes(q)).slice(0, maxItems) : [];
+
+  React.useEffect(() => {
+    const fn = (e) => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", fn);
+    return () => document.removeEventListener("mousedown", fn);
+  }, []);
+
+  const pick = (s) => { onChange(s.label); setOpen(false); setHi(-1); onPick && onPick(s.label); };
+  const onKey = (e) => {
+    if (e.key === "Enter") { e.preventDefault(); if (open && hi >= 0 && matches[hi]) return pick(matches[hi]); setOpen(false); onPick && onPick(value); return; }
+    if (!open || !matches.length) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); setHi(h => Math.min(h + 1, matches.length - 1)); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setHi(h => Math.max(h - 1, 0)); }
+    else if (e.key === "Escape") { setOpen(false); setHi(-1); }
+  };
+
+  return (
+    <div ref={wrapRef} style={{ position: "relative" }}>
+      {leftIcon && <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: "#9CA3AF", pointerEvents: "none", zIndex: 1, display: "flex" }}>{leftIcon}</span>}
+      <input value={value} placeholder={placeholder} autoComplete="off"
+        onChange={e => { onChange(e.target.value); setOpen(true); setHi(-1); }}
+        onFocus={() => setOpen(true)} onKeyDown={onKey} style={style} />
+      {open && matches.length > 0 && (
+        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#fff", border: "1px solid #E5E5E4", borderRadius: 12, boxShadow: "0 14px 36px rgba(15,27,45,0.14)", zIndex: 60, overflow: "hidden", maxHeight: 290, overflowY: "auto" }}>
+          {matches.map((s, i) => (
+            <div key={s.kind + s.label} onMouseDown={e => { e.preventDefault(); pick(s); }} onMouseEnter={() => setHi(i)}
+              style={{ padding: "10px 14px", display: "flex", alignItems: "center", gap: 10, cursor: "pointer", background: hi === i ? "#FFF0F2" : "#fff" }}>
+              <span style={{ color: hi === i ? "var(--tar)" : "#9CA3AF", display: "flex", flexShrink: 0 }}><I3Pin s={14} /></span>
+              <span style={{ fontFamily: "var(--sans)", fontSize: 13, color: "#0F1B2D", flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.label}</span>
+              <span style={{ fontFamily: "var(--sans)", fontSize: 10, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.5, flexShrink: 0 }}>{s.kind}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ── Property image with For Sale/Renta badge ─────────────────────────────────
 const PropImg3 = ({ property, height = 220, rounded = true }) => (
   <div style={{
@@ -104,7 +182,7 @@ const PropCard3 = ({ property, onClick, saved, onSave }) => {
           </div>
         </div>
         <div style={{ marginTop:12, fontFamily:"var(--display)", fontSize:24, fontWeight:700, color:"#0F1B2D", letterSpacing:-0.5 }}>
-          {formatPrice(property.price, property.currency, property.operation)}
+          {formatPrice(property.price, property.currency, property.operation, property.priceUnit)}
         </div>
       </div>
     </div>
@@ -142,8 +220,11 @@ const Header3 = ({ page, onNavigate }) => {
       transition:"background 0.3s, border-color 0.3s" }}>
       <div style={{ maxWidth:1400, margin:"0 auto", padding:"16px 32px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:24 }}>
         {/* Logo */}
+        {/* Header: logo original (SVG con fondo blanco, bloque rojo + texto). Va bien
+            sobre el header blanco; con sombra suave al flotar sobre el hero oscuro.
+            El logo blanco (.webp) se usa en el footer (fondo navy). */}
         <div onClick={() => onNavigate("home")} style={{ cursor:"pointer", display:"flex", alignItems:"center", gap:10, flexShrink:0 }}>
-          <img src="assets/tar-logo.svg" alt="TAR Internacional" style={{ height:46, width:"auto", display:"block", borderRadius:4, boxShadow: floating ? "0 2px 10px rgba(0,0,0,0.18)" : "none" }} />
+          <img src="assets/tar-logo.svg" alt="TAR Internacional" style={{ height:50, width:"auto", display:"block", borderRadius:6, boxShadow: floating ? "0 2px 12px rgba(0,0,0,0.22)" : "none" }} />
         </div>
         {/* Nav — pill container */}
         <nav style={{ display:"flex", alignItems:"center", gap:4, background: floating?"rgba(255,255,255,0.7)":"#F7F7F6", padding:"5px", borderRadius:30, border: floating?"1px solid rgba(255,255,255,0.4)":"1px solid #F1F1F0", backdropFilter:"blur(6px)" }}>
@@ -174,13 +255,19 @@ const Filter3 = ({ filters, onChange }) => {
   const lbl = { fontSize:11, fontFamily:"var(--sans)", fontWeight:600, color:"#6B7280", display:"block", marginBottom:8 };
   const chip = (on) => ({ padding:"7px 14px", border:`1px solid ${on?"var(--tar)":"#E5E5E4"}`, background:on?"var(--tar)":"#fff", color:on?"#fff":"#374151", fontFamily:"var(--sans)", fontSize:12, fontWeight:500, cursor:"pointer", borderRadius:20, transition:"all 0.15s" });
 
+  // El precio se adapta a la operación: rentas en $/mes, ventas en MDP. Evita
+  // mezclar umbrales incompatibles (el bug de "filtros que no funcionan").
+  const priceOpts = filters.operation === "renta"
+    ? [["all","Sin límite"],["15000","$15,000/mes"],["30000","$30,000/mes"],["60000","$60,000/mes"],["120000","$120,000/mes"]]
+    : [["all","Sin límite"],["3000000","$3 MDP"],["6000000","$6 MDP"],["12000000","$12 MDP"],["30000000","$30 MDP"]];
+
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:22 }}>
       <div>
         <span style={lbl}>Operación</span>
         <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
           {[["all","Todo"],["venta","Venta"],["renta","Renta"]].map(([v,l]) => (
-            <button key={v} style={chip(filters.operation===v)} onClick={() => set("operation",v)}>{l}</button>
+            <button key={v} style={chip(filters.operation===v)} onClick={() => onChange({ ...filters, operation:v, maxPrice:"all" })}>{l}</button>
           ))}
         </div>
       </div>
@@ -193,22 +280,24 @@ const Filter3 = ({ filters, onChange }) => {
         </div>
       </div>
       <div>
-        <span style={lbl}>Precio máximo</span>
+        <span style={lbl}>Precio máximo {filters.operation === "renta" ? "(renta)" : "(venta)"}</span>
         <select value={filters.maxPrice} onChange={e => set("maxPrice",e.target.value)} style={inp}>
-          <option value="all">Sin límite</option>
-          <option value="5000000">$5 MDP</option>
-          <option value="10000000">$10 MDP</option>
-          <option value="20000000">$20 MDP</option>
-          <option value="50000000">$50 MDP</option>
-          <option value="50000">$50,000/mes</option>
-          <option value="150000">$150,000/mes</option>
+          {priceOpts.map(([v,l]) => <option key={v} value={v}>{l}</option>)}
         </select>
       </div>
       <div>
-        <span style={lbl}>Zona</span>
+        <span style={lbl}>Ubicación</span>
         <select value={filters.zone} onChange={e => set("zone",e.target.value)} style={inp}>
-          <option value="all">Todas las zonas</option>
-          {ZONES.map(z => <option key={z}>{z}</option>)}
+          <option value="all">Todas las ubicaciones</option>
+          <optgroup label="Estado / Zona">
+            {LOCATION_OPTIONS.zonas.map(z => <option key={"z"+z} value={"zone::"+z}>{z}</option>)}
+          </optgroup>
+          <optgroup label="Alcaldía / Municipio">
+            {LOCATION_OPTIONS.ciudades.map(c => <option key={"c"+c} value={"city::"+c}>{c}</option>)}
+          </optgroup>
+          <optgroup label="Colonia">
+            {LOCATION_OPTIONS.colonias.map(c => <option key={"co"+c} value={"colony::"+c}>{c}</option>)}
+          </optgroup>
         </select>
       </div>
       <div>
@@ -219,10 +308,11 @@ const Filter3 = ({ filters, onChange }) => {
           ))}
         </div>
       </div>
-      <div style={{ position:"relative" }}>
+      <div>
         <span style={lbl}>Buscar</span>
-        <input placeholder="Colonia, zona…" value={filters.search} onChange={e => set("search",e.target.value)} style={{...inp, paddingLeft:36}} />
-        <span style={{ position:"absolute", left:12, bottom:13, color:"#9CA3AF" }}><I3Search s={14}/></span>
+        <Autocomplete3 value={filters.search} onChange={v => set("search", v)}
+          placeholder="Colonia, alcaldía, zona…" leftIcon={<I3Search s={14}/>}
+          style={{...inp, paddingLeft:36}} />
       </div>
       <button onClick={() => onChange({operation:"all",type:"all",maxPrice:"all",zone:"all",minBeds:"0",search:""})}
         style={{ padding:"10px 0", border:"1px solid #E5E5E4", borderRadius:10, background:"none", fontFamily:"var(--sans)", fontSize:12, color:"#6B7280", cursor:"pointer", fontWeight:500 }}>
@@ -245,7 +335,7 @@ const Footer3 = ({ onNavigate }) => {
       <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:48, marginBottom:48 }}>
         <div>
           <div style={{ marginBottom:18 }}>
-            <img src="assets/tar-logo.svg" alt="TAR Internacional" style={{ height:54, width:"auto", display:"block", borderRadius:4 }} />
+            <img src="assets/tar-logo.webp" alt="TAR Internacional" style={{ height:44, width:"auto", display:"block" }} />
           </div>
           <p style={{ fontFamily:"var(--sans)", fontSize:14, lineHeight:1.8, maxWidth:280 }}>Grupo inmobiliario con más de 60 años de experiencia conectando personas con propiedades extraordinarias en México y Estados Unidos.</p>
         </div>
@@ -385,4 +475,5 @@ Object.assign(window, {
   S, I3Search, I3Pin, I3Bed, I3Bath, I3Car, I3Ruler, I3Close, I3ChevL, I3ChevR, I3ChevD,
   I3Heart, I3Map, I3Mail, I3Wapp, I3User, I3Plus, I3Check, I3Grid, I3List, I3Edit, I3Share, I3Verif,
   PropImg3, PropCard3, Header3, Filter3, Footer3, ContactForm3, Modal3,
+  Autocomplete3, norm3, SEARCH_SUGGESTIONS,
 });
