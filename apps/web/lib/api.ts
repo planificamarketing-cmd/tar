@@ -1,0 +1,145 @@
+import type { UserRole } from '@tar/shared';
+
+// Cliente HTTP del backoffice contra la API (§5). El access token (JWT 15 min) vive
+// SOLO en memoria; el refresh es una cookie httpOnly (acotada a /auth) que el navegador
+// envía sola con `credentials: 'include'`. Al recibir 401 se intenta un refresh y se
+// reintenta la petición una vez.
+// En producción se fija `NEXT_PUBLIC_API_URL` (subdominio de la API). En desarrollo,
+// si no está, se deriva del host del navegador → funciona igual por `localhost:3000`
+// que por la IP de WSL (172.x:3000) sin reconfigurar nada.
+function getApiBase(): string {
+  const fromEnv = process.env.NEXT_PUBLIC_API_URL;
+  if (fromEnv) return fromEnv;
+  if (typeof window !== 'undefined') {
+    return `${window.location.protocol}//${window.location.hostname}:4000/api/v1`;
+  }
+  return 'http://localhost:4000/api/v1';
+}
+
+export type AdminUser = {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+};
+
+export type AuthResponse = {
+  accessToken: string;
+  refreshToken: string;
+  user: AdminUser;
+};
+
+export class ApiError extends Error {
+  status: number;
+  code?: string;
+  details?: unknown;
+  constructor(status: number, message: string, code?: string, details?: unknown) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.code = code;
+    this.details = details;
+  }
+}
+
+let accessToken: string | null = null;
+export const getAccessToken = (): string | null => accessToken;
+export const setAccessToken = (token: string | null): void => {
+  accessToken = token;
+};
+
+async function toError(res: Response): Promise<ApiError> {
+  let body: unknown;
+  try {
+    body = await res.json();
+  } catch {
+    /* respuesta sin cuerpo JSON */
+  }
+  const err = (body as { error?: { code?: string; message?: string; details?: unknown } })
+    ?.error;
+  return new ApiError(
+    res.status,
+    err?.message ?? res.statusText ?? 'Error de red',
+    err?.code,
+    err?.details,
+  );
+}
+
+// Un solo refresh en vuelo compartido (evita ráfagas de refresh ante varios 401).
+let refreshing: Promise<AuthResponse> | null = null;
+
+async function rawRefresh(): Promise<AuthResponse> {
+  const res = await fetch(`${getApiBase()}/auth/refresh`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}',
+  });
+  if (!res.ok) throw await toError(res);
+  const data = (await res.json()) as AuthResponse;
+  accessToken = data.accessToken;
+  return data;
+}
+
+export function refresh(): Promise<AuthResponse> {
+  if (!refreshing) {
+    refreshing = rawRefresh().finally(() => {
+      refreshing = null;
+    });
+  }
+  return refreshing;
+}
+
+type FetchOptions = RequestInit & { auth?: boolean; _retry?: boolean };
+
+export async function apiFetch<T>(
+  path: string,
+  options: FetchOptions = {},
+): Promise<T> {
+  const { auth = true, _retry = false, headers, ...rest } = options;
+  const h = new Headers(headers);
+  if (rest.body && !h.has('Content-Type')) h.set('Content-Type', 'application/json');
+  if (auth && accessToken) h.set('Authorization', `Bearer ${accessToken}`);
+
+  const res = await fetch(`${getApiBase()}${path}`, {
+    ...rest,
+    headers: h,
+    credentials: 'include',
+  });
+
+  if (res.status === 401 && auth && !_retry) {
+    try {
+      await refresh();
+    } catch {
+      throw await toError(res);
+    }
+    return apiFetch<T>(path, { ...options, _retry: true });
+  }
+
+  if (!res.ok) throw await toError(res);
+  if (res.status === 204) return undefined as T;
+  return (await res.json()) as T;
+}
+
+// ── Endpoints de autenticación ───────────────────────────────────────────────
+export async function login(email: string, password: string): Promise<AuthResponse> {
+  const data = await apiFetch<AuthResponse>('/auth/login', {
+    method: 'POST',
+    auth: false,
+    body: JSON.stringify({ email, password }),
+  });
+  accessToken = data.accessToken;
+  return data;
+}
+
+export async function logout(): Promise<void> {
+  try {
+    await apiFetch<void>('/auth/logout', { method: 'POST', body: '{}' });
+  } finally {
+    accessToken = null;
+  }
+}
+
+export async function me(): Promise<{ user: AdminUser }> {
+  return apiFetch<{ user: AdminUser }>('/auth/me');
+}

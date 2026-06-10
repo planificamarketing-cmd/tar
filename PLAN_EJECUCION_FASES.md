@@ -104,7 +104,7 @@ _12 tests (7 leads + 5 webhooks, incl. firma HMAC). Entrega real verificada en `
 
 **Objetivo:** backoffice autónomo (sin conocimientos técnicos), §7.2.
 
-- [ ] Layout admin protegido (route group `(admin)`), login + manejo de sesión (refresh).
+- [x] Layout admin protegido (route group `(admin)`), login + manejo de sesión (refresh). _(Slice 1: tokens DM + cliente API con refresh-en-401, `/admin/login`, layout `(panel)` con guard + sidebar, shell de dashboard. typecheck/lint/build en verde.)_
 - [ ] Dashboard con KPIs: propiedades por estatus, leads por status, **leads recientes y visualizaciones por propiedad** (§6.6).
 - [ ] CRUD propiedades con asistente: datos → `LocationPicker` (fijar `geo`) → `ImageUploader` (**subida masiva** drag&drop, WebP server-side) → amenidades → publicar. Selector de estatus comercial + **toggle Premium/Destacada**.
 - [ ] Gestión de leads: tablero por status, asignación a broker, detalle con bitácora (`lead_events`).

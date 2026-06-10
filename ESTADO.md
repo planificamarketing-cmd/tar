@@ -2,9 +2,9 @@
 
 > **Partida guardada del proyecto.** Este archivo (+ `git log`) es lo ÚNICO que se lee al iniciar sesión. NO releer el PRD, el plan ni el código completos: consultar solo la sección puntual que toque la tarea en curso. Se regenera (se sobrescribe) al final de cada sesión.
 
-**Última actualización:** 2026-06-07 · sesión Fase 1→A
-**Fase actual:** FASE A — Core & Backend **COMPLETA y CERRADA** (API §5 + docs + 44 tests). Siguiente: FASE C (backoffice) y/o FASE B (público, tras firma del diseño). **Avance global:** ~50%
-**Prototipo:** revisado (rondas del cliente); listo para publicar en Netlify (zip `tar-prototipo-v3.zip`).
+**Última actualización:** 2026-06-09 · sesión correcciones prototipo (ronda 2)
+**Fase actual:** FASE C — Backoffice **EN PROGRESO** (slice 1: fundación, hecho). (Fase A cerrada; Fase B bloqueada hasta firma del diseño.) **Avance global:** ~52%
+**Prototipo:** ronda 2 de correcciones del cliente APLICADA; **zip `tar-prototipo-v3.zip` regenerado** (raíz del repo, 10 archivos, listo para Netlify drop).
 
 ## Hecho
 - **FASE 0** completa (cimientos, ver `git log`).
@@ -23,16 +23,24 @@
 - **FASE A.6 — OpenAPI/Swagger COMPLETA** (`apps/api/src/openapi/`): spec OpenAPI 3.0 generado desde los Zod compartidos (`@asteasolutions/zod-to-openapi`), Swagger UI en **`/docs`**, export `pnpm openapi` → `docs/openapi.json` (23 rutas). A.7: 44 tests (unit + integración). **Fase A cerrada (DoD §5/§10).**
 - Verificado: `lint`, `typecheck`, `build`, **`test` (44)** en verde + `pnpm smoke` 21/21 + importador dry-run + `/docs` 200.
 - **Documentación de entrega + sistema de reportes** creados (`docs/`): `README` (índice), `ARQUITECTURA`, `GLOSARIO`, `PUESTA-EN-MARCHA`, `VERIFICACION`, `ERD`, `openapi.json`; `docs/reportes/` con semanales (1–6) + quincenales (1–3) + **INFORME-EJECUTIVO** (para el cliente) + plantillas, alineados al cronograma.
+- **FASE C.1 — Fundación del backoffice** (`apps/web`): tokens de marca + familia DM (`next/font`) en `tailwind.config`/`layout`; **cliente API** (`lib/api.ts`, Bearer + refresh httpOnly + reintento en 401, base derivada del host para WSL/local) y **sesión** (`lib/auth.tsx`, rehidrata vía refresh al montar); rutas `app/admin/login` (login validado con Zod compartido) + grupo `(panel)` con **guard** + sidebar estilo prototipo (logo, usuario/rol, logout) + **shell de dashboard**. TanStack Query montado. `typecheck`/`lint`/`build` en verde; login E2E verificado (curl 200 + cookie + CORS) por `localhost` y por IP de WSL. Logos en `apps/web/public/brand/`.
 
 ## En progreso
-- _(ninguna técnica — esperando insumos del cliente para el bloque de diseño)_
+- **FASE C — Backoffice (slice 2):** Dashboard con KPIs en vivo + **CRUD de propiedades** (asistente: datos → LocationPicker → ImageUploader masivo → amenidades → publicar; estatus + toggle premium). `LocationPicker` necesita la API key de Google Maps (pendiente del cliente, vacía en `.env`) → fallback pin arrastrable / coords manuales mientras tanto.
 
 ## Siguiente (máx. 3)
-1. **FASE C — Backoffice** (Next.js admin, route group `(admin)`): consume la API ya lista (login/refresh, CRUD propiedades con LocationPicker + ImageUploader, gestión de leads/usuarios/scripts, webhooks). NO depende de la firma del diseño.
+1. **Fase C — resto de bloques:** gestión de leads (tablero + bitácora), usuarios (admin), scripts de marketing (head/body/footer), webhooks salientes + API keys entrantes.
 2. **FASE B — Frontend público**: bloqueada hasta la **firma del prototipo v3** (cliente). Publicar el prototipo en Netlify y abrir la ronda de firma.
-3. Portar tokens del diseño a `tailwind.config` tras la firma.
+3. Portar el resto de tokens del diseño a `tailwind.config` tras la firma (los de marca + familia DM ya están).
 
 ## Decisiones / desviaciones respecto al PRD
+- 2026-06-09: **Correcciones del cliente al prototipo (ronda 2)** aplicadas en `design-reference/prototipo-v3/` (sin tocar backend):
+  - **Logo:** header = logo original `tar-logo.svg`; footer = logo nuevo `tar-logo.webp` (blanco, entregado por el cliente, sobre el navy del footer).
+  - **Tipografía → familia DM:** `DM Serif Display` (títulos) + `DM Sans` (interfaz) + `DM Mono` (cifras). Sustituye Fraunces + Inter. (Al portar a `tailwind.config`/`next/font` en Fase B, usar estas fuentes.)
+  - **Buscadores con autocompletado** (`Autocomplete3`) en hero, sidebar y mapa: sugieren colonias/alcaldías/zonas; búsqueda sin acentos y multi-campo (título, ubicación, colonia, ciudad, zona).
+  - **Filtro "Ubicación" de 3 niveles** (estado/zona, alcaldía/municipio, colonia) en `<optgroup>`; reemplaza el viejo selector que solo listaba estados.
+  - **Filtro de precio coherente** por operación (rentas en $/mes, ventas en MDP).
+  - **Precios `$/m²`:** las propiedades comerciales que en EasyBroker vienen por metro cuadrado se etiquetan `$X/m²[/mes]` (campo `priceUnit:"m2"` en `tar-data.jsx`, 40 props). **Pendiente backend:** el importador Fase A.5 hoy guarda ese valor unitario como total — revisar antes del Lanzamiento (detección $/m² o campo de unidad).
 - 2026-06-07: **Decisiones de diseño del cliente (ronda 1, reflejadas en el prototipo)** que afectan la construcción:
   - **Roles:** ya no hay "brokers"; son **usuarios administrativos** (Administrador / Editor). Mapea a §4.1/§5.6. (Enum aplicado — ver abajo.)
   - **Acceso al panel:** no se enlaza desde la web pública; entrada oculta. En producción será un **subdominio aparte** (p.ej. `panel.tarinternacional.com`) detrás de login. Mapea a §7.2/§11 (ajustar Caddyfile + route group).
