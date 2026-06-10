@@ -1,44 +1,50 @@
 'use client';
 
 import { useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
+import {
+  NDash,
+  NHome,
+  NPlus,
+  NTenant,
+  NUser,
+  NScript,
+  NCog,
+  NLogout,
+  type IconProps,
+} from '@/components/icons';
 
 type NavItem = {
   href: string;
   label: string;
-  icon: React.ReactNode;
+  Icon: (p: IconProps) => React.ReactNode;
   ready?: boolean;
 };
 
-// Iconos mínimos (stroke currentColor) para no depender de una librería pesada.
-const Icon = ({ d }: { d: string | string[] }) => (
-  <svg
-    width={18}
-    height={18}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.8}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="shrink-0"
-  >
-    {(Array.isArray(d) ? d : [d]).map((p, i) => (
-      <path key={i} d={p} />
-    ))}
-  </svg>
-);
-
-const NAV: NavItem[] = [
-  { href: '/admin', label: 'Dashboard', ready: true, icon: <Icon d={['M3 13h8V3H3z', 'M13 21h8V11h-8z', 'M13 3h8v6h-8z', 'M3 17h8v4H3z']} /> },
-  { href: '/admin/propiedades', label: 'Propiedades', icon: <Icon d={['M3 9.5L12 3l9 6.5', 'M5 10v10h14V10']} /> },
-  { href: '/admin/leads', label: 'Leads', ready: true, icon: <Icon d={['M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2', 'M9 11a4 4 0 100-8 4 4 0 000 8z', 'M23 21v-2a4 4 0 00-3-3.87']} /> },
-  { href: '/admin/usuarios', label: 'Usuarios', icon: <Icon d={['M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2', 'M12 11a4 4 0 100-8 4 4 0 000 8z']} /> },
-  { href: '/admin/scripts', label: 'Scripts', icon: <Icon d={['M16 18l6-6-6-6', 'M8 6l-6 6 6 6']} /> },
-  { href: '/admin/webhooks', label: 'Webhooks', icon: <Icon d={['M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9', 'M13.73 21a2 2 0 01-3.46 0']} /> },
+// Misma estructura que el prototipo (v3-admin.jsx): General / CRM / Configuración.
+const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
+  {
+    label: 'General',
+    items: [
+      { href: '/admin', label: 'Dashboard', Icon: NDash, ready: true },
+      { href: '/admin/propiedades', label: 'Propiedades', Icon: NHome },
+      { href: '/admin/propiedades/nueva', label: 'Nueva propiedad', Icon: NPlus },
+    ],
+  },
+  {
+    label: 'CRM',
+    items: [
+      { href: '/admin/leads', label: 'Leads', Icon: NTenant, ready: true },
+      { href: '/admin/usuarios', label: 'Usuarios', Icon: NUser },
+      { href: '/admin/scripts', label: 'Scripts', Icon: NScript },
+    ],
+  },
+  {
+    label: 'Configuración',
+    items: [{ href: '/admin/ajustes', label: 'Ajustes', Icon: NCog }],
+  },
 ];
 
 function Spinner() {
@@ -61,82 +67,94 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
   if (loading || !user) return <Spinner />;
 
   return (
-    <div className="flex min-h-screen bg-canvas">
-      {/* Sidebar */}
-      <aside className="fixed inset-y-0 left-0 flex w-60 flex-col bg-navy text-white">
-        <div className="flex h-16 items-center px-6">
-          <Image
-            src="/brand/tar-logo.webp"
-            alt="TAR Internacional"
-            width={135}
-            height={64}
-            className="h-8 w-auto"
-            priority
-          />
+    <div className="min-h-screen bg-canvas">
+      {/* Sidebar — blanco, igual al prototipo */}
+      <aside className="fixed inset-y-0 left-0 flex w-60 flex-col border-r border-line bg-white px-3.5 py-6">
+        {/* Logo block: cuadro rojo TAR + título */}
+        <div className="mb-3.5 flex items-center gap-2.5 border-b border-line px-3 pb-5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-[9px] bg-brand">
+            <span className="font-display text-[13px] font-bold text-white">TAR</span>
+          </div>
+          <div>
+            <div className="font-display text-[15px] font-bold leading-tight text-navy">
+              Admin Panel
+            </div>
+            <div className="mt-0.5 text-[10px] uppercase tracking-[0.15em] text-muted">
+              Internal · v3
+            </div>
+          </div>
         </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-4">
-          {NAV.map((item) => {
-            const active =
-              item.href === '/admin'
-                ? pathname === '/admin'
-                : pathname.startsWith(item.href);
-            const base =
-              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition';
-            if (!item.ready) {
-              return (
-                <div
-                  key={item.href}
-                  className={`${base} cursor-not-allowed text-white/30`}
-                  title="Próximamente"
-                >
-                  {item.icon}
-                  <span className="flex-1">{item.label}</span>
-                  <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/40">
-                    Pronto
-                  </span>
-                </div>
-              );
-            }
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`${base} ${
-                  active
-                    ? 'bg-white/10 text-white'
-                    : 'text-white/60 hover:bg-white/5 hover:text-white'
-                }`}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
+        <nav className="flex-1 overflow-y-auto">
+          {NAV_GROUPS.map((group) => (
+            <div key={group.label} className="mb-4">
+              <div className="px-3 pb-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-muted">
+                {group.label}
+              </div>
+              {group.items.map((item) => {
+                const active =
+                  item.href === '/admin'
+                    ? pathname === '/admin'
+                    : pathname.startsWith(item.href);
+                if (!item.ready) {
+                  return (
+                    <div
+                      key={item.href}
+                      title="Próximamente"
+                      className="mb-0.5 flex cursor-not-allowed items-center gap-3 rounded-[10px] border-l-[3px] border-transparent px-3 py-2.5 text-[13px] font-medium text-muted/60"
+                    >
+                      <item.Icon s={16} />
+                      <span className="flex-1">{item.label}</span>
+                      <span className="rounded-full bg-line px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted">
+                        Pronto
+                      </span>
+                    </div>
+                  );
+                }
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`mb-0.5 flex items-center gap-3 rounded-[10px] border-l-[3px] px-3 py-2.5 text-[13px] transition ${
+                      active
+                        ? 'border-brand bg-brand-soft font-semibold text-brand'
+                        : 'border-transparent font-medium text-ink hover:bg-canvas'
+                    }`}
+                  >
+                    <item.Icon s={16} />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
-        <div className="border-t border-white/10 p-4">
-          <div className="mb-3 px-1">
-            <p className="truncate text-sm font-medium text-white">{user.name}</p>
-            <p className="truncate text-xs text-white/40">{user.email}</p>
-            <span className="mt-1 inline-block rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/50">
-              {user.role === 'admin' ? 'Administrador' : 'Editor'}
-            </span>
+        {/* Usuario + cerrar sesión */}
+        <div className="border-t border-line pt-3">
+          <div className="mb-2.5 flex items-center gap-2.5 px-1">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-soft font-display text-[12px] font-bold text-brand">
+              {user.name.slice(0, 1).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-[13px] font-semibold text-navy">{user.name}</p>
+              <p className="truncate text-[11px] text-muted">
+                {user.role === 'admin' ? 'Administrador' : 'Editor'}
+              </p>
+            </div>
           </div>
           <button
-            onClick={() => {
-              void logout().then(() => router.replace('/admin/login'));
-            }}
-            className="w-full rounded-lg border border-white/15 px-3 py-2 text-sm text-white/70 transition hover:bg-white/5 hover:text-white"
+            onClick={() => void logout().then(() => router.replace('/admin/login'))}
+            className="flex w-full items-center gap-2.5 rounded-[10px] border border-line px-3.5 py-2.5 text-[12px] font-medium text-muted transition hover:bg-canvas"
           >
-            Cerrar sesión
+            <NLogout s={14} /> Cerrar sesión
           </button>
         </div>
       </aside>
 
       {/* Contenido */}
-      <div className="ml-60 flex-1">
-        <main className="mx-auto max-w-6xl px-8 py-8">{children}</main>
+      <div className="ml-60">
+        <main className="px-9 py-8">{children}</main>
       </div>
     </div>
   );

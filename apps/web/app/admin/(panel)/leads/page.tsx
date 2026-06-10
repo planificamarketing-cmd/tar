@@ -5,7 +5,12 @@ import { useRouter } from 'next/navigation';
 import { LEAD_STATUSES, type LeadStatus } from '@tar/shared';
 import { useLeads } from '@/lib/queries';
 import { LeadStatusBadge } from '@/components/lead-status-badge';
-import { LEAD_STATUS_META, LEAD_TYPE_LABEL, formatDate } from '@/lib/format';
+import {
+  LEAD_STATUS_META,
+  LEAD_TYPE_LABEL,
+  formatDate,
+  initials,
+} from '@/lib/format';
 
 const PER_PAGE = 20;
 
@@ -86,7 +91,12 @@ export default function LeadsPage() {
                   className="cursor-pointer transition hover:bg-canvas/60"
                 >
                   <td className="px-5 py-3.5">
-                    <span className="font-medium text-navy">{lead.name}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-soft font-display text-[12px] font-bold text-brand">
+                        {initials(lead.name)}
+                      </div>
+                      <span className="font-medium text-navy">{lead.name}</span>
+                    </div>
                   </td>
                   <td className="px-5 py-3.5 text-muted">
                     <div className="text-ink">{lead.email}</div>

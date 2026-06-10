@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { loginSchema } from '@tar/shared';
 import { useAuth } from '@/lib/auth';
@@ -15,7 +14,6 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  // Si ya hay sesión activa, salta directo al panel.
   useEffect(() => {
     if (!loading && user) router.replace('/admin');
   }, [loading, user, router]);
@@ -44,34 +42,37 @@ export default function LoginPage() {
   }
 
   const field =
-    'w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 outline-none transition focus:border-brand focus:bg-white/10';
+    'w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-navy outline-none transition placeholder:text-muted/60 focus:border-brand';
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-navy px-6 py-12">
+    <main className="flex min-h-screen items-center justify-center bg-canvas px-6 py-12">
       <div className="w-full max-w-sm">
-        <div className="mb-8 flex flex-col items-center text-center">
-          <Image
-            src="/brand/tar-logo.webp"
-            alt="TAR Internacional"
-            width={135}
-            height={64}
-            priority
-            className="h-12 w-auto"
-          />
-          <h1 className="mt-6 font-display text-2xl text-white">
-            Panel de administración
-          </h1>
-          <p className="mt-1 text-sm text-white/50">
+        <div className="mb-7 flex flex-col items-center text-center">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand">
+              <span className="font-display text-base font-bold text-white">TAR</span>
+            </div>
+            <div className="text-left">
+              <div className="font-display text-lg font-bold leading-tight text-navy">
+                Admin Panel
+              </div>
+              <div className="text-[10px] uppercase tracking-[0.15em] text-muted">
+                TAR Internacional
+              </div>
+            </div>
+          </div>
+          <h1 className="mt-7 font-display text-2xl text-navy">Iniciar sesión</h1>
+          <p className="mt-1 text-sm text-muted">
             Acceso exclusivo para el equipo de TAR Internacional.
           </p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur"
+          className="flex flex-col gap-3 rounded-2xl border border-line bg-white p-6 shadow-sm"
         >
           <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-white/60">Correo</span>
+            <span className="text-xs font-medium text-muted">Correo</span>
             <input
               type="email"
               autoComplete="email"
@@ -83,7 +84,7 @@ export default function LoginPage() {
           </label>
 
           <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-white/60">Contraseña</span>
+            <span className="text-xs font-medium text-muted">Contraseña</span>
             <input
               type="password"
               autoComplete="current-password"
@@ -95,7 +96,7 @@ export default function LoginPage() {
           </label>
 
           {error && (
-            <p className="rounded-lg bg-brand/15 px-3 py-2 text-xs text-brand-soft">
+            <p className="rounded-lg bg-brand-soft px-3 py-2 text-xs font-medium text-brand">
               {error}
             </p>
           )}
@@ -109,7 +110,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-white/30">
+        <p className="mt-6 text-center text-xs text-muted/70">
           © {new Date().getFullYear()} TAR Internacional · Grupo Inmobiliario
         </p>
       </div>

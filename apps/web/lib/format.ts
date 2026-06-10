@@ -1,36 +1,33 @@
-import type { LeadStatus, LeadType } from '@tar/shared';
+import type { LeadStatus, LeadType, PropertyType } from '@tar/shared';
 
-// Etiquetas + colores del pipeline de leads (decisión del cliente, ronda 1).
+// Pipeline de leads con los colores exactos del prototipo (v3-admin.jsx).
 export const LEAD_STATUS_META: Record<
   LeadStatus,
-  { label: string; className: string }
+  { label: string; color: string }
 > = {
-  nuevo: { label: 'Nuevo', className: 'bg-blue-50 text-blue-700 ring-blue-600/15' },
-  cita_agendada: {
-    label: 'Cita agendada',
-    className: 'bg-amber-50 text-amber-700 ring-amber-600/20',
-  },
-  cita_concretada: {
-    label: 'Cita concretada',
-    className: 'bg-teal-50 text-teal-700 ring-teal-600/20',
-  },
-  apartado: {
-    label: 'Apartado',
-    className: 'bg-purple-50 text-purple-700 ring-purple-600/20',
-  },
-  firma_contrato: {
-    label: 'Firma de contrato',
-    className: 'bg-green-50 text-green-700 ring-green-600/20',
-  },
-  descartado: {
-    label: 'Descartado',
-    className: 'bg-gray-100 text-gray-500 ring-gray-500/20',
-  },
+  nuevo: { label: 'Nuevo', color: '#2563EB' },
+  cita_agendada: { label: 'Cita agendada', color: '#CA8A04' },
+  cita_concretada: { label: 'Cita concretada', color: '#7C3AED' },
+  apartado: { label: 'Apartado', color: '#EA580C' },
+  firma_contrato: { label: 'Firma de contrato', color: '#16A34A' },
+  descartado: { label: 'Descartado', color: '#9CA3AF' },
 };
 
 export const LEAD_TYPE_LABEL: Record<LeadType, string> = {
   contacto: 'Contacto',
   cita: 'Cita',
+};
+
+// Etiquetas de tipo de propiedad (igual que TYPE_LABELS del prototipo).
+export const PROPERTY_TYPE_LABEL: Record<PropertyType, string> = {
+  casa: 'Casas',
+  departamento: 'Departamentos',
+  oficina: 'Oficinas',
+  local_comercial: 'Locales comerciales',
+  bodega_industrial: 'Bodegas industriales',
+  terreno_industrial: 'Terrenos industriales',
+  edificio: 'Edificios',
+  terreno: 'Terrenos',
 };
 
 const dateFmt = new Intl.DateTimeFormat('es-MX', {
@@ -58,7 +55,6 @@ export function formatDateTime(value: string | null | undefined): string {
   return Number.isNaN(d.getTime()) ? '—' : dateTimeFmt.format(d);
 }
 
-// "hace 2 h", "hace 3 d" — para listas de actividad reciente.
 export function timeAgo(value: string | null | undefined): string {
   if (!value) return '';
   const d = new Date(value).getTime();
@@ -71,4 +67,13 @@ export function timeAgo(value: string | null | undefined): string {
   if (h < 24) return `hace ${h} h`;
   const days = Math.round(h / 24);
   return `hace ${days} d`;
+}
+
+export function initials(name: string): string {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((n) => n[0]?.toUpperCase() ?? '')
+    .join('');
 }
