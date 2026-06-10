@@ -105,9 +105,9 @@ _12 tests (7 leads + 5 webhooks, incl. firma HMAC). Entrega real verificada en `
 **Objetivo:** backoffice autónomo (sin conocimientos técnicos), §7.2.
 
 - [x] Layout admin protegido (route group `(admin)`), login + manejo de sesión (refresh). _(Slice 1: tokens DM + cliente API con refresh-en-401, `/admin/login`, layout `(panel)` con guard + sidebar, shell de dashboard. typecheck/lint/build en verde.)_
-- [ ] Dashboard con KPIs: propiedades por estatus, leads por status, **leads recientes y visualizaciones por propiedad** (§6.6).
+- [~] Dashboard con KPIs: propiedades por estatus, leads por status, **leads recientes y visualizaciones por propiedad** (§6.6). _(Slice 2: KPIs en vivo —publicadas, leads nuevos/citas/totales— + leads recientes, sobre endpoints existentes. Pendiente: visualizaciones por propiedad y conteo de borradores, requieren endpoint admin.)_
 - [ ] CRUD propiedades con asistente: datos → `LocationPicker` (fijar `geo`) → `ImageUploader` (**subida masiva** drag&drop, WebP server-side) → amenidades → publicar. Selector de estatus comercial + **toggle Premium/Destacada**.
-- [ ] Gestión de leads: tablero por status, asignación a broker, detalle con bitácora (`lead_events`).
+- [~] Gestión de leads: tablero por status, asignación a broker, detalle con bitácora (`lead_events`). _(Slice 2: tablero con filtro por status + paginación, detalle con datos/mensaje/bitácora y cambio de estado en vivo —emite `lead.status_changed`—. Pendiente: asignación a usuario, llega con el bloque Usuarios.)_
 - [ ] Gestión de usuarios (solo admin): alta/baja/rol.
 - [ ] Gestor de scripts de marketing (**head / body / footer**, activar/desactivar) — §6.5.
 - [ ] Configuración de webhooks salientes + bitácora + reintento manual + **gestión de API keys de webhooks entrantes**.

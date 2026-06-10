@@ -35,7 +35,7 @@ const Icon = ({ d }: { d: string | string[] }) => (
 const NAV: NavItem[] = [
   { href: '/admin', label: 'Dashboard', ready: true, icon: <Icon d={['M3 13h8V3H3z', 'M13 21h8V11h-8z', 'M13 3h8v6h-8z', 'M3 17h8v4H3z']} /> },
   { href: '/admin/propiedades', label: 'Propiedades', icon: <Icon d={['M3 9.5L12 3l9 6.5', 'M5 10v10h14V10']} /> },
-  { href: '/admin/leads', label: 'Leads', icon: <Icon d={['M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2', 'M9 11a4 4 0 100-8 4 4 0 000 8z', 'M23 21v-2a4 4 0 00-3-3.87']} /> },
+  { href: '/admin/leads', label: 'Leads', ready: true, icon: <Icon d={['M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2', 'M9 11a4 4 0 100-8 4 4 0 000 8z', 'M23 21v-2a4 4 0 00-3-3.87']} /> },
   { href: '/admin/usuarios', label: 'Usuarios', icon: <Icon d={['M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2', 'M12 11a4 4 0 100-8 4 4 0 000 8z']} /> },
   { href: '/admin/scripts', label: 'Scripts', icon: <Icon d={['M16 18l6-6-6-6', 'M8 6l-6 6 6 6']} /> },
   { href: '/admin/webhooks', label: 'Webhooks', icon: <Icon d={['M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9', 'M13.73 21a2 2 0 01-3.46 0']} /> },
