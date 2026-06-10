@@ -2,8 +2,8 @@
 
 > **Partida guardada del proyecto.** Este archivo (+ `git log`) es lo ÚNICO que se lee al iniciar sesión. NO releer el PRD, el plan ni el código completos: consultar solo la sección puntual que toque la tarea en curso. Se regenera (se sobrescribe) al final de cada sesión.
 
-**Última actualización:** 2026-06-09 · sesión correcciones prototipo (ronda 2)
-**Fase actual:** FASE C — Backoffice **EN PROGRESO** (slice 1: fundación, hecho). (Fase A cerrada; Fase B bloqueada hasta firma del diseño.) **Avance global:** ~52%
+**Última actualización:** 2026-06-09 · sesión: prototipo ronda 2 + Fase C (slices 1–2)
+**Fase actual:** FASE C — Backoffice **EN PROGRESO**. Hecho: slice 1 (fundación/auth), slice 2 (dashboard + leads) y panel **fiel al diseño del prototipo admin**. Siguiente: slice 3 (CRUD de propiedades). (Fase A cerrada; Fase B bloqueada hasta firma del diseño.) **Avance global:** ~55%
 **Prototipo:** ronda 2 de correcciones del cliente APLICADA; **zip `tar-prototipo-v3.zip` regenerado** (raíz del repo, 10 archivos, listo para Netlify drop).
 
 ## Hecho
@@ -68,3 +68,6 @@
 - `git log --oneline -15` para ver el avance real de código.
 - Tareas marcadas `[x]` en `PLAN_EJECUCION_FASES.md` = fuente de verdad del checklist.
 - Levantar: `pnpm db:up` (BD) + `pnpm dev`. Recargar datos: `pnpm db:migrate && pnpm db:seed`.
+- **Backoffice (Fase C):** entra en `/admin/login` (`admin@tarinternacional.com` / `admin123`). Para verlo desde Windows vía WSL: arrancar api y web con `next dev -H 0.0.0.0` y `CORS_ORIGINS` incluyendo la IP de WSL; el cliente API deriva la URL del host del navegador.
+- **Leads de muestra:** los 7 leads para la demo se insertaron por SQL en la BD dev (NO están en el seed ni en git). Si reseteas la BD desaparecen → considerar añadirlos a `pnpm db:seed` para reproducibilidad.
+- **Pendiente backend para slice 3:** falta endpoint admin de listado de propiedades (el público fuerza estados públicos; no muestra borradores). La paginación de la API limita `limit` a 50.
