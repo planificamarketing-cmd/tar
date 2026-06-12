@@ -25,15 +25,18 @@ Plantillas: [`_plantilla-semanal.md`](_plantilla-semanal.md) ·
 | 3 | Fase A.1–A.2 (Auth, Propiedades) | [semana-03](semana-03.md) | ✅ |
 | 4 | Fase A.3–A.4 (Media, Leads/Webhooks) | [semana-04](semana-04.md) | ✅ |
 | 5 | Fase A.5–A.6 (Importador, OpenAPI) | [semana-05](semana-05.md) | ✅ |
-| 6 | Cierre Fase A + verificación · inicio Fase C | [semana-06](semana-06.md) | 🔄 |
-| 6–8 | Fase C Backoffice | _(en curso)_ | ⏳ |
+| 6 | Cierre Fase A + verificación · inicio Fase C | [semana-06](semana-06.md) | ✅ |
+| 7 | Fase C Backoffice (fundación, dashboard/leads, propiedades) | [semana-07](semana-07.md) | ✅ |
+| 8 | Fase C Backoffice (usuarios, integraciones, scripts) · **cierre** | [semana-08](semana-08.md) | ✅ |
 | 8–13 | Fase B Frontend público | _(tras firma diseño)_ | ⛔ |
 | 14–15 | Fase QA | — | ⏳ |
 | 16 | Lanzamiento | — | ⏳ |
 
 Quincenales: [quincena-1](quincena-1.md) (sem 1–2) · [quincena-2](quincena-2.md)
-(sem 3–4) · [quincena-3](quincena-3.md) (sem 5–6).
+(sem 3–4) · [quincena-3](quincena-3.md) (sem 5–6) · [quincena-4](quincena-4.md)
+(sem 7–8).
 
 > **Nota de calendario:** las fechas reales dependen del kick-off formal con TAR.
-> Corte de este paquete de reportes: **2026-06-07**. La ejecución está **adelantada**
-> respecto al cronograma contractual (sin costo adicional, §13).
+> Corte de este paquete de reportes: **2026-06-11**. La ejecución está **muy adelantada**
+> respecto al cronograma contractual (sin costo adicional, §13): a la altura de la
+> semana 8 del plan, las Fases 0, 1, A y **C** ya están completas.
