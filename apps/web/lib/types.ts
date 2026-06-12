@@ -4,6 +4,7 @@ import type {
   PropertyType,
   PropertyStatus,
   FeaturedLevel,
+  UserRole,
 } from '@tar/shared';
 
 export type PropertyListItem = {
@@ -28,6 +29,16 @@ export type PropertyListItem = {
   cover: { urlWebp: string; urlThumb: string } | null;
   createdAt: string;
   publishedAt: string | null;
+};
+
+export type User = {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type Amenity = { id: string; name: string; icon: string | null };

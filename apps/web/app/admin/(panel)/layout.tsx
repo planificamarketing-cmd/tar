@@ -37,7 +37,7 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
     label: 'CRM',
     items: [
       { href: '/admin/leads', label: 'Leads', Icon: NTenant, ready: true },
-      { href: '/admin/usuarios', label: 'Usuarios', Icon: NUser },
+      { href: '/admin/usuarios', label: 'Usuarios', Icon: NUser, ready: true },
       { href: '/admin/scripts', label: 'Scripts', Icon: NScript },
     ],
   },

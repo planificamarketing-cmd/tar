@@ -13,7 +13,10 @@ import type {
 } from '@tar/shared';
 import type {
   CreatePropertyInput,
+  CreateUserInput,
   UpdatePropertyInput,
+  UpdateUserInput,
+  UserRole,
 } from '@tar/shared';
 import { apiFetch, apiUpload } from './api';
 import type {
@@ -24,6 +27,7 @@ import type {
   PropertyDetail,
   PropertyImage,
   PropertyListItem,
+  User,
 } from './types';
 import { PROPERTY_TYPE_LABEL } from './format';
 
@@ -232,6 +236,55 @@ export function useUpdateImage(id: string) {
       void qc.invalidateQueries({ queryKey: ['admin-property', id] });
       void qc.invalidateQueries({ queryKey: ['admin-properties'] });
     },
+  });
+}
+
+// ── Usuarios (solo admin) ───────────────────────────────────────────────────────
+export type UsersParams = {
+  role?: UserRole;
+  active?: 'true' | 'false';
+  q?: string;
+  page?: number;
+  limit?: number;
+};
+
+export function useUsers(params: UsersParams) {
+  return useQuery({
+    queryKey: ['users', params],
+    queryFn: () => apiFetch<Paginated<User>>(`/users${qs(params)}`),
+    placeholderData: (prev) => prev,
+  });
+}
+
+export function useCreateUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateUserInput) =>
+      apiFetch<{ data: User }>('/users', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['users'] }),
+  });
+}
+
+export function useUpdateUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: UpdateUserInput }) =>
+      apiFetch<{ data: User }>(`/users/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['users'] }),
+  });
+}
+
+export function useDeactivateUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiFetch(`/users/${id}`, { method: 'DELETE' }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['users'] }),
   });
 }
 

@@ -2,8 +2,8 @@
 
 > **Partida guardada del proyecto.** Este archivo (+ `git log`) es lo ÚNICO que se lee al iniciar sesión. NO releer el PRD, el plan ni el código completos: consultar solo la sección puntual que toque la tarea en curso. Se regenera (se sobrescribe) al final de cada sesión.
 
-**Última actualización:** 2026-06-11 · sesión: Fase C slice 3 (CRUD de propiedades)
-**Fase actual:** FASE C — Backoffice **EN PROGRESO**. Hecho: slice 1 (fundación/auth), slice 2 (dashboard + leads), **slice 3 (CRUD de propiedades con asistente + tabla admin)**; panel **fiel al diseño del prototipo admin**. Siguiente: usuarios (admin), scripts de marketing, webhooks/API keys. (Fase A cerrada; Fase B bloqueada hasta firma del diseño.) **Avance global:** ~65%
+**Última actualización:** 2026-06-11 · sesión: Fase C slices 3 (propiedades) + 4 (usuarios)
+**Fase actual:** FASE C — Backoffice **EN PROGRESO**. Hecho: slice 1 (fundación/auth), slice 2 (dashboard + leads), slice 3 (CRUD de propiedades con asistente), **slice 4 (gestión de usuarios admin-only)**; panel **fiel al diseño del prototipo admin**. Siguiente: scripts de marketing, webhooks salientes + API keys entrantes (cierran la DoD de Fase C). (Fase A cerrada; Fase B bloqueada hasta firma del diseño.) **Avance global:** ~72%
 **Prototipo:** ronda 2 de correcciones del cliente APLICADA; **zip `tar-prototipo-v3.zip` regenerado** (raíz del repo, 10 archivos, listo para Netlify drop).
 
 ## Hecho
@@ -33,9 +33,13 @@
   - **`LocationPicker` sin Google Maps** (API key pendiente del cliente): captura estado/municipio/colonia + dirección y fija el punto por **coordenadas manuales o pegando un enlace de Google Maps** (parser lat/lng). Al llegar la API key se sustituye por mapa con pin arrastrable sin tocar el formulario.
   - **Imágenes admin:** `next/image` con `unoptimized` (panel interno sin métricas §9; host de media dinámico WSL/localhost evita `remotePatterns`).
   - Verificado: `typecheck`/`lint`/`build` web en verde, `typecheck`/`test (48)` api en verde, y **E2E en vivo por curl**: login → crear borrador → status-counts `{borrador:1}` → publish sin geo **422** → fijar geo + publish **200** → soft delete **204**.
+- **FASE C.4 — Gestión de usuarios COMPLETA** (`apps/api` + `apps/web`):
+  - **Backend** (`modules/users/`, **solo admin** `requireRole('admin')`): `GET /users` (paginado + filtros rol/activo + búsqueda por nombre/correo), `POST /users` (argon2; email único→**409 email_taken**), `GET /users/:id`, `PATCH /users/:id` (nombre/contraseña/rol/activo), `DELETE /users/:id` = **baja por desactivación** (no hard delete; revoca sus refresh tokens). Nunca expone `passwordHash`. **Guards anti-lockout:** no puedes degradarte/desactivarte a ti mismo (**self_lockout**) ni dejar el sistema sin admin activo (**last_admin**). `userQuerySchema` en `packages/shared`. 8 tests → **56 tests verdes**. OpenAPI **29 rutas**.
+  - **Frontend** `/admin/usuarios`: tabla (avatar, rol, estado activo/inactivo, alta) + filtros por rol + búsqueda + paginación; **modal de alta/edición** (nombre, correo —inmutable al editar—, rol, contraseña/reset opcional, checkbox activo). Self-row marcado "(tú)" con controles de rol/baja bloqueados. Errores del backend (409) mostrados al usuario. Nav "Usuarios" activo. Queries en `lib/queries.ts`, tipo `User` en `lib/types.ts`.
+  - Verificado **E2E en vivo por curl**: crear (sin exponer hash) → duplicado **409** → actualizar a admin + reset password (login con la nueva clave **200**) → auto-baja del admin **409 self_lockout** → desactivar **204** → login del desactivado **401**.
 
 ## Siguiente (máx. 3)
-1. **Fase C — resto de bloques:** **usuarios** (admin: alta/baja/rol), **scripts de marketing** (head/body/footer, activar/desactivar), **webhooks salientes + bitácora + reintento** + **API keys entrantes**. Cierra la DoD de Fase C.
+1. **Fase C — resto de bloques:** **scripts de marketing** (head/body/footer, activar/desactivar — §6.5), **webhooks salientes + bitácora + reintento manual** + **gestión de API keys entrantes**. Cierra la DoD de Fase C. (El backend de webhooks/api-keys ya existe de A.4; falta la UI; scripts no tiene módulo aún — revisar si hay schema/tabla `marketing_scripts`.)
 2. **FASE B — Frontend público**: bloqueada hasta la **firma del prototipo v3** (cliente). Publicar el prototipo en Netlify y abrir la ronda de firma.
 3. Reportes: actualizar `docs/reportes/` con el avance del backoffice (Fase C casi cerrada).
 
