@@ -32,17 +32,21 @@ ponerla en marcha, qué se puede y qué no, y el significado de cada cosa.
 - **Estado actual** (partida guardada): `ESTADO.md` (raíz) · **Plan/checklist:**
   `PLAN_EJECUCION_FASES.md` (raíz).
 
+### Operar el panel de administración
+- **[MANUAL-ADMIN.md](MANUAL-ADMIN.md)** — guía del backoffice pantalla por pantalla
+  (acceso, propiedades, leads, usuarios, integraciones/webhooks, scripts), para
+  personas no técnicas.
+
 ### Despliegue (se completa en Fase Lanzamiento)
 - **SETUP_SERVIDOR_UBUNTU.md** (raíz) — aprovisionamiento del servidor.
 - **README-DEPLOY.md** _(pendiente, Fase Lanzamiento)_.
-- **MANUAL-ADMIN.md** _(pendiente, se construye con la Fase C — Backoffice)_.
 
-## Estado del proyecto (corte 2026-06-07)
+## Estado del proyecto (corte 2026-06-11)
 | Fase | Estado |
 |---|---|
 | 0 Cimientos · 1 Datos+Prototipo · A Backend | ✅ Completas |
-| C Backoffice (panel admin) | 🔄 En curso |
+| C Backoffice (panel admin) | ✅ Completa |
 | B Frontend público | ⛔ Bloqueada hasta la **firma del diseño** |
 | QA · Lanzamiento | ⏳ Pendientes |
 
-Avance global aprox.: **~50%** (muy adelantado al cronograma).
+Avance global aprox.: **~82%** (muy adelantado al cronograma).

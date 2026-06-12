@@ -50,7 +50,7 @@
   - **Nota:** la **inyección pública** de los scripts por placement en el `<head>/<body>/footer` del sitio es tarea de **Fase B** (§7.1, layout público); aquí solo el gestor (alta/edición/activación).
 
 ## Siguiente (máx. 3)
-1. **Documentación de Fase C:** escribir `docs/MANUAL-ADMIN.md` (lo pide CLAUDE.md: redactarlo durante Fase C) y actualizar `docs/reportes/` (semana/quincena) con el backoffice cerrado. La doc de API ya está al día (OpenAPI 31 rutas regenerado).
+1. **Documentación de Fase C:** ✅ `docs/MANUAL-ADMIN.md` redactado (manual del backoffice para el cliente, no técnico) + índice `docs/README.md` actualizado. **Pendiente:** actualizar `docs/reportes/` (semana/quincena) con el backoffice cerrado. La doc de API ya está al día (OpenAPI 31 rutas).
 2. **FASE B — Frontend público**: bloqueada hasta la **firma del prototipo v3** (cliente). Publicar el prototipo en Netlify y abrir la ronda de firma. Incluye la **inyección pública de scripts** por placement (§7.1) y el `LocationPicker` con Google Maps real (cuando llegue la API key).
 3. **FASE QA / aprovisionamiento** del servidor Ubuntu (cuando el cliente entregue accesos) — independiente de la firma.
 
