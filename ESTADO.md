@@ -2,7 +2,7 @@
 
 > **Partida guardada del proyecto.** Este archivo (+ `git log`) es lo ÚNICO que se lee al iniciar sesión. NO releer el PRD, el plan ni el código completos: consultar solo la sección puntual que toque la tarea en curso. Se regenera (se sobrescribe) al final de cada sesión.
 
-**Última actualización:** 2026-06-11 · sesión: Fase C completada (propiedades, usuarios, webhooks/API keys, scripts)
+**Última actualización:** 2026-06-11 · sesión: Fase C completada + documentada (propiedades, usuarios, webhooks/API keys, scripts, manual, reportes)
 **Fase actual:** **FASE C — Backoffice CERRADA.** Todos los bloques hechos: 1 (fundación/auth), 2 (dashboard + leads), 3 (CRUD de propiedades con asistente), 4 (usuarios), 5 (Integraciones · webhooks + API keys), **6 (scripts de marketing)**. Panel **fiel al diseño del prototipo admin**. **DoD cumplida:** un usuario no técnico puede publicar una propiedad con imágenes/ubicación, gestionar leads, gestionar usuarios, configurar integraciones e insertar scripts — todo desde el panel. (Fase A cerrada; Fase B bloqueada hasta firma del diseño.) **Avance global:** ~82%
 **Prototipo:** ronda 2 de correcciones del cliente APLICADA; **zip `tar-prototipo-v3.zip` regenerado** (raíz del repo, 10 archivos, listo para Netlify drop).
 
@@ -48,11 +48,12 @@
   - **Frontend** `/admin/scripts`: master-detail fiel al prototipo — lista (estado, badge de placement, **toggle activo rápido**) + editor de código monospace sobre fondo navy (nombre, ubicación head/body/footer con descripción, código, activo, guardar/eliminar). Tipo `MarketingScript` en `lib/types`; `SCRIPT_PLACEMENT_META` en `lib/format`; queries en `lib/queries`. Nav "Scripts" activo (todos los items del nav ya activos).
   - Verificado **E2E en vivo por curl**: crear head/footer → orden head→body→footer → filtro `placement=head` → toggle activo→false → **401** sin token.
   - **Nota:** la **inyección pública** de los scripts por placement en el `<head>/<body>/footer` del sitio es tarea de **Fase B** (§7.1, layout público); aquí solo el gestor (alta/edición/activación).
+- **Documentación de Fase C COMPLETA** (`docs/`): **`MANUAL-ADMIN.md`** (manual del backoffice pantalla por pantalla, no técnico) + índice `docs/README.md` actualizado; **reportes** `semana-07`, `semana-08`, `quincena-4`, `reportes/README.md` e **INFORME-EJECUTIVO** al corte 2026-06-11 (~82%); OpenAPI 31 rutas regenerado. La doc de entrega y los reportes quedan al día con la fase cerrada.
 
 ## Siguiente (máx. 3)
-1. **Documentación de Fase C:** ✅ COMPLETA — `docs/MANUAL-ADMIN.md` + índices actualizados + **reportes** (semana-07, semana-08, quincena-4, README de reportes e INFORME-EJECUTIVO al corte 2026-06-11, ~82%). API documentada (OpenAPI 31 rutas). **Toda la Fase C entregada y documentada.**
-2. **FASE B — Frontend público**: bloqueada hasta la **firma del prototipo v3** (cliente). Publicar el prototipo en Netlify y abrir la ronda de firma. Incluye la **inyección pública de scripts** por placement (§7.1) y el `LocationPicker` con Google Maps real (cuando llegue la API key).
-3. **FASE QA / aprovisionamiento** del servidor Ubuntu (cuando el cliente entregue accesos) — independiente de la firma.
+1. **FASE B — Frontend público**: bloqueada hasta la **firma del prototipo v3** (cliente). Publicar el prototipo (Netlify/GH Pages) y abrir la ronda de firma. Al desbloquear: layout público + **inyección de `marketing_scripts` por placement** (§7.1), home/listado/detalle SSR/SSG, `SearchMap` (Google Maps + supercluster), `LeadForm` y SEO. Portar tokens de diseño restantes a `tailwind.config`.
+2. **Mapa real (Google Maps)**: al recibir la API key del cliente, sustituir el fallback del `LocationPicker` (coords/enlace) por mapa con pin arrastrable — sin tocar el formulario del asistente.
+3. **FASE QA / aprovisionamiento** del servidor Ubuntu (cuando el cliente entregue accesos) — independiente de la firma; cerrar checklist de `SETUP_SERVIDOR_UBUNTU.md`.
 
 ## Decisiones / desviaciones respecto al PRD
 - 2026-06-09: **Correcciones del cliente al prototipo (ronda 2)** aplicadas en `design-reference/prototipo-v3/` (sin tocar backend):
@@ -90,3 +91,5 @@
 - **Backoffice (Fase C):** entra en `/admin/login` (`admin@tarinternacional.com` / `admin123`). Para verlo desde Windows vía WSL: arrancar api y web con `next dev -H 0.0.0.0` y `CORS_ORIGINS` incluyendo la IP de WSL; el cliente API deriva la URL del host del navegador.
 - **Leads de muestra:** los 7 leads para la demo se insertaron por SQL en la BD dev (NO están en el seed ni en git). Si reseteas la BD desaparecen → considerar añadirlos a `pnpm db:seed` para reproducibilidad.
 - **Propiedades (slice 3):** entra en `/admin/propiedades`. "Nueva propiedad" crea un **borrador**; en el editor `[id]` se suben imágenes y se publica (publish exige geo + precio). El `LocationPicker` acepta coords manuales o pegar un enlace de Google Maps mientras llega la API key. La paginación de la API limita `limit` a 50.
+- **Panel completo (Fase C):** `/admin/{propiedades,leads,usuarios,scripts,ajustes}`. **Usuarios** y **Ajustes** (Integraciones · webhooks + API keys) y **Scripts** son **solo admin** (un editor recibe 403). Todos los endpoints nuevos están en `/docs` (Swagger). Manual de uso: `docs/MANUAL-ADMIN.md`.
+- **Suite de pruebas:** `pnpm --filter api test` → **62 verdes** (la BD Docker debe estar arriba: `pnpm db:up`). El nombre real de la BD dev es `tar_portal` (no `tar`).
