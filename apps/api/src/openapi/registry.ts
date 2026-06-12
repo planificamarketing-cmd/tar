@@ -16,7 +16,9 @@ import {
   updateLeadSchema,
   updatePropertySchema,
   updateStatusSchema,
+  updateUserSchema,
   updateWebhookSubscriptionSchema,
+  createUserSchema,
 } from '@tar/shared';
 
 extendZodWithOpenApi(z);
@@ -85,6 +87,67 @@ export function buildOpenApiDocument() {
     summary: 'Usuario autenticado',
     security: [{ [bearerAuth.name]: [] }],
     responses: { 200: ok('Usuario'), ...errResponses },
+  });
+
+  // ── Usuarios (solo admin) ──
+  const userSec = [{ [bearerAuth.name]: [] }];
+  const userIdParam = z.object({ id: z.string().uuid() });
+  registry.registerPath({
+    method: 'get',
+    path: '/api/v1/users',
+    tags: ['Usuarios'],
+    summary: 'Listar operadores (paginado + filtros rol/activo/búsqueda)',
+    security: userSec,
+    request: {
+      query: z.object({
+        role: z.enum(['admin', 'editor']).optional(),
+        active: z.enum(['true', 'false']).optional(),
+        q: z.string().optional(),
+        page: z.number().optional(),
+        limit: z.number().optional(),
+      }),
+    },
+    responses: { 200: ok('{ data, meta }'), ...errResponses },
+  });
+  registry.registerPath({
+    method: 'post',
+    path: '/api/v1/users',
+    tags: ['Usuarios'],
+    summary: 'Crear operador',
+    security: userSec,
+    request: { body: json(createUserSchema) },
+    responses: { 201: ok('Creado'), 409: ok('Correo en uso'), ...errResponses },
+  });
+  registry.registerPath({
+    method: 'get',
+    path: '/api/v1/users/{id}',
+    tags: ['Usuarios'],
+    summary: 'Detalle de operador',
+    security: userSec,
+    request: { params: userIdParam },
+    responses: { 200: ok('Usuario'), 404: ok('No encontrado') },
+  });
+  registry.registerPath({
+    method: 'patch',
+    path: '/api/v1/users/{id}',
+    tags: ['Usuarios'],
+    summary: 'Actualizar (nombre, contraseña, rol, activo)',
+    security: userSec,
+    request: { params: userIdParam, body: json(updateUserSchema) },
+    responses: {
+      200: ok('Actualizado'),
+      409: ok('Último admin / auto-bloqueo'),
+      ...errResponses,
+    },
+  });
+  registry.registerPath({
+    method: 'delete',
+    path: '/api/v1/users/{id}',
+    tags: ['Usuarios'],
+    summary: 'Baja = desactivar (no hard delete); revoca sus sesiones',
+    security: userSec,
+    request: { params: userIdParam },
+    responses: { 204: ok('Desactivado'), 409: ok('Último admin / auto-bloqueo') },
   });
 
   // ── Propiedades (público) ──
