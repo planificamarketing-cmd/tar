@@ -11,6 +11,7 @@ import { errorHandler, notFoundHandler } from './middleware/error-handler';
 import { healthRouter } from './modules/health/health.routes';
 import { authRouter } from './modules/auth/auth.routes';
 import { usersRouter } from './modules/users/users.routes';
+import { scriptsRouter } from './modules/scripts/scripts.routes';
 import { propertiesRouter } from './modules/properties/properties.routes';
 import { mediaRouter } from './modules/media/media.routes';
 import { amenitiesRouter } from './modules/amenities/amenities.routes';
@@ -54,6 +55,7 @@ export function createApp(): Express {
   app.use('/health', healthRouter);
   app.use('/api/v1/auth', authRouter);
   app.use('/api/v1/users', usersRouter);
+  app.use('/api/v1/scripts', scriptsRouter);
   app.use('/api/v1/properties', propertiesRouter);
   app.use('/api/v1/properties', mediaRouter);
   app.use('/api/v1/amenities', amenitiesRouter);

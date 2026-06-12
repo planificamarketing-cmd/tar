@@ -19,6 +19,8 @@ import {
   updateUserSchema,
   updateWebhookSubscriptionSchema,
   createUserSchema,
+  createScriptSchema,
+  updateScriptSchema,
 } from '@tar/shared';
 
 extendZodWithOpenApi(z);
@@ -148,6 +150,59 @@ export function buildOpenApiDocument() {
     security: userSec,
     request: { params: userIdParam },
     responses: { 204: ok('Desactivado'), 409: ok('Último admin / auto-bloqueo') },
+  });
+
+  // ── Scripts de marketing (solo admin, §6.5) ──
+  const scriptIdParam = z.object({ id: z.string().uuid() });
+  registry.registerPath({
+    method: 'get',
+    path: '/api/v1/scripts',
+    tags: ['Scripts'],
+    summary: 'Listar scripts (filtros opcionales placement/active)',
+    security: userSec,
+    request: {
+      query: z.object({
+        placement: z.enum(['head', 'body', 'footer']).optional(),
+        active: z.enum(['true', 'false']).optional(),
+      }),
+    },
+    responses: { 200: ok('{ data: Script[] }'), ...errResponses },
+  });
+  registry.registerPath({
+    method: 'post',
+    path: '/api/v1/scripts',
+    tags: ['Scripts'],
+    summary: 'Crear script de marketing',
+    security: userSec,
+    request: { body: json(createScriptSchema) },
+    responses: { 201: ok('Creado'), ...errResponses },
+  });
+  registry.registerPath({
+    method: 'get',
+    path: '/api/v1/scripts/{id}',
+    tags: ['Scripts'],
+    summary: 'Detalle de script',
+    security: userSec,
+    request: { params: scriptIdParam },
+    responses: { 200: ok('Script'), 404: ok('No encontrado') },
+  });
+  registry.registerPath({
+    method: 'patch',
+    path: '/api/v1/scripts/{id}',
+    tags: ['Scripts'],
+    summary: 'Actualizar (incl. activar/desactivar)',
+    security: userSec,
+    request: { params: scriptIdParam, body: json(updateScriptSchema) },
+    responses: { 200: ok('Actualizado'), 404: ok('No encontrado'), ...errResponses },
+  });
+  registry.registerPath({
+    method: 'delete',
+    path: '/api/v1/scripts/{id}',
+    tags: ['Scripts'],
+    summary: 'Eliminar script',
+    security: userSec,
+    request: { params: scriptIdParam },
+    responses: { 204: ok('Eliminado'), 404: ok('No encontrado') },
   });
 
   // ── Propiedades (público) ──
