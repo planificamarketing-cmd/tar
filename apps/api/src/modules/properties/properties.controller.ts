@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import {
   createPropertySchema,
+  propertyAdminQuerySchema,
   propertyMapQuerySchema,
   propertyQuerySchema,
   updatePropertySchema,
@@ -12,6 +13,23 @@ import * as svc from './properties.service';
 export async function list(req: Request, res: Response): Promise<void> {
   const q = propertyQuerySchema.parse(req.query);
   res.json(await svc.listProperties(q));
+}
+
+// Listado del backoffice (todos los estatus).
+export async function listAdmin(req: Request, res: Response): Promise<void> {
+  const q = propertyAdminQuerySchema.parse(req.query);
+  res.json(await svc.listPropertiesAdmin(q));
+}
+
+// Conteo por estatus para KPIs del dashboard.
+export async function statusCounts(_req: Request, res: Response): Promise<void> {
+  res.json({ data: await svc.propertyStatusCounts() });
+}
+
+// Detalle admin por id (ve borradores).
+export async function detailAdmin(req: Request, res: Response): Promise<void> {
+  const id = uuidSchema.parse(req.params.id);
+  res.json({ data: await svc.getPropertyByIdAdmin(id) });
 }
 
 export async function map(req: Request, res: Response): Promise<void> {

@@ -599,6 +599,191 @@
         }
       }
     },
+    "/api/v1/properties/admin": {
+      "get": {
+        "tags": [
+          "Propiedades"
+        ],
+        "summary": "Listado del backoffice (todos los estatus, incl. borrador)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "borrador",
+                "disponible",
+                "apartado",
+                "rentado",
+                "vendido",
+                "pausado"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "type",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "normal",
+                "destacada",
+                "premium"
+              ]
+            },
+            "required": false,
+            "name": "featured",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "recientes",
+                "actualizados",
+                "precio_asc",
+                "precio_desc"
+              ]
+            },
+            "required": false,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "number"
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "number"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ data, meta }"
+          },
+          "400": {
+            "description": "Validación / petición inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/properties/admin/status-counts": {
+      "get": {
+        "tags": [
+          "Propiedades"
+        ],
+        "summary": "Conteo de propiedades por estatus (KPIs del dashboard)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ data: Record<status, number> }"
+          },
+          "400": {
+            "description": "Validación / petición inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/properties/admin/{id}": {
+      "get": {
+        "tags": [
+          "Propiedades"
+        ],
+        "summary": "Detalle admin por id (ve borradores)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Propiedad"
+          },
+          "404": {
+            "description": "No encontrada"
+          }
+        }
+      }
+    },
     "/api/v1/properties/{id}": {
       "patch": {
         "tags": [

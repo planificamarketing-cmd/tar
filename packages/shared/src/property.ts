@@ -3,6 +3,7 @@ import {
   commercialStatusSchema,
   currencySchema,
   featuredLevelSchema,
+  propertyStatusSchema,
   propertyTypeSchema,
 } from './enums';
 import { paginationSchema } from './common';
@@ -46,6 +47,29 @@ export const propertyQuerySchema = paginationSchema.extend({
   sort: propertySortSchema,
 });
 export type PropertyQuery = z.infer<typeof propertyQuerySchema>;
+
+// --- Listado admin (backoffice) ---
+// A diferencia del público, ve TODOS los estatus (incl. borrador) y permite
+// filtrar por estatus. Orden por recientes/actualizados; búsqueda por texto.
+export const PROPERTY_ADMIN_SORTS = [
+  'recientes',
+  'actualizados',
+  'precio_asc',
+  'precio_desc',
+] as const;
+export const propertyAdminSortSchema = z
+  .enum(PROPERTY_ADMIN_SORTS)
+  .default('actualizados');
+export type PropertyAdminSort = (typeof PROPERTY_ADMIN_SORTS)[number];
+
+export const propertyAdminQuerySchema = paginationSchema.extend({
+  status: propertyStatusSchema.optional(),
+  type: propertyTypeSchema.optional(),
+  featured: featuredLevelSchema.optional(),
+  q: z.string().trim().min(1).optional(),
+  sort: propertyAdminSortSchema,
+});
+export type PropertyAdminQuery = z.infer<typeof propertyAdminQuerySchema>;
 
 // PRD §5.2 — GET /properties/map: filtros del listado + bbox.
 // bbox = "minLng,minLat,maxLng,maxLat".

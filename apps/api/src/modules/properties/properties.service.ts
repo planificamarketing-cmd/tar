@@ -15,6 +15,7 @@ import { db, schema } from '@tar/db';
 import type {
   CreatePropertyInput,
   Paginated,
+  PropertyAdminQuery,
   PropertyMapQuery,
   PropertyQuery,
   UpdatePropertyInput,
@@ -179,6 +180,68 @@ export async function listProperties(q: PropertyQuery): Promise<Paginated<unknow
   }));
 
   return { data, meta: { page: q.page, limit: q.limit, total } };
+}
+
+// GET /properties/admin — listado del backoffice: TODOS los estatus (incl.
+// borrador), filtro por estatus y búsqueda. No aplica los estatus públicos.
+export async function listPropertiesAdmin(
+  q: PropertyAdminQuery,
+): Promise<Paginated<unknown>> {
+  const c: SQL[] = [isNull(properties.deletedAt)];
+  if (q.status) c.push(eq(properties.status, q.status));
+  if (q.type) c.push(eq(properties.propertyType, q.type));
+  if (q.featured) c.push(eq(properties.featured, q.featured));
+  if (q.q)
+    c.push(sql`${properties.searchVector} @@ plainto_tsquery('spanish', ${q.q})`);
+  const where = and(...c);
+  const offset = (q.page - 1) * q.limit;
+
+  const orderBy: SQL[] =
+    q.sort === 'recientes'
+      ? [desc(properties.createdAt)]
+      : q.sort === 'precio_asc'
+        ? [asc(properties.priceSaleMxn), asc(properties.priceRentMxn)]
+        : q.sort === 'precio_desc'
+          ? [desc(properties.priceSaleMxn), desc(properties.priceRentMxn)]
+          : [desc(properties.updatedAt)];
+
+  const rows = await db
+    .select(propertyColumns)
+    .from(properties)
+    .leftJoin(locations, eq(properties.locationId, locations.id))
+    .where(where)
+    .orderBy(...orderBy)
+    .limit(q.limit)
+    .offset(offset);
+
+  const countRows = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(properties)
+    .where(where);
+  const total = countRows[0]?.count ?? 0;
+
+  const covers = await coverImages(rows.map((r) => r.id));
+  const data = rows.map((r) => ({
+    ...shape(r),
+    cover: covers.get(r.id) ?? null,
+  }));
+
+  return { data, meta: { page: q.page, limit: q.limit, total } };
+}
+
+// Conteo de propiedades por estatus (no borradas) — KPIs del dashboard admin.
+export async function propertyStatusCounts(): Promise<Record<string, number>> {
+  const rows = await db
+    .select({
+      status: properties.status,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(properties)
+    .where(isNull(properties.deletedAt))
+    .groupBy(properties.status);
+  const out: Record<string, number> = {};
+  for (const r of rows) out[r.status] = r.count;
+  return out;
 }
 
 // GET /properties/map — payload ligero para clustering (bbox + filtros).

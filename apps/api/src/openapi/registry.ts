@@ -144,6 +144,53 @@ export function buildOpenApiDocument() {
   const sec = [{ [bearerAuth.name]: [] }];
   const idParam = z.object({ id: z.string().uuid() });
   registry.registerPath({
+    method: 'get',
+    path: '/api/v1/properties/admin',
+    tags: ['Propiedades'],
+    summary: 'Listado del backoffice (todos los estatus, incl. borrador)',
+    security: sec,
+    request: {
+      query: z.object({
+        status: z
+          .enum([
+            'borrador',
+            'disponible',
+            'apartado',
+            'rentado',
+            'vendido',
+            'pausado',
+          ])
+          .optional(),
+        type: z.string().optional(),
+        featured: z.enum(['normal', 'destacada', 'premium']).optional(),
+        q: z.string().optional(),
+        sort: z
+          .enum(['recientes', 'actualizados', 'precio_asc', 'precio_desc'])
+          .optional(),
+        page: z.number().optional(),
+        limit: z.number().optional(),
+      }),
+    },
+    responses: { 200: ok('{ data, meta }'), ...errResponses },
+  });
+  registry.registerPath({
+    method: 'get',
+    path: '/api/v1/properties/admin/status-counts',
+    tags: ['Propiedades'],
+    summary: 'Conteo de propiedades por estatus (KPIs del dashboard)',
+    security: sec,
+    responses: { 200: ok('{ data: Record<status, number> }'), ...errResponses },
+  });
+  registry.registerPath({
+    method: 'get',
+    path: '/api/v1/properties/admin/{id}',
+    tags: ['Propiedades'],
+    summary: 'Detalle admin por id (ve borradores)',
+    security: sec,
+    request: { params: idParam },
+    responses: { 200: ok('Propiedad'), 404: ok('No encontrada') },
+  });
+  registry.registerPath({
     method: 'post',
     path: '/api/v1/properties',
     tags: ['Propiedades'],

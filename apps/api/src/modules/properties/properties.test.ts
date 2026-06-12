@@ -141,6 +141,37 @@ describe('Properties /api/v1/properties', () => {
     );
   });
 
+  it('el listado admin exige autenticación (401)', async () => {
+    const res = await request(app).get('/api/v1/properties/admin');
+    expect(res.status).toBe(401);
+  });
+
+  it('el listado admin muestra la propiedad aunque el público la oculte', async () => {
+    const res = await auth(
+      request(app).get('/api/v1/properties/admin').query({ status: 'rentado' }),
+    );
+    expect(res.status).toBe(200);
+    expect(res.body.data.some((p: { id: string }) => p.id === propId)).toBe(
+      true,
+    );
+  });
+
+  it('el detalle admin por id ve la propiedad (no requiere slug)', async () => {
+    const res = await auth(
+      request(app).get(`/api/v1/properties/admin/${propId}`),
+    );
+    expect(res.status).toBe(200);
+    expect(res.body.data.id).toBe(propId);
+  });
+
+  it('el conteo por estatus incluye rentado', async () => {
+    const res = await auth(
+      request(app).get('/api/v1/properties/admin/status-counts'),
+    );
+    expect(res.status).toBe(200);
+    expect(res.body.data.rentado).toBeGreaterThanOrEqual(1);
+  });
+
   it('soft delete (204) y luego 404 por slug', async () => {
     const del = await auth(request(app).delete(`/api/v1/properties/${propId}`));
     expect(del.status).toBe(204);
