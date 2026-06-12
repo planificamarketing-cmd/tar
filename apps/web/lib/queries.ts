@@ -3,9 +3,28 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import type { LeadStatus } from '@tar/shared';
-import { apiFetch } from './api';
-import type { Lead, LeadDetail, Paginated, PropertyListItem } from './types';
+import type {
+  CommercialStatus,
+  FeaturedLevel,
+  LeadStatus,
+  PropertyAdminSort,
+  PropertyStatus,
+  PropertyType,
+} from '@tar/shared';
+import type {
+  CreatePropertyInput,
+  UpdatePropertyInput,
+} from '@tar/shared';
+import { apiFetch, apiUpload } from './api';
+import type {
+  Amenity,
+  Lead,
+  LeadDetail,
+  Paginated,
+  PropertyDetail,
+  PropertyImage,
+  PropertyListItem,
+} from './types';
 import { PROPERTY_TYPE_LABEL } from './format';
 
 function qs(params: Record<string, string | number | undefined>): string {
@@ -53,10 +72,174 @@ export function useUpdateLead(id: string) {
   });
 }
 
+// ── Propiedades (backoffice) ────────────────────────────────────────────────────
+export type AdminPropertiesParams = {
+  status?: PropertyStatus;
+  type?: PropertyType;
+  featured?: FeaturedLevel;
+  q?: string;
+  sort?: PropertyAdminSort;
+  page?: number;
+  limit?: number;
+};
+
+export function useAdminProperties(params: AdminPropertiesParams) {
+  return useQuery({
+    queryKey: ['admin-properties', params],
+    queryFn: () =>
+      apiFetch<Paginated<PropertyListItem>>(`/properties/admin${qs(params)}`),
+    placeholderData: (prev) => prev,
+  });
+}
+
+export function usePropertyStatusCounts() {
+  return useQuery({
+    queryKey: ['property-status-counts'],
+    queryFn: () =>
+      apiFetch<{ data: Record<string, number> }>(
+        '/properties/admin/status-counts',
+      ),
+    select: (r) => r.data,
+  });
+}
+
+function invalidateProperties(qc: ReturnType<typeof useQueryClient>) {
+  void qc.invalidateQueries({ queryKey: ['admin-properties'] });
+  void qc.invalidateQueries({ queryKey: ['property-status-counts'] });
+  void qc.invalidateQueries({ queryKey: ['dashboard'] });
+}
+
+export function usePublishProperty() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch(`/properties/${id}/publish`, { method: 'POST' }),
+    onSuccess: () => invalidateProperties(qc),
+  });
+}
+
+export function useUpdatePropertyStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: CommercialStatus }) =>
+      apiFetch(`/properties/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      }),
+    onSuccess: () => invalidateProperties(qc),
+  });
+}
+
+export function useDeleteProperty() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch(`/properties/${id}`, { method: 'DELETE' }),
+    onSuccess: () => invalidateProperties(qc),
+  });
+}
+
+export function useProperty(id: string) {
+  return useQuery({
+    queryKey: ['admin-property', id],
+    queryFn: () =>
+      apiFetch<{ data: PropertyDetail }>(`/properties/admin/${id}`),
+    select: (r) => r.data,
+  });
+}
+
+export function useAmenities() {
+  return useQuery({
+    queryKey: ['amenities'],
+    queryFn: () => apiFetch<{ data: Amenity[] }>('/amenities'),
+    select: (r) => r.data,
+    staleTime: 5 * 60_000,
+  });
+}
+
+export function useCreateProperty() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreatePropertyInput) =>
+      apiFetch<{ data: PropertyDetail }>('/properties', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () => invalidateProperties(qc),
+  });
+}
+
+export function useUpdateProperty(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: UpdatePropertyInput) =>
+      apiFetch<{ data: PropertyDetail }>(`/properties/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () => {
+      invalidateProperties(qc);
+      void qc.invalidateQueries({ queryKey: ['admin-property', id] });
+    },
+  });
+}
+
+export function useUploadImages(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (files: File[]) => {
+      const form = new FormData();
+      for (const f of files) form.append('images', f);
+      return apiUpload<{ data: PropertyImage[] }>(
+        `/properties/${id}/images`,
+        form,
+      );
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['admin-property', id] });
+      void qc.invalidateQueries({ queryKey: ['admin-properties'] });
+    },
+  });
+}
+
+export function useDeleteImage(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (imgId: string) =>
+      apiFetch(`/properties/${id}/images/${imgId}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['admin-property', id] });
+      void qc.invalidateQueries({ queryKey: ['admin-properties'] });
+    },
+  });
+}
+
+export function useUpdateImage(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      imgId,
+      body,
+    }: {
+      imgId: string;
+      body: { isCover?: boolean; alt?: string | null; position?: number };
+    }) =>
+      apiFetch(`/properties/${id}/images/${imgId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['admin-property', id] });
+      void qc.invalidateQueries({ queryKey: ['admin-properties'] });
+    },
+  });
+}
+
 // ── Dashboard ──────────────────────────────────────────────────────────────────
 export type DashboardData = {
   kpis: {
     published: number;
+    drafts: number;
     leadsMonth: number;
     enSeguimiento: number;
     cierres: number;
@@ -86,12 +269,16 @@ export function useDashboard() {
       // El límite máximo de paginación de la API es 50. `meta.total` da el total
       // real; el mix por tipo y los buckets mensuales se calculan sobre la muestra
       // (suficiente hoy; con más volumen se añadirá un endpoint de agregados).
-      const [props, leadsRes] = await Promise.all([
+      const [props, leadsRes, counts] = await Promise.all([
         apiFetch<Paginated<PropertyListItem>>('/properties?limit=50'),
         apiFetch<Paginated<Lead>>('/leads?limit=50'),
+        apiFetch<{ data: Record<string, number> }>(
+          '/properties/admin/status-counts',
+        ),
       ]);
       const properties = props.data;
       const leads = leadsRes.data;
+      const byStatus = counts.data;
 
       // KPIs
       const now = new Date();
@@ -137,21 +324,22 @@ export function useDashboard() {
           color: TYPE_COLORS[i % TYPE_COLORS.length] ?? '#0F1B2D',
         }));
 
-      // Estado de propiedades
-      const statusCounts = new Map<string, number>();
-      for (const p of properties) {
-        statusCounts.set(p.status, (statusCounts.get(p.status) ?? 0) + 1);
-      }
+      // Estado de propiedades — conteos REALES por estatus (incl. borrador,
+      // rentado, vendido), no la muestra pública del listado.
       const statusMix = STATUS_META.filter(
-        (s) => (statusCounts.get(s.key) ?? 0) > 0,
-      ).map((s) => ({ label: s.label, count: statusCounts.get(s.key) ?? 0, color: s.color }));
+        (s) => (byStatus[s.key] ?? 0) > 0,
+      ).map((s) => ({ label: s.label, count: byStatus[s.key] ?? 0, color: s.color }));
+      const totalProperties = Object.values(byStatus).reduce((a, b) => a + b, 0);
+      const drafts = byStatus.borrador ?? 0;
+      const published =
+        (byStatus.disponible ?? 0) + (byStatus.apartado ?? 0);
 
       return {
-        kpis: { published: props.meta.total, leadsMonth, enSeguimiento, cierres },
+        kpis: { published, drafts, leadsMonth, enSeguimiento, cierres },
         monthlyLeads,
         typeMix,
         statusMix,
-        totalProperties: props.meta.total,
+        totalProperties,
         recentLeads: leads.slice(0, 5),
       };
     },

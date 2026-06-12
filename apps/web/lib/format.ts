@@ -1,4 +1,10 @@
-import type { LeadStatus, LeadType, PropertyType } from '@tar/shared';
+import type {
+  FeaturedLevel,
+  LeadStatus,
+  LeadType,
+  PropertyStatus,
+  PropertyType,
+} from '@tar/shared';
 
 // Pipeline de leads con los colores exactos del prototipo (v3-admin.jsx).
 export const LEAD_STATUS_META: Record<
@@ -29,6 +35,45 @@ export const PROPERTY_TYPE_LABEL: Record<PropertyType, string> = {
   edificio: 'Edificios',
   terreno: 'Terrenos',
 };
+
+// Estatus comercial de una propiedad — colores alineados al dashboard (queries.ts).
+export const PROPERTY_STATUS_META: Record<
+  PropertyStatus,
+  { label: string; color: string }
+> = {
+  borrador: { label: 'Borrador', color: '#9CA3AF' },
+  disponible: { label: 'Disponible', color: '#16A34A' },
+  apartado: { label: 'Apartado', color: '#EA580C' },
+  rentado: { label: 'Rentado', color: '#2563EB' },
+  vendido: { label: 'Vendido', color: '#D2103E' },
+  pausado: { label: 'Pausado', color: '#CA8A04' },
+};
+
+// Nivel de destaque (Premium / Destacada / normal).
+export const FEATURED_META: Record<
+  FeaturedLevel,
+  { label: string; color: string } | null
+> = {
+  normal: null,
+  destacada: { label: 'Destacada', color: '#CA8A04' },
+  premium: { label: 'Premium', color: '#BE8C3C' },
+};
+
+// Formatea un precio en su moneda ORIGINAL (la guía del proyecto: nunca convertir
+// para mostrar). `price` llega como string numérico de Postgres.
+export function formatPrice(
+  price: string | null | undefined,
+  currency: string | null | undefined,
+): string | null {
+  if (price == null) return null;
+  const n = Number(price);
+  if (Number.isNaN(n)) return null;
+  return new Intl.NumberFormat('es-MX', {
+    style: 'currency',
+    currency: currency ?? 'MXN',
+    maximumFractionDigits: 0,
+  }).format(n);
+}
 
 const dateFmt = new Intl.DateTimeFormat('es-MX', {
   day: '2-digit',

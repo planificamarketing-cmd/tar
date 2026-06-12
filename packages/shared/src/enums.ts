@@ -39,6 +39,7 @@ export const COMMERCIAL_STATUSES = [
   'pausado',
 ] as const;
 export const commercialStatusSchema = z.enum(COMMERCIAL_STATUSES);
+export type CommercialStatus = z.infer<typeof commercialStatusSchema>;
 
 export const FEATURED_LEVELS = ['normal', 'destacada', 'premium'] as const;
 export const featuredLevelSchema = z.enum(FEATURED_LEVELS);

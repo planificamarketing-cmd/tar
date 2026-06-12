@@ -121,6 +121,37 @@ export async function apiFetch<T>(
   return (await res.json()) as T;
 }
 
+// Subida multipart (FormData) — NO se fija Content-Type (el navegador pone el
+// boundary). Mismo manejo de 401 → refresh → reintento una vez.
+export async function apiUpload<T>(
+  path: string,
+  form: FormData,
+  _retry = false,
+): Promise<T> {
+  const h = new Headers();
+  if (accessToken) h.set('Authorization', `Bearer ${accessToken}`);
+
+  const res = await fetch(`${getApiBase()}${path}`, {
+    method: 'POST',
+    body: form,
+    headers: h,
+    credentials: 'include',
+  });
+
+  if (res.status === 401 && !_retry) {
+    try {
+      await refresh();
+    } catch {
+      throw await toError(res);
+    }
+    return apiUpload<T>(path, form, true);
+  }
+
+  if (!res.ok) throw await toError(res);
+  if (res.status === 204) return undefined as T;
+  return (await res.json()) as T;
+}
+
 // ── Endpoints de autenticación ───────────────────────────────────────────────
 export async function login(email: string, password: string): Promise<AuthResponse> {
   const data = await apiFetch<AuthResponse>('/auth/login', {

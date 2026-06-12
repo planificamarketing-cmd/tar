@@ -12,6 +12,7 @@ import { healthRouter } from './modules/health/health.routes';
 import { authRouter } from './modules/auth/auth.routes';
 import { propertiesRouter } from './modules/properties/properties.routes';
 import { mediaRouter } from './modules/media/media.routes';
+import { amenitiesRouter } from './modules/amenities/amenities.routes';
 import { leadsRouter } from './modules/leads/leads.routes';
 import { trackingRouter } from './modules/tracking/tracking.routes';
 import { webhooksRouter } from './modules/webhooks/webhooks.routes';
@@ -53,6 +54,7 @@ export function createApp(): Express {
   app.use('/api/v1/auth', authRouter);
   app.use('/api/v1/properties', propertiesRouter);
   app.use('/api/v1/properties', mediaRouter);
+  app.use('/api/v1/amenities', amenitiesRouter);
   app.use('/api/v1/leads', leadsRouter);
   app.use('/api/v1/events', trackingRouter);
   app.use('/api/v1/webhooks', webhooksRouter);

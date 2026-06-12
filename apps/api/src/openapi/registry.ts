@@ -236,6 +236,15 @@ export function buildOpenApiDocument() {
     responses: { 204: ok('Borrada') },
   });
 
+  // ── Amenidades ──
+  registry.registerPath({
+    method: 'get',
+    path: '/api/v1/amenities',
+    tags: ['Propiedades'],
+    summary: 'Catálogo de amenidades (selector del backoffice)',
+    responses: { 200: ok('{ data: Amenity[] }') },
+  });
+
   // ── Media ──
   registry.registerPath({
     method: 'post',

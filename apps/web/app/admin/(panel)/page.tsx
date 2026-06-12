@@ -210,7 +210,7 @@ export default function DashboardPage() {
 
       {/* KPIs */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Kpi Icon={NBuilding} chipBg="#FFF0F2" chipColor="#D2103E" value={data?.kpis.published} label="Propiedades publicadas" hint="En catálogo" loading={isLoading} />
+        <Kpi Icon={NBuilding} chipBg="#FFF0F2" chipColor="#D2103E" value={data?.kpis.published} label="Propiedades publicadas" hint={`${data?.kpis.drafts ?? 0} en borrador`} loading={isLoading} />
         <Kpi Icon={NTenant} chipBg="#EFF6FF" chipColor="#2563EB" value={data?.kpis.leadsMonth} label="Leads del mes" hint="Registrados este mes" loading={isLoading} />
         <Kpi Icon={NMsg} chipBg="#FEF3C7" chipColor="#CA8A04" value={data?.kpis.enSeguimiento} label="En seguimiento" hint="Pipeline activo" loading={isLoading} />
         <Kpi Icon={NRent} chipBg="#DCFCE7" chipColor="#16A34A" value={data?.kpis.cierres} label="Cierres" hint="Firma de contrato" loading={isLoading} />

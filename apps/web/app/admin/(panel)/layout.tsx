@@ -29,8 +29,8 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
     label: 'General',
     items: [
       { href: '/admin', label: 'Dashboard', Icon: NDash, ready: true },
-      { href: '/admin/propiedades', label: 'Propiedades', Icon: NHome },
-      { href: '/admin/propiedades/nueva', label: 'Nueva propiedad', Icon: NPlus },
+      { href: '/admin/propiedades', label: 'Propiedades', Icon: NHome, ready: true },
+      { href: '/admin/propiedades/nueva', label: 'Nueva propiedad', Icon: NPlus, ready: true },
     ],
   },
   {
@@ -92,10 +92,17 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
                 {group.label}
               </div>
               {group.items.map((item) => {
+                // "Nueva propiedad" (/admin/propiedades/nueva) es prefijo de
+                // "Propiedades" (/admin/propiedades): el item más específico gana,
+                // así que sólo se enciende uno.
                 const active =
                   item.href === '/admin'
                     ? pathname === '/admin'
-                    : pathname.startsWith(item.href);
+                    : item.href === '/admin/propiedades'
+                      ? pathname === item.href ||
+                        (pathname.startsWith('/admin/propiedades/') &&
+                          pathname !== '/admin/propiedades/nueva')
+                      : pathname.startsWith(item.href);
                 if (!item.ready) {
                   return (
                     <div

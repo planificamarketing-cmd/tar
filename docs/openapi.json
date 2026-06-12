@@ -1099,6 +1099,19 @@
         }
       }
     },
+    "/api/v1/amenities": {
+      "get": {
+        "tags": [
+          "Propiedades"
+        ],
+        "summary": "Catálogo de amenidades (selector del backoffice)",
+        "responses": {
+          "200": {
+            "description": "{ data: Amenity[] }"
+          }
+        }
+      }
+    },
     "/api/v1/properties/{id}/images": {
       "post": {
         "tags": [

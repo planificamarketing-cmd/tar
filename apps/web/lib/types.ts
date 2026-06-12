@@ -30,6 +30,41 @@ export type PropertyListItem = {
   publishedAt: string | null;
 };
 
+export type Amenity = { id: string; name: string; icon: string | null };
+
+export type PropertyImage = {
+  id: string;
+  urlWebp: string;
+  urlThumb: string;
+  alt: string | null;
+  position: number;
+  isCover: boolean;
+  width: number | null;
+  height: number | null;
+};
+
+// Detalle admin (GET /properties/admin/:id) — incluye geo, imágenes y amenidades.
+export type PropertyDetail = PropertyListItem & {
+  description: string | null;
+  externalRef: string | null;
+  halfBathrooms: number | null;
+  parking: number | null;
+  floor: string | null;
+  lotM2: string | null;
+  address: string | null;
+  postalCode: string | null;
+  lat: number | null;
+  lng: number | null;
+  location:
+    | (PropertyListItem['location'] & {
+        slugEstado?: string | null;
+        slugColonia?: string | null;
+      })
+    | null;
+  images: PropertyImage[];
+  amenities: Amenity[];
+};
+
 // Respuesta paginada estándar de la API (§5): { data, meta }.
 export type Paginated<T> = {
   data: T[];

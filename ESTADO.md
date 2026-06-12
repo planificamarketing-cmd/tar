@@ -2,8 +2,8 @@
 
 > **Partida guardada del proyecto.** Este archivo (+ `git log`) es lo ÚNICO que se lee al iniciar sesión. NO releer el PRD, el plan ni el código completos: consultar solo la sección puntual que toque la tarea en curso. Se regenera (se sobrescribe) al final de cada sesión.
 
-**Última actualización:** 2026-06-09 · sesión: prototipo ronda 2 + Fase C (slices 1–2)
-**Fase actual:** FASE C — Backoffice **EN PROGRESO**. Hecho: slice 1 (fundación/auth), slice 2 (dashboard + leads) y panel **fiel al diseño del prototipo admin**. Siguiente: slice 3 (CRUD de propiedades). (Fase A cerrada; Fase B bloqueada hasta firma del diseño.) **Avance global:** ~55%
+**Última actualización:** 2026-06-11 · sesión: Fase C slice 3 (CRUD de propiedades)
+**Fase actual:** FASE C — Backoffice **EN PROGRESO**. Hecho: slice 1 (fundación/auth), slice 2 (dashboard + leads), **slice 3 (CRUD de propiedades con asistente + tabla admin)**; panel **fiel al diseño del prototipo admin**. Siguiente: usuarios (admin), scripts de marketing, webhooks/API keys. (Fase A cerrada; Fase B bloqueada hasta firma del diseño.) **Avance global:** ~65%
 **Prototipo:** ronda 2 de correcciones del cliente APLICADA; **zip `tar-prototipo-v3.zip` regenerado** (raíz del repo, 10 archivos, listo para Netlify drop).
 
 ## Hecho
@@ -26,14 +26,18 @@
 - **FASE C — Backoffice fiel al prototipo** (`apps/web`): el panel replica el diseño del prototipo admin (`v3-admin.jsx`): **sidebar blanco** con nav agrupada (General/CRM/Configuración), logo cuadro rojo "TAR", item activo en rojo con borde izquierdo; **dashboard** con header de bienvenida + Exportar CSV, tarjetas KPI con chip de icono, y gráficas (Leads por mes, Mix de inventario, Estado de propiedades, Leads recientes con avatares) — **alimentadas con datos reales** de la API (`/properties`, `/leads`, límite de paginación 50). Login en el mismo lenguaje (cuadro rojo TAR). Iconos del prototipo portados a `components/icons.tsx`.
 - **FASE C.2 — Dashboard + Leads** (`apps/web`): cliente de datos (`lib/queries.ts`, TanStack Query) + tipos/formatos (`lib/types.ts`, `lib/format.ts`). **Dashboard con KPIs en vivo** (publicadas, leads nuevos/citas/totales) + leads recientes. **Gestión de leads**: tablero con filtro por status + paginación (`/admin/leads`), detalle con datos/mensaje/**bitácora** y **cambio de estado en vivo** (`PATCH /leads/:id` → emite `lead.status_changed`) (`/admin/leads/[id]`). Nav "Leads" activo. 7 leads de muestra sembrados (variados) en la BD dev para demo. typecheck/lint/build verdes; flujo verificado E2E por API. Pendiente: asignación a usuario (llega con Usuarios), visualizaciones por propiedad y conteo de borradores (requieren endpoint admin de propiedades).
 - **FASE C.1 — Fundación del backoffice** (`apps/web`): tokens de marca + familia DM (`next/font`) en `tailwind.config`/`layout`; **cliente API** (`lib/api.ts`, Bearer + refresh httpOnly + reintento en 401, base derivada del host para WSL/local) y **sesión** (`lib/auth.tsx`, rehidrata vía refresh al montar); rutas `app/admin/login` (login validado con Zod compartido) + grupo `(panel)` con **guard** + sidebar estilo prototipo (logo, usuario/rol, logout) + **shell de dashboard**. TanStack Query montado. `typecheck`/`lint`/`build` en verde; login E2E verificado (curl 200 + cookie + CORS) por `localhost` y por IP de WSL. Logos en `apps/web/public/brand/`.
-
-## En progreso
-- **FASE C — Backoffice (slice 3): CRUD de propiedades.** Requiere primero un **endpoint admin** de listado (el público fuerza estados públicos → no muestra borradores). Luego: tabla admin (todos los estados) + asistente (datos → LocationPicker → ImageUploader masivo → amenidades → publicar; estatus + toggle premium). `LocationPicker` necesita la API key de Google Maps (pendiente del cliente, vacía en `.env`) → fallback pin arrastrable / coords manuales mientras tanto.
+- **FASE C.3 — CRUD de propiedades COMPLETO** (`apps/api` + `apps/web`):
+  - **Backend:** `GET /properties/admin` (todos los estatus incl. borrador; filtros status/tipo/featured + búsqueda full-text + orden + paginación), `GET /properties/admin/status-counts` (conteo por estatus, KPIs), `GET /properties/admin/:id` (detalle admin, ya existía el service). Schema `propertyAdminQuerySchema` en `packages/shared`. Tipo `CommercialStatus` exportado. Nuevo módulo `amenities` (`GET /amenities`, catálogo para el selector). 4 tests admin nuevos → **48 tests verdes**. OpenAPI 27 rutas.
+  - **Frontend:** tabla `/admin/propiedades` (todos los estatus, filtros por estatus + búsqueda + paginación, chips de estatus/premium, miniatura; acciones publicar/cambiar estatus/archivar). Asistente `/admin/propiedades/nueva` (crea borrador → redirige a edición). Editor `/admin/propiedades/[id]` (campos + `LocationPicker` + `ImageUploader` masivo + amenidades + premium + guardar/publicar/estatus). Componentes nuevos: `property-fields`, `location-picker`, `image-uploader`, `property-status-badge`. `lib/property-form.ts` (valores↔payload). `apiUpload` (multipart) en `lib/api.ts`. Nav "Propiedades"/"Nueva propiedad" activado.
+  - **Dashboard:** `StatusChart` + KPI de borradores ahora sobre **conteos reales** (`/properties/admin/status-counts`), no la muestra pública (que solo veía disponible/apartado).
+  - **`LocationPicker` sin Google Maps** (API key pendiente del cliente): captura estado/municipio/colonia + dirección y fija el punto por **coordenadas manuales o pegando un enlace de Google Maps** (parser lat/lng). Al llegar la API key se sustituye por mapa con pin arrastrable sin tocar el formulario.
+  - **Imágenes admin:** `next/image` con `unoptimized` (panel interno sin métricas §9; host de media dinámico WSL/localhost evita `remotePatterns`).
+  - Verificado: `typecheck`/`lint`/`build` web en verde, `typecheck`/`test (48)` api en verde, y **E2E en vivo por curl**: login → crear borrador → status-counts `{borrador:1}` → publish sin geo **422** → fijar geo + publish **200** → soft delete **204**.
 
 ## Siguiente (máx. 3)
-1. **Fase C — resto de bloques:** gestión de leads (tablero + bitácora), usuarios (admin), scripts de marketing (head/body/footer), webhooks salientes + API keys entrantes.
+1. **Fase C — resto de bloques:** **usuarios** (admin: alta/baja/rol), **scripts de marketing** (head/body/footer, activar/desactivar), **webhooks salientes + bitácora + reintento** + **API keys entrantes**. Cierra la DoD de Fase C.
 2. **FASE B — Frontend público**: bloqueada hasta la **firma del prototipo v3** (cliente). Publicar el prototipo en Netlify y abrir la ronda de firma.
-3. Portar el resto de tokens del diseño a `tailwind.config` tras la firma (los de marca + familia DM ya están).
+3. Reportes: actualizar `docs/reportes/` con el avance del backoffice (Fase C casi cerrada).
 
 ## Decisiones / desviaciones respecto al PRD
 - 2026-06-09: **Correcciones del cliente al prototipo (ronda 2)** aplicadas en `design-reference/prototipo-v3/` (sin tocar backend):
@@ -70,4 +74,4 @@
 - Levantar: `pnpm db:up` (BD) + `pnpm dev`. Recargar datos: `pnpm db:migrate && pnpm db:seed`.
 - **Backoffice (Fase C):** entra en `/admin/login` (`admin@tarinternacional.com` / `admin123`). Para verlo desde Windows vía WSL: arrancar api y web con `next dev -H 0.0.0.0` y `CORS_ORIGINS` incluyendo la IP de WSL; el cliente API deriva la URL del host del navegador.
 - **Leads de muestra:** los 7 leads para la demo se insertaron por SQL en la BD dev (NO están en el seed ni en git). Si reseteas la BD desaparecen → considerar añadirlos a `pnpm db:seed` para reproducibilidad.
-- **Pendiente backend para slice 3:** falta endpoint admin de listado de propiedades (el público fuerza estados públicos; no muestra borradores). La paginación de la API limita `limit` a 50.
+- **Propiedades (slice 3):** entra en `/admin/propiedades`. "Nueva propiedad" crea un **borrador**; en el editor `[id]` se suben imágenes y se publica (publish exige geo + precio). El `LocationPicker` acepta coords manuales o pegar un enlace de Google Maps mientras llega la API key. La paginación de la API limita `limit` a 50.
