@@ -2,8 +2,8 @@
 
 > **Partida guardada del proyecto.** Este archivo (+ `git log`) es lo ÚNICO que se lee al iniciar sesión. NO releer el PRD, el plan ni el código completos: consultar solo la sección puntual que toque la tarea en curso. Se regenera (se sobrescribe) al final de cada sesión.
 
-**Última actualización:** 2026-06-11 · sesión: Fase C slices 3 (propiedades) + 4 (usuarios)
-**Fase actual:** FASE C — Backoffice **EN PROGRESO**. Hecho: slice 1 (fundación/auth), slice 2 (dashboard + leads), slice 3 (CRUD de propiedades con asistente), **slice 4 (gestión de usuarios admin-only)**; panel **fiel al diseño del prototipo admin**. Siguiente: scripts de marketing, webhooks salientes + API keys entrantes (cierran la DoD de Fase C). (Fase A cerrada; Fase B bloqueada hasta firma del diseño.) **Avance global:** ~72%
+**Última actualización:** 2026-06-11 · sesión: Fase C slices 3 (propiedades) + 4 (usuarios) + 5 (webhooks/API keys)
+**Fase actual:** FASE C — Backoffice **EN PROGRESO**. Hecho: slices 1 (fundación/auth), 2 (dashboard + leads), 3 (CRUD de propiedades), 4 (usuarios), **5 (Integraciones · webhooks salientes + bitácora/reintento + API keys entrantes en `/admin/ajustes`)**; panel **fiel al diseño del prototipo admin**. **Falta solo: scripts de marketing** (head/body/footer) para cerrar la DoD de Fase C. (Fase A cerrada; Fase B bloqueada hasta firma del diseño.) **Avance global:** ~78%
 **Prototipo:** ronda 2 de correcciones del cliente APLICADA; **zip `tar-prototipo-v3.zip` regenerado** (raíz del repo, 10 archivos, listo para Netlify drop).
 
 ## Hecho
@@ -37,9 +37,15 @@
   - **Backend** (`modules/users/`, **solo admin** `requireRole('admin')`): `GET /users` (paginado + filtros rol/activo + búsqueda por nombre/correo), `POST /users` (argon2; email único→**409 email_taken**), `GET /users/:id`, `PATCH /users/:id` (nombre/contraseña/rol/activo), `DELETE /users/:id` = **baja por desactivación** (no hard delete; revoca sus refresh tokens). Nunca expone `passwordHash`. **Guards anti-lockout:** no puedes degradarte/desactivarte a ti mismo (**self_lockout**) ni dejar el sistema sin admin activo (**last_admin**). `userQuerySchema` en `packages/shared`. 8 tests → **56 tests verdes**. OpenAPI **29 rutas**.
   - **Frontend** `/admin/usuarios`: tabla (avatar, rol, estado activo/inactivo, alta) + filtros por rol + búsqueda + paginación; **modal de alta/edición** (nombre, correo —inmutable al editar—, rol, contraseña/reset opcional, checkbox activo). Self-row marcado "(tú)" con controles de rol/baja bloqueados. Errores del backend (409) mostrados al usuario. Nav "Usuarios" activo. Queries en `lib/queries.ts`, tipo `User` en `lib/types.ts`.
   - Verificado **E2E en vivo por curl**: crear (sin exponer hash) → duplicado **409** → actualizar a admin + reset password (login con la nueva clave **200**) → auto-baja del admin **409 self_lockout** → desactivar **204** → login del desactivado **401**.
+- **FASE C.5 — Integraciones (webhooks + API keys) COMPLETA** (`apps/web`, backend ya existía de A.4): UI en **`/admin/ajustes`** fiel al prototipo (apartado "Integraciones · Webhooks"):
+  - **Webhooks salientes:** lista + alta/edición (`WebhookModal`: nombre, URL, secreto de firma, selección de eventos, activo), toggle activo en vivo, eliminar. Catálogo de eventos disponibles con su descripción. Caja informativa HMAC-SHA256 + reintentos.
+  - **Bitácora de entregas:** tabla (webhook, evento, estado con código, intentos, fecha) + **reintento manual** (solo en fallidas; `POST /deliveries/:id/retry`).
+  - **API keys entrantes:** lista (scopes, "puede:", último uso) + alta (`ApiKeyModal`: muestra la llave **una sola vez** con botón copiar) + revocar. Nota de uso (`POST /webhooks/inbound`, header `X-API-Key`).
+  - Componentes nuevos: `webhook-modal`, `api-key-modal`. Tipos `WebhookSubscription/WebhookDelivery/ApiKey(+Created)` en `lib/types`; catálogos `WEBHOOK_EVENT_DESC`/`SCOPE_DESC`/`DELIVERY_STATUS_META` en `lib/format`; queries en `lib/queries`. Nav "Ajustes" activo.
+  - Verificado **E2E en vivo por curl**: alta de webhook → disparar `lead.created` → entrega registrada en bitácora (fallida sin internet al destino, `lastError: fetch failed` capturado) → reintento **202** → toggle inactivo → eliminar **204**; API key: alta (llave mostrada una vez) → la lista NO expone la llave → inbound `lead.update_status` **ok** → scope insuficiente **403** → llave inválida **401** → revocar **204**.
 
 ## Siguiente (máx. 3)
-1. **Fase C — resto de bloques:** **scripts de marketing** (head/body/footer, activar/desactivar — §6.5), **webhooks salientes + bitácora + reintento manual** + **gestión de API keys entrantes**. Cierra la DoD de Fase C. (El backend de webhooks/api-keys ya existe de A.4; falta la UI; scripts no tiene módulo aún — revisar si hay schema/tabla `marketing_scripts`.)
+1. **Fase C — último bloque: scripts de marketing** (head/body/footer, activar/desactivar — §6.5). **Cierra la DoD de Fase C.** La tabla `marketing_scripts` YA existe en el schema (`packages/db`, con `placement` head/body/footer + `code` + `isActive`); **falta el módulo de API** (no hay `modules/scripts/` aún) y la UI `/admin/scripts`.
 2. **FASE B — Frontend público**: bloqueada hasta la **firma del prototipo v3** (cliente). Publicar el prototipo en Netlify y abrir la ronda de firma.
 3. Reportes: actualizar `docs/reportes/` con el avance del backoffice (Fase C casi cerrada).
 

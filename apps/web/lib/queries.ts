@@ -12,15 +12,20 @@ import type {
   PropertyType,
 } from '@tar/shared';
 import type {
+  CreateApiKeyInput,
   CreatePropertyInput,
   CreateUserInput,
+  CreateWebhookSubscriptionInput,
   UpdatePropertyInput,
   UpdateUserInput,
+  UpdateWebhookSubscriptionInput,
   UserRole,
 } from '@tar/shared';
 import { apiFetch, apiUpload } from './api';
 import type {
   Amenity,
+  ApiKey,
+  ApiKeyCreated,
   Lead,
   LeadDetail,
   Paginated,
@@ -28,6 +33,8 @@ import type {
   PropertyImage,
   PropertyListItem,
   User,
+  WebhookDelivery,
+  WebhookSubscription,
 } from './types';
 import { PROPERTY_TYPE_LABEL } from './format';
 
@@ -285,6 +292,106 @@ export function useDeactivateUser() {
   return useMutation({
     mutationFn: (id: string) => apiFetch(`/users/${id}`, { method: 'DELETE' }),
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['users'] }),
+  });
+}
+
+// ── Webhooks salientes + API keys entrantes (solo admin, §5.5) ──────────────────
+export function useWebhookSubscriptions() {
+  return useQuery({
+    queryKey: ['webhook-subscriptions'],
+    queryFn: () =>
+      apiFetch<{ data: WebhookSubscription[] }>('/webhooks/subscriptions'),
+    select: (r) => r.data,
+  });
+}
+
+export function useCreateWebhook() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateWebhookSubscriptionInput) =>
+      apiFetch('/webhooks/subscriptions', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () =>
+      void qc.invalidateQueries({ queryKey: ['webhook-subscriptions'] }),
+  });
+}
+
+export function useUpdateWebhook() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      body,
+    }: {
+      id: string;
+      body: UpdateWebhookSubscriptionInput;
+    }) =>
+      apiFetch(`/webhooks/subscriptions/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () =>
+      void qc.invalidateQueries({ queryKey: ['webhook-subscriptions'] }),
+  });
+}
+
+export function useDeleteWebhook() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch(`/webhooks/subscriptions/${id}`, { method: 'DELETE' }),
+    onSuccess: () =>
+      void qc.invalidateQueries({ queryKey: ['webhook-subscriptions'] }),
+  });
+}
+
+export function useWebhookDeliveries() {
+  return useQuery({
+    queryKey: ['webhook-deliveries'],
+    queryFn: () =>
+      apiFetch<{ data: WebhookDelivery[] }>('/webhooks/deliveries'),
+    select: (r) => r.data,
+  });
+}
+
+export function useRetryDelivery() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch(`/webhooks/deliveries/${id}/retry`, { method: 'POST' }),
+    onSuccess: () =>
+      void qc.invalidateQueries({ queryKey: ['webhook-deliveries'] }),
+  });
+}
+
+export function useApiKeys() {
+  return useQuery({
+    queryKey: ['api-keys'],
+    queryFn: () => apiFetch<{ data: ApiKey[] }>('/webhooks/api-keys'),
+    select: (r) => r.data,
+  });
+}
+
+export function useCreateApiKey() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateApiKeyInput) =>
+      apiFetch<{ data: ApiKeyCreated }>('/webhooks/api-keys', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['api-keys'] }),
+  });
+}
+
+export function useDeleteApiKey() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch(`/webhooks/api-keys/${id}`, { method: 'DELETE' }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['api-keys'] }),
   });
 }
 

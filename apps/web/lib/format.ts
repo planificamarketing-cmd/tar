@@ -1,10 +1,13 @@
 import type {
+  ApiKeyScope,
   FeaturedLevel,
   LeadStatus,
   LeadType,
   PropertyStatus,
   PropertyType,
+  WebhookEvent,
 } from '@tar/shared';
+import type { DeliveryStatus } from './types';
 
 // Pipeline de leads con los colores exactos del prototipo (v3-admin.jsx).
 export const LEAD_STATUS_META: Record<
@@ -74,6 +77,32 @@ export function formatPrice(
     maximumFractionDigits: 0,
   }).format(n);
 }
+
+// ── Webhooks / integraciones (§5.5) ──
+// Catálogo de eventos salientes: qué los dispara (lenguaje para el cliente).
+export const WEBHOOK_EVENT_DESC: Record<WebhookEvent, string> = {
+  'lead.created': 'Entra un nuevo lead (contacto o cita).',
+  'lead.status_changed':
+    'Cambia el estatus de un lead en el pipeline (Nuevo → Cita agendada → … → Firma de contrato).',
+  'property.published': 'Se publica una propiedad (pasa a “disponible”).',
+  'property.status_changed':
+    'Cambia el estatus comercial de una propiedad (apartado, vendido, rentado…).',
+};
+
+// Qué permite hacer cada scope a un tercero (webhooks entrantes).
+export const SCOPE_DESC: Record<ApiKeyScope, string> = {
+  'leads:write': 'Actualizar el estatus de leads',
+  'properties:write': 'Actualizar el estatus de propiedades',
+};
+
+export const DELIVERY_STATUS_META: Record<
+  DeliveryStatus,
+  { label: string; color: string }
+> = {
+  pendiente: { label: 'Pendiente', color: '#CA8A04' },
+  entregado: { label: 'Entregado', color: '#16A34A' },
+  fallido: { label: 'Fallido', color: '#DC2626' },
+};
 
 const dateFmt = new Intl.DateTimeFormat('es-MX', {
   day: '2-digit',

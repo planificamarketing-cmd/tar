@@ -5,6 +5,8 @@ import type {
   PropertyStatus,
   FeaturedLevel,
   UserRole,
+  WebhookEvent,
+  ApiKeyScope,
 } from '@tar/shared';
 
 export type PropertyListItem = {
@@ -39,6 +41,50 @@ export type User = {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+};
+
+// ── Webhooks salientes + API keys entrantes (§5.5) ──
+export type WebhookSubscription = {
+  id: string;
+  name: string;
+  targetUrl: string;
+  secret: string;
+  events: WebhookEvent[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type DeliveryStatus = 'pendiente' | 'entregado' | 'fallido';
+
+export type WebhookDelivery = {
+  id: string;
+  subscriptionId: string;
+  event: string;
+  payload: Record<string, unknown> | null;
+  status: DeliveryStatus;
+  attempts: number;
+  lastError: string | null;
+  responseCode: number | null;
+  createdAt: string;
+  deliveredAt: string | null;
+};
+
+export type ApiKey = {
+  id: string;
+  name: string;
+  scopes: ApiKeyScope[];
+  isActive: boolean;
+  lastUsedAt: string | null;
+  createdAt: string;
+};
+
+// Respuesta de creación: incluye la llave en claro (solo una vez).
+export type ApiKeyCreated = {
+  id: string;
+  name: string;
+  scopes: ApiKeyScope[];
+  key: string;
 };
 
 export type Amenity = { id: string; name: string; icon: string | null };

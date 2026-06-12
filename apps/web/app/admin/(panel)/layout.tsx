@@ -43,7 +43,7 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   },
   {
     label: 'Configuración',
-    items: [{ href: '/admin/ajustes', label: 'Ajustes', Icon: NCog }],
+    items: [{ href: '/admin/ajustes', label: 'Ajustes', Icon: NCog, ready: true }],
   },
 ];
 
