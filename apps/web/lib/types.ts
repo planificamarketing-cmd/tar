@@ -7,6 +7,7 @@ import type {
   UserRole,
   WebhookEvent,
   ApiKeyScope,
+  ScriptPlacement,
 } from '@tar/shared';
 
 export type PropertyListItem = {
@@ -85,6 +86,16 @@ export type ApiKeyCreated = {
   name: string;
   scopes: ApiKeyScope[];
   key: string;
+};
+
+export type MarketingScript = {
+  id: string;
+  name: string;
+  placement: ScriptPlacement;
+  code: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type Amenity = { id: string; name: string; icon: string | null };

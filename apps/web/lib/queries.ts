@@ -14,9 +14,11 @@ import type {
 import type {
   CreateApiKeyInput,
   CreatePropertyInput,
+  CreateScriptInput,
   CreateUserInput,
   CreateWebhookSubscriptionInput,
   UpdatePropertyInput,
+  UpdateScriptInput,
   UpdateUserInput,
   UpdateWebhookSubscriptionInput,
   UserRole,
@@ -28,6 +30,7 @@ import type {
   ApiKeyCreated,
   Lead,
   LeadDetail,
+  MarketingScript,
   Paginated,
   PropertyDetail,
   PropertyImage,
@@ -392,6 +395,47 @@ export function useDeleteApiKey() {
     mutationFn: (id: string) =>
       apiFetch(`/webhooks/api-keys/${id}`, { method: 'DELETE' }),
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['api-keys'] }),
+  });
+}
+
+// ── Scripts de marketing (solo admin, §6.5) ─────────────────────────────────────
+export function useScripts() {
+  return useQuery({
+    queryKey: ['scripts'],
+    queryFn: () => apiFetch<{ data: MarketingScript[] }>('/scripts'),
+    select: (r) => r.data,
+  });
+}
+
+export function useCreateScript() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateScriptInput) =>
+      apiFetch<{ data: MarketingScript }>('/scripts', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['scripts'] }),
+  });
+}
+
+export function useUpdateScript() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: UpdateScriptInput }) =>
+      apiFetch<{ data: MarketingScript }>(`/scripts/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['scripts'] }),
+  });
+}
+
+export function useDeleteScript() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiFetch(`/scripts/${id}`, { method: 'DELETE' }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['scripts'] }),
   });
 }
 

@@ -2,8 +2,8 @@
 
 > **Partida guardada del proyecto.** Este archivo (+ `git log`) es lo ÚNICO que se lee al iniciar sesión. NO releer el PRD, el plan ni el código completos: consultar solo la sección puntual que toque la tarea en curso. Se regenera (se sobrescribe) al final de cada sesión.
 
-**Última actualización:** 2026-06-11 · sesión: Fase C slices 3 (propiedades) + 4 (usuarios) + 5 (webhooks/API keys)
-**Fase actual:** FASE C — Backoffice **EN PROGRESO**. Hecho: slices 1 (fundación/auth), 2 (dashboard + leads), 3 (CRUD de propiedades), 4 (usuarios), **5 (Integraciones · webhooks salientes + bitácora/reintento + API keys entrantes en `/admin/ajustes`)**; panel **fiel al diseño del prototipo admin**. **Falta solo: scripts de marketing** (head/body/footer) para cerrar la DoD de Fase C. (Fase A cerrada; Fase B bloqueada hasta firma del diseño.) **Avance global:** ~78%
+**Última actualización:** 2026-06-11 · sesión: Fase C completada (propiedades, usuarios, webhooks/API keys, scripts)
+**Fase actual:** **FASE C — Backoffice CERRADA.** Todos los bloques hechos: 1 (fundación/auth), 2 (dashboard + leads), 3 (CRUD de propiedades con asistente), 4 (usuarios), 5 (Integraciones · webhooks + API keys), **6 (scripts de marketing)**. Panel **fiel al diseño del prototipo admin**. **DoD cumplida:** un usuario no técnico puede publicar una propiedad con imágenes/ubicación, gestionar leads, gestionar usuarios, configurar integraciones e insertar scripts — todo desde el panel. (Fase A cerrada; Fase B bloqueada hasta firma del diseño.) **Avance global:** ~82%
 **Prototipo:** ronda 2 de correcciones del cliente APLICADA; **zip `tar-prototipo-v3.zip` regenerado** (raíz del repo, 10 archivos, listo para Netlify drop).
 
 ## Hecho
@@ -43,11 +43,16 @@
   - **API keys entrantes:** lista (scopes, "puede:", último uso) + alta (`ApiKeyModal`: muestra la llave **una sola vez** con botón copiar) + revocar. Nota de uso (`POST /webhooks/inbound`, header `X-API-Key`).
   - Componentes nuevos: `webhook-modal`, `api-key-modal`. Tipos `WebhookSubscription/WebhookDelivery/ApiKey(+Created)` en `lib/types`; catálogos `WEBHOOK_EVENT_DESC`/`SCOPE_DESC`/`DELIVERY_STATUS_META` en `lib/format`; queries en `lib/queries`. Nav "Ajustes" activo.
   - Verificado **E2E en vivo por curl**: alta de webhook → disparar `lead.created` → entrega registrada en bitácora (fallida sin internet al destino, `lastError: fetch failed` capturado) → reintento **202** → toggle inactivo → eliminar **204**; API key: alta (llave mostrada una vez) → la lista NO expone la llave → inbound `lead.update_status` **ok** → scope insuficiente **403** → llave inválida **401** → revocar **204**.
+- **FASE C.6 — Scripts de marketing COMPLETA** (`apps/api` + `apps/web`) — **cierra la Fase C**:
+  - **Backend** (`modules/scripts/`, **solo admin**): `GET /scripts` (filtros opcionales placement/active, orden head→body→footer), `POST/GET/PATCH/DELETE /scripts[/:id]`. `scriptQuerySchema` en shared. La tabla `marketing_scripts` ya existía. 6 tests → **62 tests verdes**. OpenAPI **31 rutas**.
+  - **Frontend** `/admin/scripts`: master-detail fiel al prototipo — lista (estado, badge de placement, **toggle activo rápido**) + editor de código monospace sobre fondo navy (nombre, ubicación head/body/footer con descripción, código, activo, guardar/eliminar). Tipo `MarketingScript` en `lib/types`; `SCRIPT_PLACEMENT_META` en `lib/format`; queries en `lib/queries`. Nav "Scripts" activo (todos los items del nav ya activos).
+  - Verificado **E2E en vivo por curl**: crear head/footer → orden head→body→footer → filtro `placement=head` → toggle activo→false → **401** sin token.
+  - **Nota:** la **inyección pública** de los scripts por placement en el `<head>/<body>/footer` del sitio es tarea de **Fase B** (§7.1, layout público); aquí solo el gestor (alta/edición/activación).
 
 ## Siguiente (máx. 3)
-1. **Fase C — último bloque: scripts de marketing** (head/body/footer, activar/desactivar — §6.5). **Cierra la DoD de Fase C.** La tabla `marketing_scripts` YA existe en el schema (`packages/db`, con `placement` head/body/footer + `code` + `isActive`); **falta el módulo de API** (no hay `modules/scripts/` aún) y la UI `/admin/scripts`.
-2. **FASE B — Frontend público**: bloqueada hasta la **firma del prototipo v3** (cliente). Publicar el prototipo en Netlify y abrir la ronda de firma.
-3. Reportes: actualizar `docs/reportes/` con el avance del backoffice (Fase C casi cerrada).
+1. **Documentación de Fase C:** escribir `docs/MANUAL-ADMIN.md` (lo pide CLAUDE.md: redactarlo durante Fase C) y actualizar `docs/reportes/` (semana/quincena) con el backoffice cerrado. La doc de API ya está al día (OpenAPI 31 rutas regenerado).
+2. **FASE B — Frontend público**: bloqueada hasta la **firma del prototipo v3** (cliente). Publicar el prototipo en Netlify y abrir la ronda de firma. Incluye la **inyección pública de scripts** por placement (§7.1) y el `LocationPicker` con Google Maps real (cuando llegue la API key).
+3. **FASE QA / aprovisionamiento** del servidor Ubuntu (cuando el cliente entregue accesos) — independiente de la firma.
 
 ## Decisiones / desviaciones respecto al PRD
 - 2026-06-09: **Correcciones del cliente al prototipo (ronda 2)** aplicadas en `design-reference/prototipo-v3/` (sin tocar backend):

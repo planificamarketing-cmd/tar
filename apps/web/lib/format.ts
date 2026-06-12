@@ -5,6 +5,7 @@ import type {
   LeadType,
   PropertyStatus,
   PropertyType,
+  ScriptPlacement,
   WebhookEvent,
 } from '@tar/shared';
 import type { DeliveryStatus } from './types';
@@ -102,6 +103,16 @@ export const DELIVERY_STATUS_META: Record<
   pendiente: { label: 'Pendiente', color: '#CA8A04' },
   entregado: { label: 'Entregado', color: '#16A34A' },
   fallido: { label: 'Fallido', color: '#DC2626' },
+};
+
+// Scripts de marketing — dónde se inyecta el código (§6.5).
+export const SCRIPT_PLACEMENT_META: Record<
+  ScriptPlacement,
+  { label: string; tag: string; hint: string }
+> = {
+  head: { label: 'Head', tag: '<head>', hint: 'Dentro de <head> (analytics, verificaciones).' },
+  body: { label: 'Body', tag: '<body>', hint: 'Al inicio de <body> (p. ej. GTM noscript).' },
+  footer: { label: 'Footer', tag: '</body>', hint: 'Antes de cerrar </body> (chats, píxeles diferidos).' },
 };
 
 const dateFmt = new Intl.DateTimeFormat('es-MX', {
