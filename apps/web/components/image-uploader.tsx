@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import {
   useDeleteImage,
@@ -25,11 +25,27 @@ export function ImageUploader({
   const updateImg = useUpdateImage(propertyId);
   const inputRef = useRef<HTMLInputElement>(null);
   const [drag, setDrag] = useState(false);
+  // Índice de la imagen abierta en el visor (null = cerrado).
+  const [viewer, setViewer] = useState<number | null>(null);
 
   function send(files: FileList | File[]) {
     const arr = Array.from(files).filter((f) => f.type.startsWith('image/'));
     if (arr.length) upload.mutate(arr);
   }
+
+  // Navegación del visor por teclado: Esc cierra, ←/→ cambian de imagen.
+  useEffect(() => {
+    if (viewer === null) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setViewer(null);
+      else if (e.key === 'ArrowRight')
+        setViewer((i) => (i === null ? i : (i + 1) % images.length));
+      else if (e.key === 'ArrowLeft')
+        setViewer((i) => (i === null ? i : (i - 1 + images.length) % images.length));
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [viewer, images.length]);
 
   return (
     <div>
@@ -84,12 +100,17 @@ export function ImageUploader({
       {/* Galería */}
       {images.length > 0 && (
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-          {images.map((img) => (
+          {images.map((img, idx) => (
             <div
               key={img.id}
               className="group relative overflow-hidden rounded-xl ring-1 ring-line"
             >
-              <div className="relative aspect-[4/3] bg-canvas">
+              <button
+                type="button"
+                onClick={() => setViewer(idx)}
+                title="Ampliar"
+                className="relative block aspect-[4/3] w-full cursor-zoom-in bg-canvas"
+              >
                 <Image
                   src={mediaUrl(img.urlThumb)}
                   alt={img.alt ?? ''}
@@ -98,7 +119,7 @@ export function ImageUploader({
                   unoptimized
                   className="object-cover"
                 />
-              </div>
+              </button>
               {img.isCover && (
                 <span className="absolute left-2 top-2 rounded-full bg-brand px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
                   Portada
@@ -128,6 +149,62 @@ export function ImageUploader({
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Visor (lightbox) */}
+      {viewer !== null && images[viewer] && (
+        <div
+          onClick={() => setViewer(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+        >
+          <button
+            type="button"
+            onClick={() => setViewer(null)}
+            aria-label="Cerrar"
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-2xl leading-none text-white transition hover:bg-white/20"
+          >
+            ×
+          </button>
+
+          {images.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setViewer((i) => (i === null ? i : (i - 1 + images.length) % images.length));
+                }}
+                aria-label="Anterior"
+                className="absolute left-4 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-3xl leading-none text-white transition hover:bg-white/20"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setViewer((i) => (i === null ? i : (i + 1) % images.length));
+                }}
+                aria-label="Siguiente"
+                className="absolute right-4 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-3xl leading-none text-white transition hover:bg-white/20"
+              >
+                ›
+              </button>
+            </>
+          )}
+
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={mediaUrl(images[viewer].urlWebp)}
+            alt={images[viewer].alt ?? ''}
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[88vh] max-w-[92vw] rounded-lg object-contain shadow-2xl"
+          />
+
+          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 font-mono text-xs text-white">
+            {viewer + 1} / {images.length}
+          </div>
         </div>
       )}
     </div>

@@ -50,7 +50,17 @@ export function createApp(): Express {
   );
 
   // Media servida en dev por el API; en prod la sirve Caddy desde MEDIA_DIR.
-  app.use('/media', express.static(env.MEDIA_DIR));
+  // helmet pone CORP `same-origin` global, lo que bloquea embeber las imágenes
+  // desde el panel (otro origen/puerto en dev, posible subdominio en prod). La
+  // media es pública por diseño → se marca `cross-origin` solo en esta ruta.
+  app.use(
+    '/media',
+    (_req, res, next) => {
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      next();
+    },
+    express.static(env.MEDIA_DIR),
+  );
 
   app.use('/health', healthRouter);
   app.use('/api/v1/auth', authRouter);
