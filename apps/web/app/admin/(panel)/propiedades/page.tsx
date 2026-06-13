@@ -15,6 +15,7 @@ import {
   usePublishProperty,
   useUpdatePropertyStatus,
 } from '@/lib/queries';
+import { mediaUrl } from '@/lib/api';
 import {
   FeaturedBadge,
   PropertyStatusBadge,
@@ -160,7 +161,7 @@ export default function PropertiesPage() {
                       <div className="relative h-11 w-14 shrink-0 overflow-hidden rounded-lg bg-canvas ring-1 ring-line">
                         {p.cover ? (
                           <Image
-                            src={p.cover.urlThumb}
+                            src={mediaUrl(p.cover.urlThumb)}
                             alt=""
                             fill
                             sizes="56px"

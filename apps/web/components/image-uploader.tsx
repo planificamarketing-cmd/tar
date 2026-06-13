@@ -8,6 +8,7 @@ import {
   useUploadImages,
 } from '@/lib/queries';
 import type { PropertyImage } from '@/lib/types';
+import { mediaUrl } from '@/lib/api';
 import { NUpload } from '@/components/icons';
 
 // ImageUploader — subida masiva (drag&drop o selector). El re-encode a WebP +
@@ -90,7 +91,7 @@ export function ImageUploader({
             >
               <div className="relative aspect-[4/3] bg-canvas">
                 <Image
-                  src={img.urlThumb}
+                  src={mediaUrl(img.urlThumb)}
                   alt={img.alt ?? ''}
                   fill
                   sizes="200px"

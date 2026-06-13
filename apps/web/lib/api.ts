@@ -16,6 +16,27 @@ function getApiBase(): string {
   return 'http://localhost:4000/api/v1';
 }
 
+// Las imágenes se guardan con URL absoluta contra `MEDIA_BASE_URL` (en dev,
+// `http://localhost:4000/media/...`). El host real varía (localhost en la misma
+// PC, IP de WSL desde Windows), así que —igual que getApiBase()— reescribimos el
+// host LOCAL de dev al del navegador para que la imagen cargue desde donde se
+// abrió el panel. En producción `MEDIA_BASE_URL` es el dominio real y no se toca;
+// las URLs externas (placehold.co, etc.) tampoco.
+export function mediaUrl(stored: string | null | undefined): string {
+  if (!stored) return '';
+  if (typeof window === 'undefined') return stored;
+  try {
+    const u = new URL(stored);
+    if (u.hostname === 'localhost' || u.hostname === '127.0.0.1') {
+      u.protocol = window.location.protocol;
+      u.hostname = window.location.hostname;
+    }
+    return u.toString();
+  } catch {
+    return stored; // rutas relativas / valores no-URL: se dejan como están
+  }
+}
+
 export type AdminUser = {
   id: string;
   email: string;
