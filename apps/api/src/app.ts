@@ -5,7 +5,7 @@ import hpp from 'hpp';
 import cookieParser from 'cookie-parser';
 import { rateLimit } from 'express-rate-limit';
 import { pinoHttp } from 'pino-http';
-import { corsOrigins, env } from './env';
+import { corsOrigin, env } from './env';
 import { logger } from './lib/logger';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
 import { healthRouter } from './modules/health/health.routes';
@@ -29,7 +29,7 @@ export function createApp(): Express {
   app.use(helmet());
   app.use(
     cors({
-      origin: corsOrigins,
+      origin: corsOrigin,
       credentials: true,
     }),
   );

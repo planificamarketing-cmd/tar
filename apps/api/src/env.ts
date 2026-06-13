@@ -58,6 +58,41 @@ if (!parsed.success) {
 }
 
 export const env = parsed.data;
-export const corsOrigins = env.CORS_ORIGINS.split(',')
+
+const corsAllowlist = env.CORS_ORIGINS.split(',')
   .map((o) => o.trim())
   .filter(Boolean);
+
+// Orígenes de desarrollo local: localhost y rangos de IP privada de LAN. La IP
+// de WSL (172.16–31.x) cambia entre arranques, así que en dev se aceptan por
+// patrón para abrir el panel desde Windows sin reconfigurar CORS cada vez.
+function isPrivateDevOrigin(origin: string): boolean {
+  try {
+    const { hostname } = new URL(origin);
+    return (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      /^10\./.test(hostname) ||
+      /^192\.168\./.test(hostname) ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
+    );
+  } catch {
+    return false;
+  }
+}
+
+// Producción: allowlist estricta (CORS_ORIGINS). Desarrollo/test: allowlist +
+// cualquier origen local/LAN privado.
+export const corsOrigin =
+  env.NODE_ENV === 'production'
+    ? corsAllowlist
+    : (
+        origin: string | undefined,
+        cb: (err: Error | null, allow?: boolean) => void,
+      ): void => {
+        if (!origin) return cb(null, true); // same-origin / curl sin Origin
+        if (corsAllowlist.includes(origin) || isPrivateDevOrigin(origin)) {
+          return cb(null, true);
+        }
+        cb(null, false);
+      };
