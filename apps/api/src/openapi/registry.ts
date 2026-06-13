@@ -301,6 +301,14 @@ export function buildOpenApiDocument() {
   });
   registry.registerPath({
     method: 'get',
+    path: '/api/v1/properties/admin/type-counts',
+    tags: ['Propiedades'],
+    summary: 'Conteo de propiedades por tipo (mix de inventario del dashboard)',
+    security: sec,
+    responses: { 200: ok('{ data: Record<tipo, number> }'), ...errResponses },
+  });
+  registry.registerPath({
+    method: 'get',
     path: '/api/v1/properties/admin/{id}',
     tags: ['Propiedades'],
     summary: 'Detalle admin por id (ve borradores)',

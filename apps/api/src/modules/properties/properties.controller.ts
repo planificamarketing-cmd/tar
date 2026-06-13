@@ -26,6 +26,11 @@ export async function statusCounts(_req: Request, res: Response): Promise<void> 
   res.json({ data: await svc.propertyStatusCounts() });
 }
 
+// Conteo por tipo (mix de inventario del dashboard, todo el inventario).
+export async function typeCounts(_req: Request, res: Response): Promise<void> {
+  res.json({ data: await svc.propertyTypeCounts() });
+}
+
 // Detalle admin por id (ve borradores).
 export async function detailAdmin(req: Request, res: Response): Promise<void> {
   const id = uuidSchema.parse(req.params.id);

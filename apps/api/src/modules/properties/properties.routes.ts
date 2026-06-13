@@ -10,6 +10,7 @@ const staff = [requireAuth, requireRole('admin', 'editor')] as const;
 // capture "admin".
 propertiesRouter.get('/admin', ...staff, c.listAdmin);
 propertiesRouter.get('/admin/status-counts', ...staff, c.statusCounts);
+propertiesRouter.get('/admin/type-counts', ...staff, c.typeCounts);
 propertiesRouter.get('/admin/:id', ...staff, c.detailAdmin);
 
 // ── Públicas ──

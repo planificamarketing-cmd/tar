@@ -1340,6 +1340,44 @@
         }
       }
     },
+    "/api/v1/properties/admin/type-counts": {
+      "get": {
+        "tags": [
+          "Propiedades"
+        ],
+        "summary": "Conteo de propiedades por tipo (mix de inventario del dashboard)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ data: Record<tipo, number> }"
+          },
+          "400": {
+            "description": "Validación / petición inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/properties/admin/{id}": {
       "get": {
         "tags": [

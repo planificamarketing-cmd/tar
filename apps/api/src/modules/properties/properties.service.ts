@@ -244,6 +244,22 @@ export async function propertyStatusCounts(): Promise<Record<string, number>> {
   return out;
 }
 
+// Conteo por tipo de propiedad (todo el inventario, incl. borradores) para el
+// mix del dashboard. Agregado real en BD: no depende de la muestra paginada.
+export async function propertyTypeCounts(): Promise<Record<string, number>> {
+  const rows = await db
+    .select({
+      type: properties.propertyType,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(properties)
+    .where(isNull(properties.deletedAt))
+    .groupBy(properties.propertyType);
+  const out: Record<string, number> = {};
+  for (const r of rows) out[r.type] = r.count;
+  return out;
+}
+
 // GET /properties/map — payload ligero para clustering (bbox + filtros).
 export async function mapProperties(q: PropertyMapQuery) {
   const c = buildFilters(q);

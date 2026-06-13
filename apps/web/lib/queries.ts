@@ -470,17 +470,19 @@ export function useDashboard() {
   return useQuery({
     queryKey: ['dashboard'],
     queryFn: async (): Promise<DashboardData> => {
-      // El límite máximo de paginación de la API es 50. `meta.total` da el total
-      // real; el mix por tipo y los buckets mensuales se calculan sobre la muestra
-      // (suficiente hoy; con más volumen se añadirá un endpoint de agregados).
-      const [props, leadsRes, counts] = await Promise.all([
-        apiFetch<Paginated<PropertyListItem>>('/properties?limit=50'),
+      // El mix por tipo y los conteos por estatus salen de agregados reales en BD
+      // (no de la muestra paginada): reflejan TODO el inventario, incl. borradores.
+      // Los buckets mensuales se calculan sobre la muestra de leads (suficiente hoy).
+      const [typeRes, leadsRes, counts] = await Promise.all([
+        apiFetch<{ data: Record<string, number> }>(
+          '/properties/admin/type-counts',
+        ),
         apiFetch<Paginated<Lead>>('/leads?limit=50'),
         apiFetch<{ data: Record<string, number> }>(
           '/properties/admin/status-counts',
         ),
       ]);
-      const properties = props.data;
+      const byType = typeRes.data;
       const leads = leadsRes.data;
       const byStatus = counts.data;
 
@@ -513,13 +515,10 @@ export function useDashboard() {
         count: buckets.get(k) ?? 0,
       }));
 
-      // Mix por tipo
-      const typeCounts = new Map<string, number>();
-      for (const p of properties) {
-        typeCounts.set(p.propertyType, (typeCounts.get(p.propertyType) ?? 0) + 1);
-      }
-      const totalProps = properties.length || 1;
-      const typeMix = [...typeCounts.entries()]
+      // Mix por tipo — sobre el inventario completo (agregado real en BD).
+      const totalProps =
+        Object.values(byType).reduce((a, b) => a + b, 0) || 1;
+      const typeMix = Object.entries(byType)
         .sort((a, b) => b[1] - a[1])
         .map(([type, count], i) => ({
           label: PROPERTY_TYPE_LABEL[type as keyof typeof PROPERTY_TYPE_LABEL] ?? type,

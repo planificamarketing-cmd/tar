@@ -172,6 +172,14 @@ describe('Properties /api/v1/properties', () => {
     expect(res.body.data.rentado).toBeGreaterThanOrEqual(1);
   });
 
+  it('el conteo por tipo incluye departamento (mix del dashboard)', async () => {
+    const res = await auth(
+      request(app).get('/api/v1/properties/admin/type-counts'),
+    );
+    expect(res.status).toBe(200);
+    expect(res.body.data.departamento).toBeGreaterThanOrEqual(1);
+  });
+
   it('soft delete (204) y luego 404 por slug', async () => {
     const del = await auth(request(app).delete(`/api/v1/properties/${propId}`));
     expect(del.status).toBe(204);
