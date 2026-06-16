@@ -1,6 +1,7 @@
 // TAR Internacional v3 — Pages (EverGreen-inspired)
 
 const {
+  useVW,
   PROPERTIES, TYPE_LABELS, LEADS, ADMIN_STATS, BROKERS, formatPrice,
   PropCard3, PropImg3, Filter3, Footer3, ContactForm3, Modal3, Autocomplete3, norm3,
   I3Search, I3Pin, I3Bed, I3Bath, I3Car, I3Ruler, I3Close, I3ChevL, I3ChevR, I3ChevD,
@@ -67,6 +68,7 @@ const Faq3 = ({ items }) => {
 
 // ── HOME ─────────────────────────────────────────────────────────────────────
 const Home3 = ({ onNavigate }) => {
+  const { isMobile, isNarrow } = useVW();
   const [op, setOp] = React.useState("venta");
   const [q, setQ]   = React.useState("");
   const [type, setType] = React.useState("");
@@ -81,9 +83,9 @@ const Home3 = ({ onNavigate }) => {
   return (
     <div>
       {/* ─── HERO — full bleed photo + overlay card ─── */}
-      <section style={{ position:"relative", padding:"100px 24px 28px", background:"#FAFAF8" }}>
+      <section style={{ position:"relative", padding: isMobile ? "84px 16px 24px" : "100px 24px 28px", background:"#FAFAF8" }}>
         <div style={{ maxWidth:1400, margin:"0 auto" }}>
-          <div style={{ position:"relative", borderRadius:24, overflow:"hidden", minHeight:"90vh", display:"flex", flexDirection:"column", justifyContent:"flex-start" }}>
+          <div style={{ position:"relative", borderRadius:24, overflow:"hidden", minHeight: isMobile ? "82vh" : "90vh", display:"flex", flexDirection:"column", justifyContent:"flex-start" }}>
             {/* Background — real featured photo */}
             <div style={{ position:"absolute", inset:0, background:"#0F1B2D" }}>
               {featured[0]?.image && <img src={featured[0].image} alt="" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }} />}
@@ -96,7 +98,7 @@ const Home3 = ({ onNavigate }) => {
             {/* (Badge "60 años" y tarjeta destacada del hero retirados a pedido del cliente.) */}
 
             {/* Headline */}
-            <div style={{ position:"relative", padding:"96px 48px 40px", zIndex:2 }}>
+            <div style={{ position:"relative", padding: isMobile ? "72px 22px 28px" : "96px 48px 40px", zIndex:2 }}>
               <h1 style={{ fontFamily:"var(--display)", fontSize:"clamp(40px,5vw,68px)", fontWeight:600, color:"#fff", lineHeight:1.05, letterSpacing:-1.5, maxWidth:860, marginBottom:22 }}>
                 Bienes raíces que <span style={{ fontStyle:"italic", color:"rgba(255,255,255,0.62)" }}>construyen</span> patrimonio.
               </h1>
@@ -116,11 +118,11 @@ const Home3 = ({ onNavigate }) => {
             </div>
 
             {/* Bottom search card */}
-            <div style={{ position:"relative", padding:"24px 32px 32px", zIndex:2, marginTop:"auto" }}>
-              <div style={{ background:"rgba(255,255,255,0.98)", borderRadius:18, padding:"22px 24px", boxShadow:"0 20px 60px rgba(0,0,0,0.2)", backdropFilter:"blur(8px)" }}>
+            <div style={{ position:"relative", padding: isMobile ? "16px 16px 22px" : "24px 32px 32px", zIndex:2, marginTop:"auto" }}>
+              <div style={{ background:"rgba(255,255,255,0.98)", borderRadius:18, padding: isMobile ? "18px 16px" : "22px 24px", boxShadow:"0 20px 60px rgba(0,0,0,0.2)", backdropFilter:"blur(8px)" }}>
                 <div style={{ fontFamily:"var(--display)", fontSize:20, fontWeight:700, color:"#0F1B2D", marginBottom:18 }}>Encuentra el mejor lugar</div>
 
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1.4fr 1fr", gap:14, alignItems:"end" }}>
+                <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : isNarrow ? "1fr 1fr" : "1fr 1fr 1.4fr 1fr", gap:14, alignItems:"end" }}>
                   <div>
                     <div style={{ fontFamily:"var(--sans)", fontSize:11, fontWeight:600, color:"#6B7280", marginBottom:6 }}>Buscando</div>
                     <select value={type} onChange={e => setType(e.target.value)}
@@ -183,17 +185,17 @@ const Home3 = ({ onNavigate }) => {
       </section>
 
       {/* ─── STATS strip ─── */}
-      <section style={{ padding:"8px 24px 64px", background:"#FAFAF8" }}>
-        <div style={{ maxWidth:1400, margin:"0 auto", background:"#fff", borderRadius:20, border:"1px solid #F1F1F0", boxShadow:"0 6px 28px rgba(15,27,45,0.05)", display:"grid", gridTemplateColumns:"repeat(4,1fr)", overflow:"hidden" }}>
+      <section style={{ padding: isMobile ? "8px 16px 48px" : "8px 24px 64px", background:"#FAFAF8" }}>
+        <div style={{ maxWidth:1400, margin:"0 auto", background:"#fff", borderRadius:20, border:"1px solid #F1F1F0", boxShadow:"0 6px 28px rgba(15,27,45,0.05)", display:"grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)", overflow:"hidden" }}>
           {[
             ["60+","Años de experiencia","Desde 1960"],
             ["300+","Edificios construidos","TARTAKOVSKI HNOS"],
             [String(PROPERTIES.length),"Propiedades disponibles","Venta y renta"],
             ["3,000+","Inquilinos atendidos","México y EUA"],
           ].map(([n,l,sub], i) => (
-            <div key={l} style={{ padding:"34px 32px", borderRight: i<3 ? "1px solid #F1F1F0" : "none", position:"relative" }}>
-              <div style={{ position:"absolute", top:0, left:32, width:36, height:3, background:"var(--tar)" }} />
-              <div style={{ fontFamily:"var(--display)", fontSize:52, fontWeight:700, color:"#0F1B2D", lineHeight:1, marginBottom:8, letterSpacing:-1.5 }}>{n}</div>
+            <div key={l} style={{ padding: isMobile ? "24px 20px" : "34px 32px", borderRight: isMobile ? (i % 2 === 0 ? "1px solid #F1F1F0" : "none") : (i<3 ? "1px solid #F1F1F0" : "none"), borderBottom: isMobile && i < 2 ? "1px solid #F1F1F0" : "none", position:"relative" }}>
+              <div style={{ position:"absolute", top:0, left: isMobile ? 20 : 32, width:36, height:3, background:"var(--tar)" }} />
+              <div style={{ fontFamily:"var(--display)", fontSize: isMobile ? 36 : 52, fontWeight:700, color:"#0F1B2D", lineHeight:1, marginBottom:8, letterSpacing:-1.5 }}>{n}</div>
               <div style={{ fontFamily:"var(--sans)", fontSize:14, color:"#0F1B2D", fontWeight:600, marginBottom:2 }}>{l}</div>
               <div style={{ fontFamily:"var(--sans)", fontSize:12, color:"#9CA3AF" }}>{sub}</div>
             </div>
@@ -202,8 +204,8 @@ const Home3 = ({ onNavigate }) => {
       </section>
 
       {/* ─── FEATURED — large editorial heading + cards ─── */}
-      <section style={{ padding:"32px 24px 80px", maxWidth:1400, margin:"0 auto" }}>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:36, gap:32 }}>
+      <section style={{ padding: isMobile ? "24px 16px 56px" : "32px 24px 80px", maxWidth:1400, margin:"0 auto" }}>
+        <div style={{ display:"flex", flexDirection: isMobile ? "column" : "row", justifyContent:"space-between", alignItems: isMobile ? "flex-start" : "flex-end", marginBottom:36, gap: isMobile ? 18 : 32 }}>
           <div>
             <div style={{ display:"inline-flex", alignItems:"center", gap:7, fontFamily:"var(--sans)", fontSize:11, fontWeight:700, color:"#A9802F", letterSpacing:2, textTransform:"uppercase", marginBottom:12 }}>
               <span style={{ color:"#BE8C3C" }}>★</span> Destacados
@@ -217,14 +219,14 @@ const Home3 = ({ onNavigate }) => {
             Ver todas <I3ChevR s={14}/>
           </button>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:24 }}>
+        <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : isNarrow ? "repeat(2,1fr)" : "repeat(3,1fr)", gap:24 }}>
           {featured.map(p => <PropCard3 key={p.id} property={p} onClick={pp => onNavigate("detail",pp.id)} saved={saved.has(p.id)} onSave={toggleSave} />)}
         </div>
       </section>
 
       {/* ─── DISCOVER w/ map snippet ─── */}
-      <section style={{ padding:"40px 24px 80px", background:"#fff" }}>
-        <div style={{ maxWidth:1400, margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1fr", gap:48, alignItems:"center" }}>
+      <section style={{ padding: isMobile ? "28px 16px 56px" : "40px 24px 80px", background:"#fff" }}>
+        <div style={{ maxWidth:1400, margin:"0 auto", display:"grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 28 : 48, alignItems:"center" }}>
           {/* Map preview — mapa real (Leaflet); en producción será Google Maps */}
           <div style={{ position:"relative", height:380, borderRadius:18, overflow:"hidden", background:"#E8EDE5", border:"1px solid #F1F1F0" }}>
             <MiniMap3 onNavigate={onNavigate} />
@@ -251,24 +253,24 @@ const Home3 = ({ onNavigate }) => {
       </section>
 
       {/* ─── ALL CATALOG preview ─── */}
-      <section style={{ padding:"40px 24px 80px", background:"#FAFAF8" }}>
+      <section style={{ padding: isMobile ? "28px 16px 56px" : "40px 24px 80px", background:"#FAFAF8" }}>
         <div style={{ maxWidth:1400, margin:"0 auto" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:36, gap:32 }}>
+          <div style={{ display:"flex", flexDirection: isMobile ? "column" : "row", justifyContent:"space-between", alignItems: isMobile ? "flex-start" : "flex-end", marginBottom:36, gap: isMobile ? 18 : 32 }}>
             <div>
               <div style={{ fontFamily:"var(--sans)", fontSize:11, fontWeight:600, color:"var(--tar)", letterSpacing:2, textTransform:"uppercase", marginBottom:12 }}>Catálogo completo</div>
               <h2 style={{ fontFamily:"var(--display)", fontSize:"clamp(28px,3.5vw,42px)", fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5, lineHeight:1.1 }}>Explora todo el inventario</h2>
               <p style={{ fontFamily:"var(--sans)", fontSize:14, color:"#6B7280", marginTop:8 }}>Departamentos, oficinas, locales y bodegas en las mejores zonas de México.</p>
             </div>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:24 }}>
+          <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : isNarrow ? "repeat(2,1fr)" : "repeat(3,1fr)", gap:24 }}>
             {all.slice(3,9).map(p => <PropCard3 key={p.id} property={p} onClick={pp => onNavigate("detail",pp.id)} saved={saved.has(p.id)} onSave={toggleSave} />)}
           </div>
         </div>
       </section>
 
       {/* ─── FAQ + EXPERT BAND ─── */}
-      <section style={{ padding:"60px 24px 80px", background:"#fff" }}>
-        <div style={{ maxWidth:1400, margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1.4fr", gap:48 }}>
+      <section style={{ padding: isMobile ? "40px 16px 56px" : "60px 24px 80px", background:"#fff" }}>
+        <div style={{ maxWidth:1400, margin:"0 auto", display:"grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1.4fr", gap: isMobile ? 28 : 48 }}>
           <div>
             <div style={{ fontFamily:"var(--sans)", fontSize:11, fontWeight:600, color:"var(--tar)", letterSpacing:2, textTransform:"uppercase", marginBottom:12 }}>FAQ</div>
             <h2 style={{ fontFamily:"var(--display)", fontSize:"clamp(28px,3.5vw,40px)", fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5, lineHeight:1.1, marginBottom:16 }}>Preguntas<br />frecuentes</h2>
@@ -290,6 +292,8 @@ const Home3 = ({ onNavigate }) => {
 
 // ── LISTINGS ─────────────────────────────────────────────────────────────────
 const Listings3 = ({ onNavigate, initialFilters = {} }) => {
+  const { isMobile, isNarrow } = useVW();
+  const [showFilters, setShowFilters] = React.useState(false);
   const [filters, setFilters] = React.useState({ ...DEF_F3, ...initialFilters });
   const [view, setView] = React.useState("grid");
   const [sort, setSort] = React.useState("recent");
@@ -330,7 +334,7 @@ const Listings3 = ({ onNavigate, initialFilters = {} }) => {
     <div style={{ paddingTop:84, minHeight:"100vh", background:"#FAFAF8" }}>
       {/* Top bar */}
       <div style={{ background:"#fff", borderBottom:"1px solid #F1F1F0" }}>
-        <div style={{ maxWidth:1400, margin:"0 auto", padding:"16px 32px", display:"flex", justifyContent:"space-between", alignItems:"center", gap:16 }}>
+        <div style={{ maxWidth:1400, margin:"0 auto", padding: isMobile ? "14px 16px" : "16px 32px", display:"flex", justifyContent:"space-between", alignItems:"center", gap:16, flexWrap:"wrap" }}>
           <div>
             <div style={{ fontFamily:"var(--display)", fontSize:24, fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5 }}>Propiedades</div>
             <div style={{ fontFamily:"var(--sans)", fontSize:13, color:"#6B7280", marginTop:2 }}><strong style={{ color:"#0F1B2D" }}>{list.length}</strong> resultados</div>
@@ -356,34 +360,48 @@ const Listings3 = ({ onNavigate, initialFilters = {} }) => {
         </div>
       </div>
 
-      <div style={{ maxWidth:1400, margin:"0 auto", padding:"28px 32px", display:"flex", gap:28 }}>
-        {/* Sidebar */}
-        <div style={{ width:240, flexShrink:0 }}>
-          <div style={{ position:"sticky", top:100, background:"#fff", borderRadius:16, padding:"22px 20px", border:"1px solid #F1F1F0" }}>
-            <div style={{ fontFamily:"var(--display)", fontSize:16, fontWeight:700, color:"#0F1B2D", marginBottom:18 }}>Filtros</div>
-            <Filter3 filters={filters} onChange={f => { setFilters(f); setPage(1); }} />
+      <div style={{ maxWidth:1400, margin:"0 auto", padding: isMobile ? "20px 16px" : "28px 32px", display:"flex", flexDirection: isNarrow ? "column" : "row", gap: isNarrow ? 16 : 28 }}>
+        {/* Sidebar — escritorio: barra lateral sticky; estrecho: panel colapsable */}
+        {isNarrow ? (
+          <div>
+            <button onClick={() => setShowFilters(s => !s)}
+              style={{ display:"flex", alignItems:"center", gap:8, padding:"11px 18px", border:"1px solid #E5E5E4", background:"#fff", fontFamily:"var(--sans)", fontSize:14, color:"#0F1B2D", cursor:"pointer", borderRadius:24, fontWeight:600 }}>
+              Filtros <span style={{ color:"#9CA3AF", fontSize:18, lineHeight:1, transition:"transform 0.2s", transform: showFilters ? "rotate(45deg)" : "rotate(0deg)" }}>+</span>
+            </button>
+            {showFilters && (
+              <div style={{ marginTop:14, background:"#fff", borderRadius:16, padding:"22px 20px", border:"1px solid #F1F1F0" }}>
+                <Filter3 filters={filters} onChange={f => { setFilters(f); setPage(1); }} />
+              </div>
+            )}
           </div>
-        </div>
+        ) : (
+          <div style={{ width:240, flexShrink:0 }}>
+            <div style={{ position:"sticky", top:100, background:"#fff", borderRadius:16, padding:"22px 20px", border:"1px solid #F1F1F0" }}>
+              <div style={{ fontFamily:"var(--display)", fontSize:16, fontWeight:700, color:"#0F1B2D", marginBottom:18 }}>Filtros</div>
+              <Filter3 filters={filters} onChange={f => { setFilters(f); setPage(1); }} />
+            </div>
+          </div>
+        )}
 
         {/* Results */}
-        <div style={{ flex:1 }}>
+        <div style={{ flex:1, minWidth:0 }}>
           {items.length === 0 ? (
             <div style={{ textAlign:"center", padding:"80px 0", color:"#6B7280", fontFamily:"var(--sans)" }}>
               <div style={{ fontFamily:"var(--display)", fontSize:24, color:"#0F1B2D", marginBottom:8 }}>Sin resultados</div>
               <div style={{ fontSize:14 }}>Prueba ajustando los filtros</div>
             </div>
           ) : view === "grid" ? (
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}>
+            <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : isNarrow ? "repeat(2,1fr)" : "repeat(3,1fr)", gap:20 }}>
               {items.map(p => <PropCard3 key={p.id} property={p} onClick={pp => onNavigate("detail",pp.id)} saved={saved.has(p.id)} onSave={toggle} />)}
             </div>
           ) : (
             <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
               {items.map(p => (
                 <div key={p.id} onClick={() => onNavigate("detail",p.id)}
-                  style={{ background:"#fff", display:"flex", cursor:"pointer", borderRadius:14, overflow:"hidden", border:"1px solid #F1F1F0", transition:"box-shadow 0.2s, transform 0.2s" }}
+                  style={{ background:"#fff", display:"flex", flexDirection: isMobile ? "column" : "row", cursor:"pointer", borderRadius:14, overflow:"hidden", border:"1px solid #F1F1F0", transition:"box-shadow 0.2s, transform 0.2s" }}
                   onMouseEnter={e => { e.currentTarget.style.boxShadow="0 8px 24px rgba(0,0,0,0.08)"; e.currentTarget.style.transform="translateY(-2px)"; }}
                   onMouseLeave={e => { e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="none"; }}>
-                  <div style={{ width:260, flexShrink:0, position:"relative" }}><PropImg3 property={p} height={180} rounded={false} /></div>
+                  <div style={{ width: isMobile ? "100%" : 260, flexShrink:0, position:"relative" }}><PropImg3 property={p} height={180} rounded={false} /></div>
                   <div style={{ padding:"20px 24px", flex:1, display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
                     <div>
                       <div style={{ display:"flex", alignItems:"center", gap:5, fontFamily:"var(--sans)", fontSize:12, color:"#6B7280", marginBottom:8 }}><I3Pin s={11}/>{p.location}</div>
@@ -422,6 +440,7 @@ const Listings3 = ({ onNavigate, initialFilters = {} }) => {
 
 // ── MAP — Habitect-inspired split layout with price pill markers ──────────────
 const Map3 = ({ onNavigate }) => {
+  const { isMobile, isNarrow } = useVW();
   const mapRef  = React.useRef(null);
   const mapInst = React.useRef(null);
   const markersRef = React.useRef({});
@@ -575,9 +594,9 @@ const Map3 = ({ onNavigate }) => {
   });
 
   return (
-    <div style={{ paddingTop: 84, height: "100vh", display: "flex", background: "#FAFAF8" }}>
+    <div style={{ paddingTop: 84, height: "100vh", display: "flex", flexDirection: isNarrow ? "column" : "row", background: "#FAFAF8" }}>
       {/* ── LEFT: List + search ── */}
-      <div style={{ width: 540, background: "#fff", display: "flex", flexDirection: "column", overflow: "hidden", borderRight: "1px solid #F1F1F0", flexShrink: 0 }}>
+      <div style={{ width: isNarrow ? "100%" : 540, background: "#fff", display: "flex", flexDirection: "column", overflow: "hidden", borderRight: isNarrow ? "none" : "1px solid #F1F1F0", flexShrink: 0, order: isNarrow ? 2 : 0, flex: isNarrow ? 1 : "none", minHeight: 0 }}>
         {/* Search */}
         <div style={{ padding: "20px 24px 14px", borderBottom: "1px solid #F1F1F0" }}>
           <div style={{ position: "relative" }}>
@@ -662,7 +681,7 @@ const Map3 = ({ onNavigate }) => {
       </div>
 
       {/* ── RIGHT: Map ── */}
-      <div style={{ flex: 1, position: "relative" }}>
+      <div style={{ flex: isNarrow ? "none" : 1, height: isNarrow ? "42vh" : "auto", position: "relative", order: isNarrow ? 1 : 0 }}>
         <div ref={mapRef} style={{ position:"absolute", inset:0 }} />
 
         {/* "Buscar en esta área" — re-busca por el área visible al desplazar el mapa (PRD §7.1) */}
@@ -730,6 +749,7 @@ const mapBtnStyle = {
 
 // ── DETAIL ────────────────────────────────────────────────────────────────────
 const Detail3 = ({ propertyId, onNavigate }) => {
+  const { isMobile, isNarrow } = useVW();
   const p = PROPERTIES.find(x => x.id === propertyId) || PROPERTIES[0];
   const similar = PROPERTIES.filter(x => x.type===p.type && x.id!==p.id).slice(0,3);
   const [saved, setSaved] = React.useState(false);
@@ -758,8 +778,8 @@ const Detail3 = ({ propertyId, onNavigate }) => {
       </div>
 
       {/* Gallery — main + 3 thumb grid */}
-      <div style={{ maxWidth:1400, margin:"0 auto", padding:"0 32px 24px" }}>
-        <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr", gap:8, borderRadius:18, overflow:"hidden", height:480 }}>
+      <div style={{ maxWidth:1400, margin:"0 auto", padding: isMobile ? "0 16px 20px" : "0 32px 24px" }}>
+        <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr", gap:8, borderRadius:18, overflow:"hidden", height: isMobile ? 280 : 480 }}>
           <div style={{ position:"relative", overflow:"hidden", background:p.color }}>
             {mainImg ? (
               <img src={mainImg} alt={p.title} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }} />
@@ -770,6 +790,7 @@ const Detail3 = ({ propertyId, onNavigate }) => {
               {p.operation === "venta" ? "En venta" : "En renta"}
             </div>
           </div>
+          {!isMobile && (
           <div style={{ display:"grid", gridTemplateRows:"1fr 1fr 1fr", gap:8 }}>
             {thumbs.map((src,i) => (
               <div key={i} onClick={() => setImg(i+1)} style={{ position:"relative", cursor:"pointer", overflow:"hidden", background:p.color, border: img===i+1 ? "2px solid var(--tar)" : "none" }}>
@@ -780,6 +801,7 @@ const Detail3 = ({ propertyId, onNavigate }) => {
               </div>
             ))}
           </div>
+          )}
         </div>
         {/* Thumbnail strip */}
         {gallery.length > 1 && (
@@ -794,12 +816,12 @@ const Detail3 = ({ propertyId, onNavigate }) => {
       </div>
 
       {/* Content + Sidebar */}
-      <div style={{ maxWidth:1400, margin:"0 auto", padding:"16px 32px 48px" }}>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 400px", gap:36 }}>
+      <div style={{ maxWidth:1400, margin:"0 auto", padding: isMobile ? "12px 16px 40px" : "16px 32px 48px" }}>
+        <div style={{ display:"grid", gridTemplateColumns: isNarrow ? "1fr" : "1fr 400px", gap: isNarrow ? 20 : 36 }}>
           {/* Left */}
           <div>
             {/* Title block */}
-            <div style={{ background:"#fff", borderRadius:18, padding:"28px 32px", border:"1px solid #F1F1F0", marginBottom:20 }}>
+            <div style={{ background:"#fff", borderRadius:18, padding: isMobile ? "20px 18px" : "28px 32px", border:"1px solid #F1F1F0", marginBottom:20 }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16, marginBottom:14 }}>
                 <div>
                   <div style={{ display:"flex", gap:8, marginBottom:14, flexWrap:"wrap" }}>
@@ -826,15 +848,15 @@ const Detail3 = ({ propertyId, onNavigate }) => {
             </div>
 
             {/* Description */}
-            <div style={{ background:"#fff", borderRadius:18, padding:"28px 32px", border:"1px solid #F1F1F0", marginBottom:20 }}>
+            <div style={{ background:"#fff", borderRadius:18, padding: isMobile ? "20px 18px" : "28px 32px", border:"1px solid #F1F1F0", marginBottom:20 }}>
               <h3 style={{ fontFamily:"var(--display)", fontSize:22, fontWeight:700, color:"#0F1B2D", marginBottom:16 }}>Descripción</h3>
               <p style={{ fontFamily:"var(--sans)", fontSize:15, color:"#374151", lineHeight:1.8 }}>{p.description}</p>
             </div>
 
             {/* Features */}
-            <div style={{ background:"#fff", borderRadius:18, padding:"28px 32px", border:"1px solid #F1F1F0", marginBottom:20 }}>
+            <div style={{ background:"#fff", borderRadius:18, padding: isMobile ? "20px 18px" : "28px 32px", border:"1px solid #F1F1F0", marginBottom:20 }}>
               <h3 style={{ fontFamily:"var(--display)", fontSize:22, fontWeight:700, color:"#0F1B2D", marginBottom:18 }}>Características</h3>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:12 }}>
+              <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2,1fr)", gap:12 }}>
                 {p.features.map(f => (
                   <div key={f} style={{ display:"flex", alignItems:"center", gap:10, fontFamily:"var(--sans)", fontSize:14, color:"#374151", padding:"8px 0" }}>
                     <div style={{ width:24, height:24, borderRadius:"50%", background:"#FFF0F2", color:"var(--tar)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><I3Check s={13}/></div>
@@ -845,9 +867,9 @@ const Detail3 = ({ propertyId, onNavigate }) => {
             </div>
 
             {/* Quick facts */}
-            <div style={{ background:"#fff", borderRadius:18, padding:"28px 32px", border:"1px solid #F1F1F0" }}>
+            <div style={{ background:"#fff", borderRadius:18, padding: isMobile ? "20px 18px" : "28px 32px", border:"1px solid #F1F1F0" }}>
               <h3 style={{ fontFamily:"var(--display)", fontSize:22, fontWeight:700, color:"#0F1B2D", marginBottom:18 }}>Datos</h3>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:0 }}>
+              <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2,1fr)", gap:0 }}>
                 {[["Tipo",TYPE_LABELS[p.type]],["Operación",p.operation.charAt(0).toUpperCase()+p.operation.slice(1)],["Superficie",`${p.area} m²`],
                   ...(p.area>0 ? [["Precio por m²", p.priceUnit==="m2"
                       ? `$${p.price.toLocaleString("es-MX")} ${p.currency}/m²${p.operation==="renta"?"/mes":""}`
@@ -864,7 +886,7 @@ const Detail3 = ({ propertyId, onNavigate }) => {
 
           {/* Right — Sticky contact form */}
           <div>
-            <div style={{ position:"sticky", top:100 }}>
+            <div style={{ position: isNarrow ? "static" : "sticky", top:100 }}>
               <ContactForm3 property={p} />
 
               {/* Trust badge */}
@@ -883,7 +905,7 @@ const Detail3 = ({ propertyId, onNavigate }) => {
         {similar.length > 0 && (
           <div style={{ marginTop:60 }}>
             <h2 style={{ fontFamily:"var(--display)", fontSize:32, fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5, marginBottom:24 }}>Propiedades similares</h2>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}>
+            <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : isNarrow ? "repeat(2,1fr)" : "repeat(3,1fr)", gap:20 }}>
               {similar.map(pp => <PropCard3 key={pp.id} property={pp} onClick={x => onNavigate("detail",x.id)} />)}
             </div>
           </div>

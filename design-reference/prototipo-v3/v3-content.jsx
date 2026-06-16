@@ -1,9 +1,10 @@
 // TAR Internacional v3 — Content pages: Nosotros + Aviso de Privacidad
 
-const { Footer3, S, I3Check, I3ChevL, I3Pin, I3Verif } = window;
+const { Footer3, S, I3Check, I3ChevL, I3Pin, I3Verif, useVW } = window;
 
 // ── NOSOTROS ──────────────────────────────────────────────────────────────────
 const Nosotros3 = ({ onNavigate }) => {
+  const { isMobile, isNarrow } = useVW();
   // Foto real del inventario para el hero (en lugar de solo el degradado).
   const heroImg = (window.PROPERTIES || []).find(p => p.image)?.image;
   const valores = [
@@ -50,7 +51,7 @@ const Nosotros3 = ({ onNavigate }) => {
           <div style={{ position:"absolute", inset:0, backgroundImage:"repeating-linear-gradient(135deg,transparent,transparent 50px,rgba(255,255,255,0.025) 50px,rgba(255,255,255,0.025) 100px)" }} />
           <div style={{ position:"absolute", inset:0, background:"linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, transparent 40%, rgba(0,0,0,0.55) 100%)" }} />
         </div>
-        <div style={{ position:"relative", zIndex:1, maxWidth:1400, margin:"0 auto", padding:"100px 40px 56px", width:"100%" }}>
+        <div style={{ position:"relative", zIndex:1, maxWidth:1400, margin:"0 auto", padding: isMobile ? "72px 20px 40px" : "100px 40px 56px", width:"100%" }}>
           <div style={{ fontFamily:"var(--mono)", fontSize:11, color:"rgba(255,255,255,0.6)", letterSpacing:3, textTransform:"uppercase", marginBottom:20, borderTop:"1px solid var(--tar)", paddingTop:10, display:"inline-block" }}>Nosotros</div>
           <h1 style={{ fontFamily:"var(--display)", fontSize:"clamp(40px,5.5vw,72px)", fontWeight:600, color:"#fff", lineHeight:1.05, letterSpacing:-1.5, maxWidth:880, marginBottom:20 }}>
             60 años formando parte de la historia de muchas personas
@@ -62,8 +63,8 @@ const Nosotros3 = ({ onNavigate }) => {
       </section>
 
       {/* Stats strip */}
-      <section style={{ background:"var(--tar)", padding:"36px 40px" }}>
-        <div style={{ maxWidth:1400, margin:"0 auto", display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:24 }}>
+      <section style={{ background:"var(--tar)", padding: isMobile ? "32px 20px" : "36px 40px" }}>
+        <div style={{ maxWidth:1400, margin:"0 auto", display:"grid", gridTemplateColumns: isMobile ? "repeat(2,1fr)" : "repeat(4,1fr)", gap:24 }}>
           {stats.map(s => (
             <div key={s.l} style={{ textAlign:"center" }}>
               <div style={{ fontFamily:"var(--display)", fontSize:44, fontWeight:700, color:"#fff", letterSpacing:-1, lineHeight:1 }}>{s.n}</div>
@@ -74,8 +75,8 @@ const Nosotros3 = ({ onNavigate }) => {
       </section>
 
       {/* Story */}
-      <section style={{ padding:"80px 40px", maxWidth:1400, margin:"0 auto" }}>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1.3fr", gap:64, alignItems:"start" }}>
+      <section style={{ padding: isMobile ? "48px 20px" : "80px 40px", maxWidth:1400, margin:"0 auto" }}>
+        <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1.3fr", gap: isMobile ? 32 : 64, alignItems:"start" }}>
           <div>
             <div style={{ fontFamily:"var(--mono)", fontSize:11, color:"var(--tar)", letterSpacing:2, textTransform:"uppercase", marginBottom:14 }}>Quiénes somos</div>
             <h2 style={{ fontFamily:"var(--display)", fontSize:"clamp(30px,3.5vw,46px)", fontWeight:600, color:"#0F1B2D", letterSpacing:-1, lineHeight:1.1 }}>
@@ -91,10 +92,10 @@ const Nosotros3 = ({ onNavigate }) => {
       </section>
 
       {/* Timeline */}
-      <section style={{ background:"#FAFAF8", padding:"72px 40px" }}>
+      <section style={{ background:"#FAFAF8", padding: isMobile ? "48px 20px" : "72px 40px" }}>
         <div style={{ maxWidth:1400, margin:"0 auto" }}>
           <h2 style={{ fontFamily:"var(--display)", fontSize:"clamp(28px,3.5vw,40px)", fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5, marginBottom:48, textAlign:"center" }}>Nuestra trayectoria</h2>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:24 }}>
+          <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : (isNarrow ? "repeat(2,1fr)" : "repeat(3,1fr)"), gap:24 }}>
             {timeline.map((t, i) => (
               <div key={i} style={{ background:"#fff", borderRadius:16, padding:"32px 28px", border:"1px solid #F1F1F0", position:"relative", overflow:"hidden" }}>
                 <div style={{ position:"absolute", top:0, left:0, right:0, height:4, background:"var(--tar)" }} />
@@ -108,10 +109,10 @@ const Nosotros3 = ({ onNavigate }) => {
       </section>
 
       {/* Misión / Visión / Filosofía */}
-      <section style={{ padding:"80px 40px", maxWidth:1400, margin:"0 auto" }}>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:2, borderRadius:18, overflow:"hidden", border:"1px solid #F1F1F0" }}>
+      <section style={{ padding: isMobile ? "48px 20px" : "80px 40px", maxWidth:1400, margin:"0 auto" }}>
+        <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)", gap:2, borderRadius:18, overflow:"hidden", border:"1px solid #F1F1F0" }}>
           {pilares.map((p, i) => (
-            <div key={p.label} style={{ background:"#fff", padding:"40px 36px", borderRight: i<2 ? "1px solid #F1F1F0" : "none" }}>
+            <div key={p.label} style={{ background:"#fff", padding: isMobile ? "32px 24px" : "40px 36px", borderRight: !isMobile && i<2 ? "1px solid #F1F1F0" : "none", borderBottom: isMobile && i<2 ? "1px solid #F1F1F0" : "none" }}>
               <div style={{ width:44, height:44, borderRadius:12, background:"#FFF0F2", color:"var(--tar)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:20 }}>
                 <I3Verif s={22}/>
               </div>
@@ -123,7 +124,7 @@ const Nosotros3 = ({ onNavigate }) => {
       </section>
 
       {/* Valores */}
-      <section style={{ background:"#0F1B2D", padding:"72px 40px" }}>
+      <section style={{ background:"#0F1B2D", padding: isMobile ? "48px 20px" : "72px 40px" }}>
         <div style={{ maxWidth:1400, margin:"0 auto", textAlign:"center" }}>
           <div style={{ fontFamily:"var(--mono)", fontSize:11, color:"rgba(255,255,255,0.5)", letterSpacing:2, textTransform:"uppercase", marginBottom:14 }}>Lo que nos define</div>
           <h2 style={{ fontFamily:"var(--display)", fontSize:"clamp(28px,3.5vw,42px)", fontWeight:600, color:"#fff", letterSpacing:-0.5, marginBottom:40 }}>Nuestros valores</h2>
@@ -142,7 +143,7 @@ const Nosotros3 = ({ onNavigate }) => {
       </section>
 
       {/* CTA */}
-      <section style={{ padding:"72px 40px", background:"#FAFAF8" }}>
+      <section style={{ padding: isMobile ? "48px 20px" : "72px 40px", background:"#FAFAF8" }}>
         <div style={{ maxWidth:1400, margin:"0 auto", display:"flex", justifyContent:"space-between", alignItems:"center", gap:32, flexWrap:"wrap" }}>
           <div>
             <h2 style={{ fontFamily:"var(--display)", fontSize:"clamp(26px,3vw,40px)", fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5, lineHeight:1.1, marginBottom:8 }}>
@@ -170,6 +171,7 @@ const Nosotros3 = ({ onNavigate }) => {
 
 // ── AVISO DE PRIVACIDAD ───────────────────────────────────────────────────────
 const Privacidad3 = ({ onNavigate }) => {
+  const { isMobile } = useVW();
   const secciones = [
     {
       h: "1. Responsable del tratamiento de sus datos personales",
@@ -207,7 +209,7 @@ const Privacidad3 = ({ onNavigate }) => {
   return (
     <div style={{ paddingTop:64, background:"#FAFAF8", minHeight:"100vh" }}>
       {/* Header band */}
-      <section style={{ background:"#0F1B2D", padding:"56px 40px" }}>
+      <section style={{ background:"#0F1B2D", padding: isMobile ? "40px 20px" : "56px 40px" }}>
         <div style={{ maxWidth:900, margin:"0 auto" }}>
           <button onClick={() => onNavigate("home")} style={{ background:"none", border:"none", cursor:"pointer", fontFamily:"var(--sans)", fontSize:13, color:"rgba(255,255,255,0.6)", display:"flex", alignItems:"center", gap:6, marginBottom:24 }}>
             <I3ChevL s={14}/> Volver al inicio
@@ -219,15 +221,15 @@ const Privacidad3 = ({ onNavigate }) => {
       </section>
 
       {/* Notice banner */}
-      <div style={{ maxWidth:900, margin:"0 auto", padding:"24px 40px 0" }}>
+      <div style={{ maxWidth:900, margin:"0 auto", padding: isMobile ? "24px 20px 0" : "24px 40px 0" }}>
         <div style={{ background:"#FFF8E1", border:"1px solid #FCD34D", borderRadius:10, padding:"14px 18px", fontFamily:"var(--sans)", fontSize:13, color:"#92400E", lineHeight:1.6 }}>
           <strong>Nota interna (no visible en producción):</strong> este es un texto base conforme a la LFPDPPP. Sustituye cada sección con el texto oficial de tu aviso de privacidad (el PDF entregado es escaneado y no se pudo extraer automáticamente).
         </div>
       </div>
 
       {/* Content */}
-      <section style={{ maxWidth:900, margin:"0 auto", padding:"32px 40px 80px" }}>
-        <div style={{ background:"#fff", borderRadius:16, padding:"48px 56px", border:"1px solid #F1F1F0" }}>
+      <section style={{ maxWidth:900, margin:"0 auto", padding: isMobile ? "32px 20px 64px" : "32px 40px 80px" }}>
+        <div style={{ background:"#fff", borderRadius:16, padding: isMobile ? "26px 20px" : "48px 56px", border:"1px solid #F1F1F0" }}>
           <p style={{ fontFamily:"var(--sans)", fontSize:16, color:"#374151", lineHeight:1.8, marginBottom:36, paddingBottom:28, borderBottom:"1px solid #F1F1F0" }}>
             En <strong style={{ color:"#0F1B2D" }}>TAR Internacional</strong> tu privacidad es muy importante para nosotros. A continuación te explicamos cómo recabamos, usamos y protegemos tus datos personales.
           </p>

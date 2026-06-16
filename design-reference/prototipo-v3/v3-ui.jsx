@@ -2,6 +2,21 @@
 
 const { TYPE_LABELS, formatPrice, ZONES } = window;
 
+// ── Responsive: viewport hook ─────────────────────────────────────────────────
+// Los estilos inline no admiten media queries, así que el responsive se resuelve
+// en JS: este hook re-renderiza al cambiar el ancho y expone los breakpoints.
+// móvil < 768 · tablet 768–1023 · escritorio ≥ 1024 (isNarrow = móvil o tablet).
+const useVW = () => {
+  const [w, setW] = React.useState(typeof window !== "undefined" ? window.innerWidth : 1280);
+  React.useEffect(() => {
+    const fn = () => setW(window.innerWidth);
+    window.addEventListener("resize", fn);
+    return () => window.removeEventListener("resize", fn);
+  }, []);
+  return { w, isMobile: w < 768, isTablet: w >= 768 && w < 1024, isDesktop: w >= 1024, isNarrow: w < 1024 };
+};
+window.useVW = useVW;
+
 // ── Minimal icons ────────────────────────────────────────────────────────────
 const S = ({ d, s = 16, f = "none", sw = 1.8 }) => (
   <svg width={s} height={s} viewBox="0 0 24 24" fill={f} stroke="currentColor"
@@ -192,6 +207,8 @@ const PropCard3 = ({ property, onClick, saved, onSave }) => {
 // ── Header — light/sticky/white ───────────────────────────────────────────────
 const Header3 = ({ page, onNavigate }) => {
   const [scrolled, setScrolled] = React.useState(false);
+  const [menu, setMenu] = React.useState(false);
+  const { isNarrow } = useVW();
   React.useEffect(() => {
     const el = document.getElementById("v3-scroll");
     if (!el) return;
@@ -199,12 +216,16 @@ const Header3 = ({ page, onNavigate }) => {
     el.addEventListener("scroll", fn);
     return () => el.removeEventListener("scroll", fn);
   }, []);
+  // El menú móvil siempre se cierra al ensanchar a escritorio.
+  React.useEffect(() => { if (!isNarrow) setMenu(false); }, [isNarrow]);
   const isHome = page === "home";
-  const floating = isHome && !scrolled;
+  const floating = isHome && !scrolled && !menu;
+
+  const items = [["home","Inicio"],["listings","Propiedades"],["map","Mapa"],["nosotros","Nosotros"],["admin","Admin"]];
 
   const nav = (k, l) => (
     <button key={k} onClick={() => onNavigate(k)}
-      style={{ background:"none", border:"none", cursor:"pointer", fontFamily:"var(--sans)", fontSize:14, fontWeight:500,
+      style={{ border:"none", cursor:"pointer", fontFamily:"var(--sans)", fontSize:14, fontWeight:500,
         color: page===k ? "var(--tar)" : floating ? "#0F1B2D" : "#374151",
         padding:"8px 14px", borderRadius:24, transition:"all 0.15s",
         background: page===k ? (floating?"rgba(255,255,255,0.85)":"#FFF0F2") : "transparent" }}>
@@ -218,32 +239,53 @@ const Header3 = ({ page, onNavigate }) => {
       borderBottom: floating ? "none" : "1px solid #F1F1F0",
       backdropFilter: floating ? "none" : "blur(8px)",
       transition:"background 0.3s, border-color 0.3s" }}>
-      <div style={{ maxWidth:1400, margin:"0 auto", padding:"16px 32px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:24 }}>
+      <div style={{ maxWidth:1400, margin:"0 auto", padding: isNarrow ? "12px 18px" : "16px 32px", display:"flex", alignItems:"center", justifyContent:"space-between", gap: isNarrow ? 12 : 24 }}>
         {/* Logo */}
         {/* Header: logo original (SVG con fondo blanco, bloque rojo + texto). Va bien
             sobre el header blanco; con sombra suave al flotar sobre el hero oscuro.
             El logo blanco (.webp) se usa en el footer (fondo navy). */}
         <div onClick={() => onNavigate("home")} style={{ cursor:"pointer", display:"flex", alignItems:"center", gap:10, flexShrink:0 }}>
-          <img src="assets/tar-logo.svg" alt="TAR Internacional" style={{ height:50, width:"auto", display:"block", borderRadius:6, boxShadow: floating ? "0 2px 12px rgba(0,0,0,0.22)" : "none" }} />
+          <img src="assets/tar-logo.svg" alt="TAR Internacional" style={{ height: isNarrow ? 40 : 50, width:"auto", display:"block", borderRadius:6, boxShadow: floating ? "0 2px 12px rgba(0,0,0,0.22)" : "none" }} />
         </div>
-        {/* Nav — pill container */}
-        <nav style={{ display:"flex", alignItems:"center", gap:4, background: floating?"rgba(255,255,255,0.7)":"#F7F7F6", padding:"5px", borderRadius:30, border: floating?"1px solid rgba(255,255,255,0.4)":"1px solid #F1F1F0", backdropFilter:"blur(6px)" }}>
-          {nav("home","Inicio")}
-          {nav("listings","Propiedades")}
-          {nav("map","Mapa")}
-          {nav("nosotros","Nosotros")}
-          {/* "Admin" VISIBLE solo para la demo del prototipo (para que el cliente vea el panel).
-              En producción NO se enlaza desde la web pública: será un subdominio aparte
-              (p.ej. panel.tarinternacional.com) detrás de login. */}
-          {nav("admin","Admin")}
-        </nav>
-        {/* CTA */}
-        <button onClick={() => onNavigate("contact")}
-          style={{ background:"var(--tar)", color:"#fff", border:"none", cursor:"pointer",
-            fontFamily:"var(--sans)", fontSize:14, fontWeight:600, padding:"10px 22px", borderRadius:24, letterSpacing:0.3, whiteSpace:"nowrap", flexShrink:0 }}>
-          Contacto
-        </button>
+
+        {/* Desktop: nav pill + CTA · Narrow: hamburguesa */}
+        {!isNarrow && (
+          <nav style={{ display:"flex", alignItems:"center", gap:4, background: floating?"rgba(255,255,255,0.7)":"#F7F7F6", padding:"5px", borderRadius:30, border: floating?"1px solid rgba(255,255,255,0.4)":"1px solid #F1F1F0", backdropFilter:"blur(6px)" }}>
+            {/* "Admin" VISIBLE solo para la demo del prototipo (para que el cliente vea el panel).
+                En producción NO se enlaza desde la web pública: será un subdominio aparte
+                (p.ej. panel.tarinternacional.com) detrás de login. */}
+            {items.map(([k,l]) => nav(k,l))}
+          </nav>
+        )}
+        {!isNarrow ? (
+          <button onClick={() => onNavigate("contact")}
+            style={{ background:"var(--tar)", color:"#fff", border:"none", cursor:"pointer",
+              fontFamily:"var(--sans)", fontSize:14, fontWeight:600, padding:"10px 22px", borderRadius:24, letterSpacing:0.3, whiteSpace:"nowrap", flexShrink:0 }}>
+            Contacto
+          </button>
+        ) : (
+          <button onClick={() => setMenu(m => !m)} aria-label="Menú"
+            style={{ background: floating ? "rgba(255,255,255,0.92)" : "#F7F7F6", color:"#0F1B2D", border: floating ? "none" : "1px solid #F1F1F0", cursor:"pointer", width:42, height:42, borderRadius:12, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow: floating ? "0 2px 10px rgba(0,0,0,0.15)" : "none" }}>
+            <S s={22} d={menu ? ["M18 6L6 18","M6 6l12 12"] : ["M3 6h18","M3 12h18","M3 18h18"]} />
+          </button>
+        )}
       </div>
+
+      {/* Menú desplegable móvil */}
+      {isNarrow && menu && (
+        <div style={{ background:"rgba(255,255,255,0.98)", borderTop:"1px solid #F1F1F0", backdropFilter:"blur(8px)", padding:"10px 18px 18px", display:"flex", flexDirection:"column", gap:4, boxShadow:"0 14px 30px rgba(15,27,45,0.10)" }}>
+          {items.map(([k,l]) => (
+            <button key={k} onClick={() => { onNavigate(k); setMenu(false); }}
+              style={{ textAlign:"left", padding:"13px 14px", background: page===k ? "#FFF0F2" : "transparent", color: page===k ? "var(--tar)" : "#0F1B2D", border:"none", borderRadius:10, fontFamily:"var(--sans)", fontSize:15, fontWeight:500, cursor:"pointer" }}>
+              {l}
+            </button>
+          ))}
+          <button onClick={() => { onNavigate("contact"); setMenu(false); }}
+            style={{ marginTop:6, background:"var(--tar)", color:"#fff", border:"none", padding:"14px 0", borderRadius:12, fontFamily:"var(--sans)", fontSize:15, fontWeight:600, cursor:"pointer" }}>
+            Contacto
+          </button>
+        </div>
+      )}
     </header>
   );
 };
@@ -324,16 +366,17 @@ const Filter3 = ({ filters, onChange }) => {
 
 // ── Footer v3 ─────────────────────────────────────────────────────────────────
 const Footer3 = ({ onNavigate }) => {
+  const { isMobile, isNarrow } = useVW();
   const go = (target) => { if (onNavigate) onNavigate(target); };
   const links = {
     "Propiedades": () => go("listings"), "Departamentos": () => go("listings"), "Oficinas": () => go("listings"), "Locales": () => go("listings"), "Mapa": () => go("map"),
     "Nosotros": () => go("nosotros"), "Contacto": () => go("contact"), "Aviso de Privacidad": () => go("privacidad"),
   };
   return (
-  <footer style={{ background:"#0F1B2D", color:"rgba(255,255,255,0.5)", padding:"60px 40px 30px" }}>
+  <footer style={{ background:"#0F1B2D", color:"rgba(255,255,255,0.5)", padding: isMobile ? "44px 22px 26px" : "60px 40px 30px" }}>
     <div style={{ maxWidth:1400, margin:"0 auto" }}>
-      <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:48, marginBottom:48 }}>
-        <div>
+      <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr 1fr" : isNarrow ? "1.4fr 1fr 1fr 1fr" : "2fr 1fr 1fr 1fr", gap: isMobile ? 28 : 48, marginBottom: isMobile ? 32 : 48 }}>
+        <div style={{ gridColumn: isMobile ? "1 / -1" : "auto" }}>
           <div style={{ marginBottom:18 }}>
             <img src="assets/tar-logo.webp" alt="TAR Internacional" style={{ height:44, width:"auto", display:"block" }} />
           </div>
@@ -352,7 +395,7 @@ const Footer3 = ({ onNavigate }) => {
           </div>
         ))}
       </div>
-      <div style={{ borderTop:"1px solid rgba(255,255,255,0.08)", paddingTop:20, display:"flex", justifyContent:"space-between", fontFamily:"var(--sans)", fontSize:12 }}>
+      <div style={{ borderTop:"1px solid rgba(255,255,255,0.08)", paddingTop:20, display:"flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? 10 : 0, justifyContent:"space-between", fontFamily:"var(--sans)", fontSize:12 }}>
         <span onDoubleClick={() => go("admin")} title="" style={{ userSelect:"none" }}>© 2026 TAR Internacional · Grupo Inmobiliario</span>
         <span style={{ cursor:"pointer" }} onClick={() => go("privacidad")}>Aviso de Privacidad · Cédula AMPI</span>
       </div>
@@ -363,6 +406,8 @@ const Footer3 = ({ onNavigate }) => {
 
 // ── CONTACT FORM (Inmuebles24 style) — solo Contactar (lead), sin info directa
 const ContactForm3 = ({ property, compact = false, onClose }) => {
+  const { isNarrow } = useVW();
+  const stack = compact || isNarrow;
   const [sent, setSent] = React.useState(false);
   const [form, setForm] = React.useState({
     name: "", email: "", phone: "",
@@ -404,7 +449,7 @@ const ContactForm3 = ({ property, compact = false, onClose }) => {
       <div style={{ fontFamily:"var(--display)", fontSize:22, fontWeight:700, color:"#0F1B2D", marginBottom:18, letterSpacing:-0.3 }}>Contacta al anunciante</div>
 
       <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-        <div style={{ display:"grid", gridTemplateColumns:compact?"1fr":"1fr 1fr", gap:10 }}>
+        <div style={{ display:"grid", gridTemplateColumns:stack?"1fr":"1fr 1fr", gap:10 }}>
           {inp("Nombre", form.name, v => setForm({...form, name:v}))}
           {inp("Email", form.email, v => setForm({...form, email:v}), "email")}
         </div>

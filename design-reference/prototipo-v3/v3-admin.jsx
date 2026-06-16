@@ -2,7 +2,7 @@
 
 const {
   PROPERTIES, TYPE_LABELS, LEADS, ADMIN_STATS, BROKERS, formatPrice,
-  PropImg3,
+  PropImg3, useVW,
   I3Search, I3Pin, I3Bed, I3Bath, I3Car, I3Ruler, I3Close, I3ChevL, I3ChevR, I3ChevD,
   I3Heart, I3Map, I3Mail, I3Wapp, I3User, I3Plus, I3Check, I3Grid, I3List, I3Edit, I3Verif, I3Share,
 } = window;
@@ -44,6 +44,9 @@ const NScript  = ({s}) => <A s={s} d={["M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2
 
 // ── Admin Layout Shell ────────────────────────────────────────────────────────
 const AdminShell = ({ tab, setTab, onNavigate, children }) => {
+  const { isNarrow } = useVW();
+  const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const selectTab = k => { setTab(k); setDrawerOpen(false); };
   const navGroups = [
     { label: "General", items: [
       ["dashboard", "Dashboard", NDash],
@@ -60,10 +63,18 @@ const AdminShell = ({ tab, setTab, onNavigate, children }) => {
     ]},
   ];
 
+  const asideStyle = isNarrow
+    ? { width:264, maxWidth:"86vw", background:"#fff", borderRight:"1px solid #F1F1F0", display:"flex", flexDirection:"column", padding:"24px 14px", position:"fixed", top:0, left:0, height:"100vh", zIndex:320, overflowY:"auto", transform: drawerOpen ? "translateX(0)" : "translateX(-105%)", transition:"transform 0.25s ease", boxShadow: drawerOpen ? "0 0 40px rgba(15,27,45,0.25)" : "none" }
+    : { width:240, background:"#fff", borderRight:"1px solid #F1F1F0", flexShrink:0, display:"flex", flexDirection:"column", padding:"24px 14px", position:"sticky", top:64, alignSelf:"flex-start", height:"calc(100vh - 64px)" };
+
   return (
     <div style={{ paddingTop:84, minHeight:"100vh", background:"#FAFAF8", display:"flex" }}>
+      {/* Backdrop (drawer) */}
+      {isNarrow && drawerOpen && (
+        <div onClick={() => setDrawerOpen(false)} style={{ position:"fixed", inset:0, background:"rgba(15,27,45,0.5)", zIndex:310 }} />
+      )}
       {/* Sidebar */}
-      <aside style={{ width:240, background:"#fff", borderRight:"1px solid #F1F1F0", flexShrink:0, display:"flex", flexDirection:"column", padding:"24px 14px", position:"sticky", top:64, alignSelf:"flex-start", height:"calc(100vh - 64px)" }}>
+      <aside style={asideStyle}>
         <div style={{ padding:"4px 12px 22px", borderBottom:"1px solid #F1F1F0", marginBottom:14, display:"flex", alignItems:"center", gap:10 }}>
           <div style={{ width:34, height:34, background:"var(--tar)", display:"flex", alignItems:"center", justifyContent:"center", borderRadius:9 }}>
             <span style={{ fontFamily:"var(--display)", fontSize:13, fontWeight:800, color:"#fff" }}>TAR</span>
@@ -79,7 +90,7 @@ const AdminShell = ({ tab, setTab, onNavigate, children }) => {
             <div key={g.label} style={{ marginBottom:18 }}>
               <div style={{ fontFamily:"var(--sans)", fontSize:10, fontWeight:700, color:"#9CA3AF", textTransform:"uppercase", letterSpacing:1.5, padding:"0 12px 6px" }}>{g.label}</div>
               {g.items.map(([k, l, Ic]) => (
-                <button key={k} onClick={() => setTab(k)}
+                <button key={k} onClick={() => selectTab(k)}
                   style={{ display:"flex", alignItems:"center", gap:11, width:"100%", textAlign:"left", padding:"10px 12px", background:tab===k?"#FFF0F2":"transparent", border:"none", cursor:"pointer", fontFamily:"var(--sans)", fontSize:13, color:tab===k?"var(--tar)":"#374151", fontWeight:tab===k?600:500, borderRadius:10, marginBottom:3, transition:"all 0.15s", borderLeft:`3px solid ${tab===k?"var(--tar)":"transparent"}` }}>
                   <Ic s={16}/>{l}
                 </button>
@@ -94,7 +105,13 @@ const AdminShell = ({ tab, setTab, onNavigate, children }) => {
       </aside>
 
       {/* Main content */}
-      <div style={{ flex:1, padding:"32px 36px", overflow:"auto" }}>
+      <div style={{ flex:1, minWidth:0, padding: isNarrow ? "18px 16px" : "32px 36px", overflow:"auto" }}>
+        {isNarrow && (
+          <button onClick={() => setDrawerOpen(true)}
+            style={{ display:"inline-flex", alignItems:"center", gap:8, background:"#fff", color:"#0F1B2D", border:"1px solid #E5E5E4", padding:"9px 16px", borderRadius:12, fontFamily:"var(--sans)", fontSize:13, fontWeight:600, cursor:"pointer", marginBottom:18 }}>
+            <A s={18} d={["M3 12h18","M3 6h18","M3 18h18"]} /> Menú
+          </button>
+        )}
         {children}
       </div>
     </div>
@@ -106,6 +123,7 @@ const NUser = NTenant;
 
 // ── Dashboard tab ───────────────────────────────────────────────────────────
 const DashboardTab = () => {
+  const { isMobile, isNarrow } = useVW();
   const recentLeads = LEADS.slice(0, 5);
 
   const kpis = [
@@ -138,7 +156,7 @@ const DashboardTab = () => {
   return (
     <div>
       {/* Welcome header */}
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28, gap:12, flexWrap:"wrap" }}>
         <div>
           <h1 style={{ fontFamily:"var(--display)", fontSize:34, fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5, lineHeight:1.2 }}>Bienvenido, <span style={{ color:"#9CA3AF", fontStyle:"italic" }}>Martín</span></h1>
           <p style={{ fontFamily:"var(--sans)", fontSize:14, color:"#6B7280", marginTop:6 }}>Resumen general de actividad — Mayo 2026</p>
@@ -149,7 +167,7 @@ const DashboardTab = () => {
       </div>
 
       {/* KPIs */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:16, marginBottom:24 }}>
+      <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : isNarrow ? "repeat(2,1fr)" : "repeat(4,1fr)", gap:16, marginBottom:24 }}>
         {kpis.map(k => (
           <div key={k.label} style={{ background:"#fff", borderRadius:14, padding:"20px 22px", border:"1px solid #F1F1F0" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:14 }}>
@@ -164,7 +182,7 @@ const DashboardTab = () => {
       </div>
 
       {/* Charts row 1 */}
-      <div style={{ display:"grid", gridTemplateColumns:"1.6fr 1fr", gap:16, marginBottom:24 }}>
+      <div style={{ display:"grid", gridTemplateColumns: isNarrow ? "1fr" : "1.6fr 1fr", gap:16, marginBottom:24 }}>
         {/* Bar chart — Monthly leads */}
         <div style={{ background:"#fff", borderRadius:14, padding:"22px 24px", border:"1px solid #F1F1F0" }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18 }}>
@@ -222,7 +240,7 @@ const DashboardTab = () => {
       </div>
 
       {/* Charts row 2 */}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1.6fr", gap:16 }}>
+      <div style={{ display:"grid", gridTemplateColumns: isNarrow ? "1fr" : "1fr 1.6fr", gap:16 }}>
         {/* Status with progress bars */}
         <div style={{ background:"#fff", borderRadius:14, padding:"22px 24px", border:"1px solid #F1F1F0" }}>
           <div style={{ fontFamily:"var(--display)", fontSize:17, fontWeight:700, color:"#0F1B2D", marginBottom:4 }}>Estado de propiedades</div>
@@ -252,7 +270,8 @@ const DashboardTab = () => {
             <div style={{ fontFamily:"var(--display)", fontSize:17, fontWeight:700, color:"#0F1B2D" }}>Leads recientes</div>
             <a href="#" style={{ fontFamily:"var(--sans)", fontSize:12, color:"var(--tar)", fontWeight:600, display:"flex", alignItems:"center", gap:4 }}>Ver todos ↗</a>
           </div>
-          <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--sans)", fontSize:13 }}>
+          <div style={{ overflowX:"auto" }}>
+          <table style={{ width:"100%", minWidth:460, borderCollapse:"collapse", fontFamily:"var(--sans)", fontSize:13 }}>
             <thead>
               <tr style={{ borderBottom:"1px solid #F1F1F0" }}>
                 {["Cliente","Interés","Fecha","Estado"].map(h => (
@@ -283,6 +302,7 @@ const DashboardTab = () => {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </div>
@@ -291,6 +311,7 @@ const DashboardTab = () => {
 
 // ── PROPIEDADES TAB (table) ───────────────────────────────────────────────────
 const PropertiesTab = ({ onNavigate, setTab }) => {
+  const { isNarrow } = useVW();
   const [search, setSearch] = React.useState("");
   const [filterOp, setFilterOp] = React.useState("all");
   const [typeF, setTypeF] = React.useState("all");
@@ -331,7 +352,7 @@ const PropertiesTab = ({ onNavigate, setTab }) => {
 
   return (
     <div>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:24 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:24, gap:12, flexWrap:"wrap" }}>
         <div>
           <h1 style={{ fontFamily:"var(--display)", fontSize:30, fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5 }}>Propiedades</h1>
           <p style={{ fontFamily:"var(--sans)", fontSize:14, color:"#6B7280", marginTop:4 }}>{items.length} propiedades en el inventario</p>
@@ -386,7 +407,8 @@ const PropertiesTab = ({ onNavigate, setTab }) => {
       </div>
 
       <div style={{ background:"#fff", borderRadius:14, overflow:"hidden", border:"1px solid #F1F1F0" }}>
-        <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--sans)", fontSize:13 }}>
+        <div style={{ overflowX:"auto" }}>
+        <table style={{ width:"100%", minWidth:760, borderCollapse:"collapse", fontFamily:"var(--sans)", fontSize:13 }}>
           <thead>
             <tr style={{ borderBottom:"1px solid #F1F1F0", background:"#FAFAF8" }}>
               {["Propiedad","Tipo","Operación","Precio","Responsable","Estado","Acciones"].map(h => (
@@ -432,6 +454,7 @@ const PropertiesTab = ({ onNavigate, setTab }) => {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
@@ -439,6 +462,7 @@ const PropertiesTab = ({ onNavigate, setTab }) => {
 
 // ── NUEVA PROPIEDAD form ──────────────────────────────────────────────────────
 const NewPropertyTab = ({ setTab }) => {
+  const { isMobile, isNarrow } = useVW();
   const [step, setStep] = React.useState(1);
   const [form, setForm] = React.useState({
     title:"", type:"departamento", operation:"venta", currency:"MXN", price:"",
@@ -498,24 +522,24 @@ const NewPropertyTab = ({ setTab }) => {
       </div>
 
       {/* Stepper */}
-      <div style={{ background:"#fff", borderRadius:14, padding:"14px 18px", border:"1px solid #F1F1F0", marginBottom:16, display:"flex", alignItems:"center", gap:6 }}>
+      <div style={{ background:"#fff", borderRadius:14, padding:"14px 18px", border:"1px solid #F1F1F0", marginBottom:16, display:"flex", alignItems:"center", gap:6, overflowX: isNarrow ? "auto" : "visible" }}>
         {steps.map((s, i) => (
           <React.Fragment key={s}>
-            <button onClick={() => setStep(i+1)} style={{ display:"flex", alignItems:"center", gap:8, background:"none", border:"none", cursor:"pointer", padding:"4px 8px" }}>
-              <span style={{ width:24, height:24, borderRadius:"50%", background:step>=i+1?"var(--tar)":"#E5E5E4", color:step>=i+1?"#fff":"#9CA3AF", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"var(--sans)", fontSize:11, fontWeight:700 }}>{step>i+1 ? <I3Check s={12}/> : i+1}</span>
+            <button onClick={() => setStep(i+1)} style={{ display:"flex", alignItems:"center", gap:8, background:"none", border:"none", cursor:"pointer", padding:"4px 8px", flexShrink:0, whiteSpace:"nowrap" }}>
+              <span style={{ width:24, height:24, borderRadius:"50%", background:step>=i+1?"var(--tar)":"#E5E5E4", color:step>=i+1?"#fff":"#9CA3AF", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"var(--sans)", fontSize:11, fontWeight:700, flexShrink:0 }}>{step>i+1 ? <I3Check s={12}/> : i+1}</span>
               <span style={{ fontFamily:"var(--sans)", fontSize:12, color:step>=i+1?"#0F1B2D":"#9CA3AF", fontWeight:step===i+1?600:500 }}>{s}</span>
             </button>
-            {i < steps.length-1 && <span style={{ flex:1, height:1, background:step>i+1?"var(--tar)":"#E5E5E4" }}/>}
+            {i < steps.length-1 && <span style={{ flex:1, minWidth: isNarrow ? 16 : 0, height:1, background:step>i+1?"var(--tar)":"#E5E5E4" }}/>}
           </React.Fragment>
         ))}
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 320px", gap:20, alignItems:"flex-start" }}>
+      <div style={{ display:"grid", gridTemplateColumns: isNarrow ? "1fr" : "1fr 320px", gap:20, alignItems:"flex-start" }}>
         {/* Left — Form */}
         <div>
           {step === 1 && (
             <Section title="Información básica" subtitle="Datos principales que se mostrarán al cliente">
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap:14 }}>
                 <div style={{ gridColumn:"1/-1" }}>
                   <label style={lblStyle}>Título de la publicación *</label>
                   <input value={form.title} onChange={e => upd("title", e.target.value)} placeholder="Ej. Penthouse en Polanco con terraza privada" style={inpStyle} />
@@ -562,7 +586,7 @@ const NewPropertyTab = ({ setTab }) => {
 
           {step === 2 && (
             <Section title="Ubicación" subtitle="Mientras más exacta, mejor posicionamiento en mapas y SEO">
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap:14 }}>
                 <div>
                   <label style={lblStyle}>Estado / Región *</label>
                   <select value={form.zone} onChange={e => upd("zone", e.target.value)} style={inpStyle}>
@@ -609,7 +633,7 @@ const NewPropertyTab = ({ setTab }) => {
 
           {step === 3 && (
             <Section title="Detalles del inmueble" subtitle="Características físicas y amenidades">
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:18 }}>
+              <div style={{ display:"grid", gridTemplateColumns: isNarrow ? "repeat(2,1fr)" : "repeat(4,1fr)", gap:12, marginBottom:18 }}>
                 <div>
                   <label style={lblStyle}>Superficie (m²) *</label>
                   <input type="number" value={form.area} onChange={e => upd("area", e.target.value)} placeholder="220" style={inpStyle} />
@@ -672,7 +696,7 @@ const NewPropertyTab = ({ setTab }) => {
               </div>
 
               {/* Mock thumbnails */}
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8, marginTop:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns: isMobile ? "repeat(2,1fr)" : "repeat(4,1fr)", gap:8, marginTop:14 }}>
                 {[0,1,2,3].map(i => (
                   <div key={i} style={{ height:90, borderRadius:8, background: i === 0 ? "linear-gradient(135deg, #8B1A28, #5A1018)" : "#E5E5E4", position:"relative", overflow:"hidden" }}>
                     <div style={{ position:"absolute", inset:0, backgroundImage:"repeating-linear-gradient(135deg,transparent,transparent 10px,rgba(255,255,255,0.04) 10px,rgba(255,255,255,0.04) 20px)" }}/>
@@ -791,6 +815,7 @@ const NewPropertyTab = ({ setTab }) => {
 
 // ── SCRIPTS TAB — GTM / Analytics / Pixels ────────────────────────────────────
 const ScriptsTab = () => {
+  const { isMobile, isNarrow } = useVW();
   const [scripts, setScripts] = React.useState([
     { id: 1, name: "Google Tag Manager", provider: "gtm", location: "head", enabled: true, code: `<!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -881,7 +906,7 @@ fbq('track', 'PageView');
 
   return (
     <div>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:24 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:24, gap:12, flexWrap:"wrap" }}>
         <div>
           <h1 style={{ fontFamily:"var(--display)", fontSize:30, fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5 }}>Scripts de rastreo</h1>
           <p style={{ fontFamily:"var(--sans)", fontSize:14, color:"#6B7280", marginTop:4 }}>
@@ -901,7 +926,7 @@ fbq('track', 'PageView');
           <span>Los scripts se ejecutan en producción. Verifica tu código antes de activar — un script con errores puede afectar el portal completo.</span>
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"340px 1fr", gap:16 }}>
+      <div style={{ display:"grid", gridTemplateColumns: isNarrow ? "1fr" : "340px 1fr", gap:16 }}>
         {/* List */}
         <div style={{ background:"#fff", borderRadius:14, border:"1px solid #F1F1F0", overflow:"hidden", height:"fit-content" }}>
           <div style={{ padding:"14px 18px", borderBottom:"1px solid #F1F1F0", fontFamily:"var(--sans)", fontSize:12, fontWeight:600, color:"#6B7280", textTransform:"uppercase", letterSpacing:1 }}>
@@ -963,7 +988,7 @@ fbq('track', 'PageView');
             {/* Body */}
             <div style={{ padding:"24px" }}>
               {/* Location + provider row */}
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:18 }}>
+              <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap:16, marginBottom:18 }}>
                 <div>
                   <label style={lblStyle}>Ubicación de inserción</label>
                   <select value={current.location} onChange={e => updateField(current.id, "location", e.target.value)} disabled={!editing} style={{ ...inpStyle, opacity:editing?1:0.7 }}>
@@ -1035,7 +1060,7 @@ fbq('track', 'PageView');
               </div>
               <button onClick={() => setShowAdd(false)} style={{ background:"none", border:"none", cursor:"pointer", color:"#9CA3AF" }}><I3Close s={20}/></button>
             </div>
-            <div style={{ padding:"20px 24px", display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+            <div style={{ padding:"20px 24px", display:"grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap:10 }}>
               {templates.map(t => {
                 const p = providers[t.provider] || providers.custom;
                 return (
@@ -1061,6 +1086,7 @@ fbq('track', 'PageView');
 
 // ── LEADS TAB · CRM funcional ─────────────────────────────────────────────────
 const LeadsTab = () => {
+  const { isMobile, isNarrow } = useVW();
   // Remapea estatus de muestra al pipeline del negocio.
   const remap = { nuevo:"nuevo", cita_agendada:"cita_agendada", cita_concretada:"cita_concretada", apartado:"apartado", firma_contrato:"firma_contrato", descartado:"descartado", contactado:"cita_agendada", seguimiento:"cita_concretada", cerrado:"firma_contrato" };
   const [leads, setLeads] = React.useState(() => LEADS.map(l => ({ ...l, status: remap[l.status] || "nuevo" })));
@@ -1103,7 +1129,7 @@ const LeadsTab = () => {
       </div>
 
       {/* Embudo por etapa */}
-      <div style={{ display:"grid", gridTemplateColumns:`repeat(${funnel.length},1fr)`, gap:10, marginBottom:18 }}>
+      <div style={{ display:"grid", gridTemplateColumns: isMobile ? "repeat(2,1fr)" : isNarrow ? "repeat(3,1fr)" : `repeat(${funnel.length},1fr)`, gap:10, marginBottom:18 }}>
         {funnel.map(s => (
           <div key={s.key} style={{ background:"#fff", border:"1px solid #F1F1F0", borderTop:`3px solid ${s.color}`, borderRadius:12, padding:"14px 16px" }}>
             <div style={{ fontFamily:"var(--display)", fontSize:26, fontWeight:700, color:"#0F1B2D", lineHeight:1 }}>{s.n}</div>
@@ -1112,10 +1138,11 @@ const LeadsTab = () => {
         ))}
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"1.7fr 1fr", gap:16, alignItems:"flex-start" }}>
+      <div style={{ display:"grid", gridTemplateColumns: isNarrow ? "1fr" : "1.7fr 1fr", gap:16, alignItems:"flex-start" }}>
         {/* Tabla de leads con estatus editable */}
         <div style={{ background:"#fff", borderRadius:14, overflow:"hidden", border:"1px solid #F1F1F0" }}>
-          <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:"var(--sans)", fontSize:13 }}>
+          <div style={{ overflowX:"auto" }}>
+          <table style={{ width:"100%", minWidth:640, borderCollapse:"collapse", fontFamily:"var(--sans)", fontSize:13 }}>
             <thead>
               <tr style={{ borderBottom:"1px solid #F1F1F0", background:"#FAFAF8" }}>
                 {["Cliente","Propiedad de interés","Fecha","Estatus (CRM)"].map(h => (
@@ -1147,6 +1174,7 @@ const LeadsTab = () => {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
 
         {/* Feed de webhooks en vivo */}
@@ -1177,11 +1205,12 @@ const LeadsTab = () => {
 // ── USUARIOS TAB ──────────────────────────────────────────────────────────────
 // (Antes "Brokers". Ahora son usuarios administrativos con acceso al panel.)
 const UsuariosTab = () => {
+  const { isMobile } = useVW();
   // El primero es Administrador; el resto, Editores (sample). En la app el rol sale de la BD.
   const roleOf = (i) => (i === 0 ? "Administrador" : "Editor");
   return (
     <div>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:24 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:24, gap:12, flexWrap:"wrap" }}>
         <div>
           <h1 style={{ fontFamily:"var(--display)", fontSize:30, fontWeight:600, color:"#0F1B2D", letterSpacing:-0.5 }}>Usuarios</h1>
           <p style={{ fontFamily:"var(--sans)", fontSize:14, color:"#6B7280", marginTop:4 }}>{BROKERS.length} usuarios con acceso al panel administrativo</p>
@@ -1190,7 +1219,7 @@ const UsuariosTab = () => {
           <I3Plus s={14}/> Nuevo usuario
         </button>
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+      <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2,1fr)", gap:14 }}>
         {BROKERS.map((b, i) => (
           <div key={b.name} style={{ background:"#fff", padding:"22px 24px", borderRadius:14, border:"1px solid #F1F1F0", display:"flex", gap:16, alignItems:"center" }}>
             <div style={{ width:54, height:54, background:"linear-gradient(135deg, #FFF0F2, #FFD3DA)", color:"var(--tar)", display:"flex", alignItems:"center", justifyContent:"center", borderRadius:"50%", flexShrink:0, fontFamily:"var(--display)", fontSize:19, fontWeight:700 }}>
@@ -1218,6 +1247,7 @@ const UsuariosTab = () => {
 
 // ── AJUSTES TAB ───────────────────────────────────────────────────────────────
 const AjustesTab = () => {
+  const { isMobile, isNarrow } = useVW();
   // Webhooks salientes y llaves de API entrantes (PRD §5.5).
   const webhooksOut = [
     { name:"HubSpot — Leads",      url:"https://api.hubspot.com/webhooks/ingest",  events:["lead.created","lead.status_changed"], active:true,  desc:"Envía cada lead a HubSpot en tiempo real para darle seguimiento desde tu CRM.", delivery:{ ok:true, text:"Última entrega: hace 5 min · 200 OK" } },
@@ -1267,7 +1297,7 @@ const AjustesTab = () => {
         </div>
 
         {/* Explicación de qué pasa en cada dirección */}
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginTop:14 }}>
+        <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap:12, marginTop:14 }}>
           <div style={{ background:"#FAFAF8", border:"1px solid #F1F1F0", borderRadius:12, padding:"14px 16px" }}>
             <div style={{ fontFamily:"var(--sans)", fontSize:13, fontWeight:700, color:"#0F1B2D", marginBottom:4 }}>→ Salientes (TAR avisa a terceros)</div>
             <div style={{ fontFamily:"var(--sans)", fontSize:12, color:"#6B7280", lineHeight:1.6 }}>Cuando ocurre un evento en TAR (p. ej. entra un lead), la plataforma <strong>envía un aviso (POST)</strong> a la URL que configures, para que tu CRM o Zapier reaccionen automáticamente.</div>
@@ -1352,7 +1382,7 @@ const AjustesTab = () => {
       </div>
 
       {/* Otros ajustes (sin Marca/Branding ni Facturación) */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }}>
+      <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : isNarrow ? "repeat(2,1fr)" : "repeat(3,1fr)", gap:14 }}>
         {cards.map(s => (
           <div key={s.title} style={{ ...card, cursor:"pointer", transition:"box-shadow 0.15s" }}
             onMouseEnter={e => e.currentTarget.style.boxShadow="0 6px 16px rgba(0,0,0,0.06)"}

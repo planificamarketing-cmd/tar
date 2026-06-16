@@ -22,6 +22,28 @@ SPA React servida por CDN (React + Babel standalone + Leaflet). Páginas:
   contiene exactamente `#D2103E`). Sustituye el `#C41930`/`#A01428` del prototipo,
   tal como exige la guía del proyecto / PLAN Fase 1.
 
+#### Responsive (móvil / tablet / escritorio)
+El prototipo es ahora **totalmente responsive**. Como usa estilos inline (sin media
+queries), el responsive se resuelve en JS con un hook `useVW()` (en `v3-ui.jsx`,
+expuesto en `window`) que expone los breakpoints **móvil < 768 · tablet 768–1023 ·
+escritorio ≥ 1024**; cada layout ramifica sus estilos según el ancho. Resumen:
+- **Header**: en pantallas estrechas, la barra de navegación se colapsa en un **menú
+  hamburguesa** desplegable.
+- **Home**: hero, tarjeta de búsqueda, franja de stats, bloques y FAQ se apilan a 1–2
+  columnas.
+- **Propiedades (Listings)**: la barra de filtros pasa a un **panel colapsable** ("Filtros");
+  la rejilla baja a 2/1 columnas; la vista lista apila imagen sobre texto.
+- **Mapa**: el split lateral pasa a **vertical** (mapa arriba ~42vh, lista abajo) sin tocar
+  la lógica de Leaflet.
+- **Detalle**: galería, características, datos y formulario de contacto a una columna; el
+  formulario deja de ser fijo.
+- **Nosotros / Privacidad**: rejillas y paddings adaptados.
+- **Panel admin**: la barra lateral se vuelve un **cajón (drawer)** con hamburguesa; las
+  tablas se desplazan en horizontal; dashboards y formularios se apilan.
+
+El render en **escritorio (≥ 1024) queda idéntico** al anterior. El zip
+`tar-prototipo-v3.zip` (raíz del repo) se regeneró con estos cambios.
+
 #### Ronda 2 de correcciones del cliente
 - **Logo oficial**: se reemplazó por el `.webp` entregado por el cliente.
 - **Tipografía → familia DM**: `DM Serif Display` (títulos) + `DM Sans` (interfaz) +
