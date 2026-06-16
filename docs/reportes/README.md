@@ -8,6 +8,14 @@ avance se organiza por la semana del cronograma a la que corresponde cada entreg
 > es el consolidado limpio y sin jerga (tablero de estado, hitos, pendientes). Incluye
 > al final cómo exportarlo a **PDF**.
 
+> 🌐 **Demo navegable del portal (maqueta de diseño):** **https://tar-mvp.netlify.app/**
+> — se abre desde cualquier navegador o celular, sin instalar nada. Incorpora los ajustes
+> solicitados tras los comentarios del equipo; pendiente de aprobación para cerrar el diseño.
+
+> ✍️ **Tono:** los reportes están redactados para personas de **negocio** (no técnicas);
+> el detalle de ingeniería queda al final de cada uno, en un bloque *"Detalle técnico
+> (referencia, opcional)"*.
+
 ## Cadencia
 - **Semanal** (`semana-NN.md`): qué se hizo esa semana del cronograma, entregables,
   evidencia de que funciona, decisiones, riesgos y lo que sigue.
@@ -37,6 +45,6 @@ Quincenales: [quincena-1](quincena-1.md) (sem 1–2) · [quincena-2](quincena-2.
 (sem 7–8).
 
 > **Nota de calendario:** las fechas reales dependen del kick-off formal con TAR.
-> Corte de este paquete de reportes: **2026-06-11**. La ejecución está **muy adelantada**
+> Corte de este paquete de reportes: **31 de julio de 2026**. La ejecución está **muy adelantada**
 > respecto al cronograma contractual (sin costo adicional, §13): a la altura de la
 > semana 8 del plan, las Fases 0, 1, A y **C** ya están completas.
