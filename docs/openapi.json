@@ -1738,6 +1738,24 @@
         }
       }
     },
+    "/api/v1/locations": {
+      "get": {
+        "tags": [
+          "Propiedades"
+        ],
+        "summary": "Catálogo de ubicaciones existentes (autocompletado de estado/municipio/colonia)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ data: { estado, municipio, colonia }[] }"
+          }
+        }
+      }
+    },
     "/api/v1/properties/{id}/images": {
       "post": {
         "tags": [

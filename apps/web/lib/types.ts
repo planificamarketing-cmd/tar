@@ -100,6 +100,12 @@ export type MarketingScript = {
 
 export type Amenity = { id: string; name: string; icon: string | null };
 
+export type LocationOption = {
+  estado: string;
+  municipio: string;
+  colonia: string;
+};
+
 export type PropertyImage = {
   id: string;
   urlWebp: string;

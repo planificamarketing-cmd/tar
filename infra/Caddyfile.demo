@@ -1,0 +1,27 @@
+# Caddyfile.demo — reverse proxy LOCAL de un solo origen para enseñar el panel por
+# túnel (Cloudflare) mientras no hay VPS. Mismo patrón que tendrá Caddy en producción:
+# web y API bajo el MISMO host (sin CORS, cookies httpOnly sin fricción).
+#
+# Uso:  caddy run --config infra/Caddyfile.demo
+# Luego exponer :8080 con:  cloudflared tunnel --url http://localhost:8080
+#
+# TLS lo termina el túnel de Cloudflare; aquí Caddy habla HTTP plano en :8080.
+{
+	auto_https off
+	admin off
+}
+
+:8080 {
+	encode gzip
+
+	# API, media, docs y health → Express (:4000)
+	@api path /api/* /media/* /docs /docs/* /health /health/*
+	handle @api {
+		reverse_proxy localhost:4000
+	}
+
+	# Todo lo demás (panel Next.js, assets /_next, etc.) → web (:3000)
+	handle {
+		reverse_proxy localhost:3000
+	}
+}

@@ -9,12 +9,24 @@ import type { UserRole } from '@tar/shared';
 // que por la IP de WSL (172.x:3000) sin reconfigurar nada.
 function getApiBase(): string {
   const fromEnv = process.env.NEXT_PUBLIC_API_URL;
-  if (fromEnv) return fromEnv;
+  if (fromEnv) {
+    // Valor relativo (modo proxy de un solo origen, p.ej. "/api/v1"): en el navegador
+    // resuelve same-origin solo, sin :4000 ni CORS — sirve para el demo por túnel y
+    // para producción tras Caddy. En SSR necesita una base absoluta.
+    if (fromEnv.startsWith('/') && typeof window === 'undefined') {
+      return `http://localhost:4000${fromEnv}`;
+    }
+    return fromEnv;
+  }
   if (typeof window !== 'undefined') {
     return `${window.location.protocol}//${window.location.hostname}:4000/api/v1`;
   }
   return 'http://localhost:4000/api/v1';
 }
+
+// En modo proxy de un solo origen, `NEXT_PUBLIC_API_URL` es relativo ("/api/v1") y
+// tanto la API como el media los sirve el mismo host público (sin :4000).
+const sameOriginProxy = (process.env.NEXT_PUBLIC_API_URL ?? '').startsWith('/');
 
 // Las imágenes se guardan con URL absoluta contra `MEDIA_BASE_URL` (en dev,
 // `http://localhost:4000/media/...`). El host real varía (localhost en la misma
@@ -28,6 +40,11 @@ export function mediaUrl(stored: string | null | undefined): string {
   try {
     const u = new URL(stored);
     if (u.hostname === 'localhost' || u.hostname === '127.0.0.1') {
+      if (sameOriginProxy) {
+        // El host público sirve /media por el mismo origen (Caddy → :4000); se
+        // descarta el :4000 del dev y se usa el origen actual.
+        return `${window.location.origin}${u.pathname}${u.search}`;
+      }
       u.protocol = window.location.protocol;
       u.hostname = window.location.hostname;
     }

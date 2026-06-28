@@ -371,6 +371,16 @@ export function buildOpenApiDocument() {
     responses: { 200: ok('{ data: Amenity[] }') },
   });
 
+  // ── Ubicaciones ──
+  registry.registerPath({
+    method: 'get',
+    path: '/api/v1/locations',
+    tags: ['Propiedades'],
+    summary: 'Catálogo de ubicaciones existentes (autocompletado de estado/municipio/colonia)',
+    security: sec,
+    responses: { 200: ok('{ data: { estado, municipio, colonia }[] }') },
+  });
+
   // ── Media ──
   registry.registerPath({
     method: 'post',

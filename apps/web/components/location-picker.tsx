@@ -1,12 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { PropertyFormValues } from '@/lib/property-form';
+import { Combobox } from './combobox';
+import { useLocations } from '@/lib/queries';
+import { normalizeText } from '@/lib/text';
 
 type Props = {
   value: PropertyFormValues;
   onChange: (patch: Partial<PropertyFormValues>) => void;
 };
+
+// Lista de valores únicos por su forma normalizada, conservando la primera grafía
+// (canónica) de cada uno.
+function uniqueByNorm(values: string[]): string[] {
+  const seen = new Map<string, string>();
+  for (const v of values) {
+    const k = normalizeText(v);
+    if (k && !seen.has(k)) seen.set(k, v);
+  }
+  return [...seen.values()];
+}
 
 const labelCls = 'mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted';
 const inputCls =
@@ -32,8 +46,42 @@ function parseCoords(text: string): { lat: number; lng: number } | null {
 export function LocationPicker({ value, onChange }: Props) {
   const [paste, setPaste] = useState('');
   const [pasteErr, setPasteErr] = useState(false);
+  const { data: locs = [] } = useLocations();
 
   const hasGeo = value.lat.trim() !== '' && value.lng.trim() !== '';
+
+  // Opciones en cascada: estado → municipios de ese estado → colonias de esa combinación.
+  const estadoOpts = useMemo(() => uniqueByNorm(locs.map((l) => l.estado)), [locs]);
+  const municipioOpts = useMemo(() => {
+    const ne = normalizeText(value.estado);
+    return uniqueByNorm(
+      locs.filter((l) => !ne || normalizeText(l.estado) === ne).map((l) => l.municipio),
+    );
+  }, [locs, value.estado]);
+  const coloniaOpts = useMemo(() => {
+    const ne = normalizeText(value.estado);
+    const nm = normalizeText(value.municipio);
+    return uniqueByNorm(
+      locs
+        .filter(
+          (l) =>
+            (!ne || normalizeText(l.estado) === ne) &&
+            (!nm || normalizeText(l.municipio) === nm),
+        )
+        .map((l) => l.colonia),
+    );
+  }, [locs, value.estado, value.municipio]);
+
+  // Al cambiar de estado/municipio a uno DISTINTO, limpia los niveles dependientes
+  // para no dejar combinaciones inconsistentes (cambiar solo la grafía no limpia).
+  function setEstado(estado: string) {
+    const changed = normalizeText(estado) !== normalizeText(value.estado);
+    onChange(changed ? { estado, municipio: '', colonia: '' } : { estado });
+  }
+  function setMunicipio(municipio: string) {
+    const changed = normalizeText(municipio) !== normalizeText(value.municipio);
+    onChange(changed ? { municipio, colonia: '' } : { municipio });
+  }
 
   function applyPaste() {
     const c = parseCoords(paste);
@@ -51,28 +99,28 @@ export function LocationPicker({ value, onChange }: Props) {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div>
           <label className={labelCls}>Estado</label>
-          <input
+          <Combobox
             value={value.estado}
-            onChange={(e) => onChange({ estado: e.target.value })}
-            className={inputCls}
+            onChange={setEstado}
+            options={estadoOpts}
             placeholder="Ciudad de México"
           />
         </div>
         <div>
           <label className={labelCls}>Municipio / Alcaldía</label>
-          <input
+          <Combobox
             value={value.municipio}
-            onChange={(e) => onChange({ municipio: e.target.value })}
-            className={inputCls}
+            onChange={setMunicipio}
+            options={municipioOpts}
             placeholder="Cuauhtémoc"
           />
         </div>
         <div>
           <label className={labelCls}>Colonia</label>
-          <input
+          <Combobox
             value={value.colonia}
-            onChange={(e) => onChange({ colonia: e.target.value })}
-            className={inputCls}
+            onChange={(colonia) => onChange({ colonia })}
+            options={coloniaOpts}
             placeholder="Roma Norte"
           />
         </div>

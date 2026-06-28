@@ -24,6 +24,7 @@ import { ApiError } from '../../middleware/error-handler';
 import { emitEvent } from '../../lib/events';
 import { toMxn } from '../../lib/pricing';
 import { generateUniqueSlug, slugify } from '../../lib/slug';
+import { normalizeText } from '../../lib/text';
 
 const { properties, locations, propertyImages, amenities, propertyAmenities } =
   schema;
@@ -395,25 +396,39 @@ async function coverImages(ids: string[]) {
   return map;
 }
 
-// Busca o crea la location (estado/municipio/colonia).
+// Busca o crea la location (estado/municipio/colonia). El match es INSENSIBLE a
+// acentos y mayúsculas (normalizeText): aunque el editor o el importador escriban
+// una variante ("cuauhtemoc"), se reutiliza la location canónica existente en lugar
+// de crear un duplicado. Solo si no hay coincidencia normalizada se inserta una nueva
+// (preservando la grafía tal cual la escribió el usuario).
 async function resolveLocation(input: {
   estado?: string;
   municipio?: string;
   colonia?: string;
 }): Promise<string | null> {
-  const { estado, municipio, colonia } = input;
+  const estado = input.estado?.trim();
+  const municipio = input.municipio?.trim();
+  const colonia = input.colonia?.trim();
   if (!estado || !municipio || !colonia) return null;
-  const [existing] = await db
-    .select({ id: locations.id })
-    .from(locations)
-    .where(
-      and(
-        eq(locations.estado, estado),
-        eq(locations.municipio, municipio),
-        eq(locations.colonia, colonia),
-      ),
-    )
-    .limit(1);
+
+  const nEstado = normalizeText(estado);
+  const nMunicipio = normalizeText(municipio);
+  const nColonia = normalizeText(colonia);
+
+  const all = await db
+    .select({
+      id: locations.id,
+      estado: locations.estado,
+      municipio: locations.municipio,
+      colonia: locations.colonia,
+    })
+    .from(locations);
+  const existing = all.find(
+    (l) =>
+      normalizeText(l.estado) === nEstado &&
+      normalizeText(l.municipio) === nMunicipio &&
+      normalizeText(l.colonia) === nColonia,
+  );
   if (existing) return existing.id;
   const [created] = await db
     .insert(locations)

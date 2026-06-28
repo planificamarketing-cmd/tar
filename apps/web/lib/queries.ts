@@ -30,6 +30,7 @@ import type {
   ApiKeyCreated,
   Lead,
   LeadDetail,
+  LocationOption,
   MarketingScript,
   Paginated,
   PropertyDetail,
@@ -166,6 +167,16 @@ export function useAmenities() {
   return useQuery({
     queryKey: ['amenities'],
     queryFn: () => apiFetch<{ data: Amenity[] }>('/amenities'),
+    select: (r) => r.data,
+    staleTime: 5 * 60_000,
+  });
+}
+
+// Ubicaciones existentes para el autocompletado en cascada del editor.
+export function useLocations() {
+  return useQuery({
+    queryKey: ['locations'],
+    queryFn: () => apiFetch<{ data: LocationOption[] }>('/locations'),
     select: (r) => r.data,
     staleTime: 5 * 60_000,
   });
