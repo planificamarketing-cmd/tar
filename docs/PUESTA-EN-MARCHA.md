@@ -22,6 +22,8 @@ pnpm dev          # 4) API (http://localhost:4000) + Web (http://localhost:3000)
 ```
 Usuario de prueba del panel: **`admin@tarinternacional.com` / `admin123`**.
 
+**Panel de administración (backoffice):** http://localhost:3000/**admin** (login en `/admin/login`).
+
 ## 3. Qué puedes hacer HOY (y el link/cómo)
 
 | Quiero… | Cómo | Link |
@@ -50,12 +52,14 @@ Usuario de prueba del panel: **`admin@tarinternacional.com` / `admin123`**.
 
 ### ✅ Se puede hacer hoy
 - Operar **toda la API** (auth, propiedades, media, leads, CRM, webhooks, importador).
+- Operar el **backoffice (panel admin) visual** completo en `/admin`: catálogo con
+  asistente, CRM por etapas, usuarios y roles, integraciones (webhooks + API keys) y
+  scripts de marketing.
 - **Migrar el inventario** real desde EasyBroker (parseo probado con 105 propiedades).
 - **Documentación interactiva** y verificación end-to-end.
 - Mostrar el **prototipo** de diseño navegable.
 
 ### ⏳ Aún no (en construcción)
-- **Backoffice (panel admin) visual** — en curso (Fase C). La API que consume ya existe.
 - **Sitio público (frontend)** — **bloqueado hasta que el cliente firme el diseño**
   (Fase B).
 
