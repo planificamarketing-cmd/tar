@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { WEBHOOK_EVENTS } from '@tar/shared';
 import {
+  testWebhook,
   useApiKeys,
   useDeleteApiKey,
   useDeleteWebhook,
@@ -10,6 +11,7 @@ import {
   useUpdateWebhook,
   useWebhookDeliveries,
   useWebhookSubscriptions,
+  type WebhookTestResult,
 } from '@/lib/queries';
 import { ApiError } from '@/lib/api';
 import type { ApiKey, WebhookSubscription } from '@/lib/types';
@@ -22,6 +24,7 @@ import {
 } from '@/lib/format';
 import { NPlus } from '@/components/icons';
 import { WebhookModal } from '@/components/webhook-modal';
+import { WebhookPayloadReference } from '@/components/webhook-payloads';
 import { ApiKeyModal } from '@/components/api-key-modal';
 
 const sectionCls = 'rounded-2xl border border-line bg-white p-6 shadow-sm';
@@ -48,6 +51,25 @@ export default function SettingsPage() {
   const [webhookModal, setWebhookModal] = useState<WebhookSubscription | 'new' | null>(null);
   const [keyModal, setKeyModal] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  // Resultado de "Probar" por webhook (id → resultado o 'loading').
+  const [tests, setTests] = useState<Record<string, WebhookTestResult | 'loading'>>({});
+
+  async function probe(w: WebhookSubscription) {
+    setTests((t) => ({ ...t, [w.id]: 'loading' }));
+    try {
+      const r = await testWebhook({
+        targetUrl: w.targetUrl,
+        secret: w.secret,
+        event: w.events[0] ?? 'property.published',
+      });
+      setTests((t) => ({ ...t, [w.id]: r }));
+    } catch {
+      setTests((t) => ({
+        ...t,
+        [w.id]: { ok: false, status: 0, error: 'No se pudo enviar' },
+      }));
+    }
+  }
 
   // Mapa subscriptionId → nombre, para la bitácora.
   const subName = useMemo(() => {
@@ -143,6 +165,22 @@ export default function SettingsPage() {
                       <EventChip key={e}>{e}</EventChip>
                     ))}
                   </div>
+                  {tests[w.id] && tests[w.id] !== 'loading' && (
+                    <p
+                      className={`mt-2 text-xs ${
+                        (tests[w.id] as WebhookTestResult).ok
+                          ? 'text-green-700'
+                          : 'text-red-600'
+                      }`}
+                    >
+                      {(tests[w.id] as WebhookTestResult).ok
+                        ? `✓ Prueba entregada (HTTP ${(tests[w.id] as WebhookTestResult).status})`
+                        : `✗ Falló: ${
+                            (tests[w.id] as WebhookTestResult).error ??
+                            `HTTP ${(tests[w.id] as WebhookTestResult).status}`
+                          }`}
+                    </p>
+                  )}
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-2">
                   <button
@@ -161,6 +199,14 @@ export default function SettingsPage() {
                     {w.isActive ? '● Activo' : '○ Inactivo'}
                   </button>
                   <div className="flex gap-2">
+                    <button
+                      onClick={() => void probe(w)}
+                      disabled={tests[w.id] === 'loading'}
+                      className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:bg-canvas disabled:opacity-50"
+                      title="Enviar un payload de ejemplo a la URL"
+                    >
+                      {tests[w.id] === 'loading' ? 'Enviando…' : 'Probar'}
+                    </button>
                     <button
                       onClick={() => setWebhookModal(w)}
                       className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:bg-canvas"
@@ -208,6 +254,12 @@ export default function SettingsPage() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Referencia de payloads (qué datos manda cada evento) */}
+        <div className="mt-6">
+          <div className={`${overline} mb-2`}>Qué datos manda cada aviso (payload)</div>
+          <WebhookPayloadReference />
         </div>
 
         {/* Bitácora de entregas */}

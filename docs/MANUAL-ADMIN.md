@@ -240,16 +240,33 @@ exactamente lo que llega al publicar una propiedad:
   - `Content-Type: application/json`
   - `X-TAR-Event: property.published` (el nombre del evento)
   - `X-TAR-Signature: <hmac>` (firma HMAC-SHA256 del cuerpo con tu secreto)
-- **Cuerpo (body):**
+- **Cuerpo (body)** — al **publicar una propiedad** llega con todos los datos:
   ```json
   {
     "event": "property.published",
-    "data": { "id": "b9373cc9-…", "slug": "demo-webhook" },
+    "data": {
+      "id": "b9373cc9-…",
+      "slug": "casa-en-polanco",
+      "url": "https://tu-sitio.com/propiedades/casa-en-polanco",
+      "title": "Casa en Polanco",
+      "description": "Amplia casa con jardín…",
+      "price": { "sale": 8500000, "saleCurrency": "MXN", "rent": null, "rentCurrency": null },
+      "bedrooms": 3, "bathrooms": 2, "parking": 2, "areaM2": 220,
+      "location": { "estado": "Ciudad de México", "municipio": "Miguel Hidalgo", "colonia": "Polanco" },
+      "cover": "https://tu-sitio.com/media/…/portada.webp",
+      "images": ["https://tu-sitio.com/media/…/1.webp", "https://tu-sitio.com/media/…/2.webp"],
+      "amenities": ["Alberca", "Seguridad 24h"]
+    },
     "timestamp": "2026-07-07T04:54:08.361Z"
   }
   ```
-  > El cuerpo trae el **id** y el **slug** de la propiedad. Si necesitas todos los
-  > datos (precio, fotos…), tu flujo puede consultarlos después con ese id/slug.
+  > **`property.published` incluye fotos, descripción, precio, amenidades y ubicación**
+  > — todo listo para usar en tu flujo. Los demás eventos (`property.status_changed`,
+  > `lead.*`) son más ligeros; si necesitas todos los datos de una propiedad puedes
+  > pedirlos (sin login) a `GET /api/v1/properties/{slug}`.
+  >
+  > 📋 **La referencia completa de cada payload está en el propio panel:** *Ajustes →
+  > Integraciones → "Qué datos manda cada aviso"* (con botón de copiar).
 
 **Pasos en n8n:**
 1. Agrega un nodo **Webhook**. En **HTTP Method** elige **POST** (viene en `GET` por
