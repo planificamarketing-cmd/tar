@@ -163,9 +163,9 @@ export default function PropertiesPage() {
 
   return (
     <div>
-      <header className="mb-6 flex items-end justify-between gap-4">
+      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-display text-3xl text-navy">Propiedades</h1>
+          <h1 className="font-display text-2xl text-navy sm:text-3xl">Propiedades</h1>
           <p className="mt-1 text-sm text-muted">
             {total} {total === 1 ? 'propiedad' : 'propiedades'}
             {archived ? ' archivadas' : ' en el inventario'}.
@@ -339,7 +339,8 @@ export default function PropertiesPage() {
             {archived ? 'No hay propiedades archivadas.' : 'No hay propiedades con este filtro.'}
           </div>
         ) : (
-          <table className="w-full text-left text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[880px] text-left text-sm">
             <thead className="border-b border-line bg-canvas/60 text-xs uppercase tracking-wide text-muted">
               <tr>
                 <th className="px-4 py-3">
@@ -497,6 +498,7 @@ export default function PropertiesPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

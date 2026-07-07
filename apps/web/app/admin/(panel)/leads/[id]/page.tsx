@@ -129,7 +129,7 @@ export default function LeadDetailPage() {
 
         {/* Cambiar estado */}
         <aside>
-          <section className="sticky top-8 rounded-2xl border border-line bg-white p-6 shadow-sm">
+          <section className="rounded-2xl border border-line bg-white p-6 shadow-sm lg:sticky lg:top-8">
             <h2 className="mb-1 font-display text-lg text-navy">Estado del lead</h2>
             <p className="mb-4 text-xs text-muted">
               Cada cambio queda en la bitácora y dispara el webhook configurado.

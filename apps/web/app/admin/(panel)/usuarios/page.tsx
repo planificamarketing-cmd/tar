@@ -92,9 +92,9 @@ export default function UsersPage() {
 
   return (
     <div>
-      <header className="mb-6 flex items-end justify-between gap-4">
+      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-display text-3xl text-navy">Usuarios</h1>
+          <h1 className="font-display text-2xl text-navy sm:text-3xl">Usuarios</h1>
           <p className="mt-1 text-sm text-muted">
             {total} {total === 1 ? 'operador' : 'operadores'} del panel.
           </p>
@@ -164,7 +164,8 @@ export default function UsersPage() {
             No hay usuarios con este filtro.
           </div>
         ) : (
-          <table className="w-full text-left text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left text-sm">
             <thead className="border-b border-line bg-canvas/60 text-xs uppercase tracking-wide text-muted">
               <tr>
                 <th className="px-5 py-3 font-semibold">Usuario</th>
@@ -243,6 +244,7 @@ export default function UsersPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

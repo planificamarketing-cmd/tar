@@ -35,9 +35,9 @@ export default function ScriptsPage() {
 
   return (
     <div>
-      <header className="mb-6 flex items-end justify-between gap-4">
+      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-display text-3xl text-navy">Scripts de marketing</h1>
+          <h1 className="font-display text-2xl text-navy sm:text-3xl">Scripts de marketing</h1>
           <p className="mt-1 text-sm text-muted">
             Inyecta código de terceros (analytics, píxeles, chats) por ubicación.{' '}
             {scripts?.length ? `${activeCount} activo(s) de ${scripts.length}.` : ''}

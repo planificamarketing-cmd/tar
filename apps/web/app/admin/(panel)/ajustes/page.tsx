@@ -90,7 +90,7 @@ export default function SettingsPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <header className="mb-6">
-        <h1 className="font-display text-3xl text-navy">Ajustes</h1>
+        <h1 className="font-display text-2xl text-navy sm:text-3xl">Ajustes</h1>
         <p className="mt-1 text-sm text-muted">
           Integraciones de la plataforma con tus herramientas externas.
         </p>
@@ -273,7 +273,8 @@ export default function SettingsPage() {
                 Sin entregas registradas todavía.
               </div>
             ) : (
-              <table className="w-full text-left text-sm">
+              <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] text-left text-sm">
                 <thead className="border-b border-line bg-canvas/60 text-[11px] uppercase tracking-wide text-muted">
                   <tr>
                     <th className="px-4 py-2.5 font-semibold">Webhook</th>
@@ -325,6 +326,7 @@ export default function SettingsPage() {
                   })}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         </div>

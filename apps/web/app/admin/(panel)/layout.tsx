@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -14,6 +14,8 @@ import {
   NScript,
   NCog,
   NLogout,
+  NMenu,
+  NClose,
   type IconProps,
 } from '@/components/icons';
 
@@ -60,17 +62,63 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [navOpen, setNavOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) router.replace('/admin/login');
   }, [loading, user, router]);
 
+  // Cierra el menú móvil al navegar.
+  useEffect(() => {
+    setNavOpen(false);
+  }, [pathname]);
+
   if (loading || !user) return <Spinner />;
 
   return (
     <div className="min-h-screen bg-canvas">
-      {/* Sidebar — blanco, igual al prototipo */}
-      <aside className="fixed inset-y-0 left-0 flex w-60 flex-col border-r border-line bg-white px-3.5 py-6">
+      {/* Barra superior móvil (hamburguesa + logo) — oculta en escritorio */}
+      <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-white px-4 lg:hidden">
+        <button
+          onClick={() => setNavOpen(true)}
+          className="rounded-lg border border-line p-1.5 text-ink transition hover:bg-canvas"
+          aria-label="Abrir menú"
+        >
+          <NMenu s={20} />
+        </button>
+        <Image
+          src="/brand/tar-logo.svg"
+          alt="TAR Internacional"
+          width={111}
+          height={85}
+          priority
+          className="h-8 w-auto"
+        />
+      </header>
+
+      {/* Fondo oscuro al abrir el menú en móvil */}
+      {navOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-navy/40 lg:hidden"
+          onClick={() => setNavOpen(false)}
+          aria-hidden
+        />
+      )}
+
+      {/* Sidebar — fija en escritorio; drawer deslizable en móvil */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-line bg-white px-3.5 py-6 transition-transform duration-200 lg:translate-x-0 ${
+          navOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {/* Botón cerrar (solo móvil) */}
+        <button
+          onClick={() => setNavOpen(false)}
+          className="absolute right-3 top-3 rounded-lg p-1.5 text-muted transition hover:bg-canvas lg:hidden"
+          aria-label="Cerrar menú"
+        >
+          <NClose s={18} />
+        </button>
         {/* Logo block: logotipo TAR */}
         <div className="mb-3.5 flex items-center border-b border-line px-3 pb-5">
           <Image
@@ -158,8 +206,8 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Contenido */}
-      <div className="ml-60">
-        <main className="px-9 py-8">{children}</main>
+      <div className="lg:ml-60">
+        <main className="px-4 py-6 sm:px-6 lg:px-9 lg:py-8">{children}</main>
       </div>
     </div>
   );

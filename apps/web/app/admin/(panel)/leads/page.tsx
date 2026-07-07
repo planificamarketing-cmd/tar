@@ -69,7 +69,7 @@ export default function LeadsPage() {
   return (
     <div>
       <header className="mb-6">
-        <h1 className="font-display text-3xl text-navy">Leads</h1>
+        <h1 className="font-display text-2xl text-navy sm:text-3xl">Leads</h1>
         <p className="mt-1 text-sm text-muted">
           {total} {total === 1 ? 'lead' : 'leads'} en el pipeline.
         </p>
@@ -133,7 +133,8 @@ export default function LeadsPage() {
             No hay leads con este filtro.
           </div>
         ) : (
-          <table className="w-full text-left text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[720px] text-left text-sm">
             <thead className="border-b border-line bg-canvas/60 text-xs uppercase tracking-wide text-muted">
               <tr>
                 <th className="px-4 py-3">
@@ -193,6 +194,7 @@ export default function LeadsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

@@ -185,9 +185,9 @@ export default function DashboardPage() {
   return (
     <div>
       {/* Header de bienvenida */}
-      <div className="mb-7 flex items-end justify-between">
+      <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-display text-[34px] leading-tight tracking-tight text-navy">
+          <h1 className="font-display text-[26px] leading-tight tracking-tight text-navy sm:text-[34px]">
             Bienvenido,{' '}
             <span className="italic text-muted">{user?.name?.split(' ')[0] ?? 'equipo'}</span>
           </h1>
@@ -196,7 +196,7 @@ export default function DashboardPage() {
         <button
           onClick={exportCsv}
           disabled={!data}
-          className="flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2.5 text-[13px] font-medium text-ink transition hover:bg-canvas disabled:opacity-50"
+          className="flex items-center gap-2 self-start rounded-full border border-line bg-white px-4 py-2.5 text-[13px] font-medium text-ink transition hover:bg-canvas disabled:opacity-50 sm:self-auto"
         >
           <NUpload s={14} /> Exportar CSV
         </button>

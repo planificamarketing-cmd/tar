@@ -56,3 +56,5 @@ export const NBuilding = make([
 ]);
 export const NScript = make(['M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z', 'M14 2v6h6', 'M9 15h2', 'M9 11h6', 'M9 7h2']);
 export const NSearch = make(['M11 19a8 8 0 100-16 8 8 0 000 16z', 'M21 21l-4.35-4.35']);
+export const NMenu = make(['M3 6h18', 'M3 12h18', 'M3 18h18']);
+export const NClose = make(['M6 6l12 12', 'M6 18L18 6']);
