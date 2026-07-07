@@ -131,6 +131,17 @@ nano .env        # llenar secretos: DATABASE_URL, JWT_*, MEDIA_DIR, SENDGRID, MA
 ./infra/deploy.sh   # git pull → build → migraciones → docker compose up -d → healthcheck
 ```
 
+En producción, además de los secretos, ajusta estas URLs al dominio real (si no, los
+enlaces y CORS apuntan a `localhost`):
+
+| Variable | Ejemplo en producción | Para qué |
+|---|---|---|
+| `PUBLIC_SITE_URL` | `https://tarinternacional.com` | Enlace `url` de la propiedad en los **webhooks** (`property.published`). Sin barra final. |
+| `MEDIA_BASE_URL` | `https://tarinternacional.com/media` | URL pública de las imágenes. |
+| `CORS_ORIGINS` | `https://tarinternacional.com` | Orígenes permitidos del navegador. |
+| `NEXT_PUBLIC_API_URL` | `https://tarinternacional.com/api/v1` | Base de la API para el frontend. |
+| `NEXT_PUBLIC_SITE_URL` | `https://tarinternacional.com` | Base del sitio para el frontend. |
+
 Servicios del `docker-compose.yml` (§11 del PRD): `db` (postgis/postgis:16-3.4, volumen `pgdata`, **sin puertos publicados al host**), `api` (corre migraciones al arrancar + worker pg-boss), `web` (Next standalone), `caddy` (80/443, TLS automático).
 
 Verificación:
