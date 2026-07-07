@@ -39,6 +39,7 @@ function RoleBadge({ role }: { role: UserRole }) {
 export default function UsersPage() {
   const { user: me } = useAuth();
   const [role, setRole] = useState<UserRole | 'all'>('all');
+  const [active, setActive] = useState<'all' | 'true' | 'false'>('all');
   const [q, setQ] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -46,23 +47,39 @@ export default function UsersPage() {
 
   const { data, isLoading, isError } = useUsers({
     role: role === 'all' ? undefined : role,
+    active: active === 'all' ? undefined : active,
     q: search || undefined,
     page,
     limit: PER_PAGE,
   });
   const deactivate = useDeactivateUser();
+  const update = useUpdateUser();
   const [actionErr, setActionErr] = useState<string | null>(null);
 
   const total = data?.meta.total ?? 0;
   const pages = Math.max(1, Math.ceil(total / PER_PAGE));
 
   async function onDeactivate(u: User) {
-    if (!window.confirm(`¿Desactivar a ${u.name}? Se cerrarán sus sesiones.`)) return;
+    if (
+      !window.confirm(
+        `¿Desactivar a ${u.name}? Se cerrarán sus sesiones y no podrá entrar. Conserva su historial y puedes reactivarlo después.`,
+      )
+    )
+      return;
     setActionErr(null);
     try {
       await deactivate.mutateAsync(u.id);
     } catch (e) {
       setActionErr(e instanceof ApiError ? e.message : 'No se pudo desactivar.');
+    }
+  }
+
+  async function onReactivate(u: User) {
+    setActionErr(null);
+    try {
+      await update.mutateAsync({ id: u.id, body: { isActive: true } });
+    } catch (e) {
+      setActionErr(e instanceof ApiError ? e.message : 'No se pudo reactivar.');
     }
   }
 
@@ -102,6 +119,22 @@ export default function UsersPage() {
             onClick={() => { setRole(r); setPage(1); }}
           >
             {ROLE_LABEL[r]}
+          </button>
+        ))}
+        <div className="mx-1 h-5 w-px bg-line" />
+        {(
+          [
+            ['all', 'Todos los estados'],
+            ['true', 'Activos'],
+            ['false', 'Inactivos'],
+          ] as const
+        ).map(([val, label]) => (
+          <button
+            key={val}
+            className={tab(active === val)}
+            onClick={() => { setActive(val); setPage(1); }}
+          >
+            {label}
           </button>
         ))}
         <form
@@ -186,15 +219,24 @@ export default function UsersPage() {
                       >
                         Editar
                       </button>
-                      {u.isActive && u.id !== me?.id && (
-                        <button
-                          disabled={deactivate.isPending}
-                          onClick={() => void onDeactivate(u)}
-                          className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-muted transition hover:border-red-300 hover:text-red-600 disabled:opacity-50"
-                        >
-                          Desactivar
-                        </button>
-                      )}
+                      {u.id !== me?.id &&
+                        (u.isActive ? (
+                          <button
+                            disabled={deactivate.isPending}
+                            onClick={() => void onDeactivate(u)}
+                            className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-muted transition hover:border-red-300 hover:text-red-600 disabled:opacity-50"
+                          >
+                            Desactivar
+                          </button>
+                        ) : (
+                          <button
+                            disabled={update.isPending}
+                            onClick={() => void onReactivate(u)}
+                            className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:border-green-300 hover:text-green-700 disabled:opacity-50"
+                          >
+                            Reactivar
+                          </button>
+                        ))}
                     </div>
                   </td>
                 </tr>

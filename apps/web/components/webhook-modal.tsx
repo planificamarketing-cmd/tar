@@ -2,7 +2,12 @@
 
 import { useState } from 'react';
 import { WEBHOOK_EVENTS, type WebhookEvent } from '@tar/shared';
-import { useCreateWebhook, useUpdateWebhook } from '@/lib/queries';
+import {
+  testWebhook,
+  useCreateWebhook,
+  useUpdateWebhook,
+  type WebhookTestResult,
+} from '@/lib/queries';
 import { ApiError } from '@/lib/api';
 import type { WebhookSubscription } from '@/lib/types';
 
@@ -27,11 +32,40 @@ export function WebhookModal({
   const [events, setEvents] = useState<WebhookEvent[]>(webhook?.events ?? []);
   const [isActive, setIsActive] = useState(webhook?.isActive ?? true);
   const [err, setErr] = useState<string | null>(null);
+  const [testResult, setTestResult] = useState<WebhookTestResult | null>(null);
+  const [testing, setTesting] = useState(false);
 
   const pending = create.isPending || update.isPending;
 
   function toggleEvent(e: WebhookEvent) {
     setEvents((cur) => (cur.includes(e) ? cur.filter((x) => x !== e) : [...cur, e]));
+  }
+
+  async function sendTest() {
+    setErr(null);
+    setTestResult(null);
+    try {
+      new URL(targetUrl);
+    } catch {
+      return setErr('Escribe una URL de destino válida para probar.');
+    }
+    // Al editar, el campo secreto puede ir en blanco (no se cambia): se usa el guardado.
+    const effectiveSecret = secret || webhook?.secret || '';
+    if (effectiveSecret.length < 1)
+      return setErr('Indica el secreto de firma para enviar la prueba.');
+    setTesting(true);
+    try {
+      const r = await testWebhook({
+        targetUrl,
+        secret: effectiveSecret,
+        event: events[0] ?? 'property.published',
+      });
+      setTestResult(r);
+    } catch (e) {
+      setErr(e instanceof ApiError ? e.message : 'No se pudo enviar la prueba.');
+    } finally {
+      setTesting(false);
+    }
   }
 
   async function submit() {
@@ -145,20 +179,46 @@ export function WebhookModal({
 
         {err && <p className="mt-4 text-sm text-red-600">{err}</p>}
 
-        <div className="mt-6 flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="rounded-xl border border-line bg-white px-4 py-2.5 text-sm font-medium text-ink transition hover:bg-canvas"
+        {testResult && (
+          <div
+            className={`mt-4 rounded-xl border px-3 py-2.5 text-sm ${
+              testResult.ok
+                ? 'border-green-200 bg-green-50 text-green-800'
+                : 'border-red-200 bg-red-50 text-red-700'
+            }`}
           >
-            Cancelar
-          </button>
+            {testResult.ok
+              ? `✓ El destino respondió correctamente (HTTP ${testResult.status}). El envío de prueba llegó.`
+              : `✗ No se pudo entregar: ${
+                  testResult.error ?? `HTTP ${testResult.status}`
+                }. Revisa que la URL esté activa y acepte POST.`}
+          </div>
+        )}
+
+        <div className="mt-6 flex items-center justify-between gap-3">
           <button
-            onClick={() => void submit()}
-            disabled={pending}
-            className="rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-hover disabled:opacity-50"
+            onClick={() => void sendTest()}
+            disabled={testing}
+            className="rounded-xl border border-line bg-white px-4 py-2.5 text-sm font-medium text-ink transition hover:bg-canvas disabled:opacity-50"
+            title="Envía un payload de ejemplo a la URL, sin guardar"
           >
-            {pending ? 'Guardando…' : isNew ? 'Crear webhook' : 'Guardar'}
+            {testing ? 'Enviando…' : 'Enviar prueba'}
           </button>
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="rounded-xl border border-line bg-white px-4 py-2.5 text-sm font-medium text-ink transition hover:bg-canvas"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={() => void submit()}
+              disabled={pending}
+              className="rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-hover disabled:opacity-50"
+            >
+              {pending ? 'Guardando…' : isNew ? 'Crear webhook' : 'Guardar'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

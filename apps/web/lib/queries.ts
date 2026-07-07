@@ -88,6 +88,21 @@ export function useUpdateLead(id: string) {
   });
 }
 
+export function useBulkLeads() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { ids: string[]; status: LeadStatus }) =>
+      apiFetch<{ data: { ok: number; failed: { id: string; error: string }[] } }>(
+        '/leads/bulk',
+        { method: 'POST', body: JSON.stringify(body) },
+      ),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['leads'] });
+      void qc.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+  });
+}
+
 // ── Propiedades (backoffice) ────────────────────────────────────────────────────
 export type AdminPropertiesParams = {
   status?: PropertyStatus;
@@ -97,6 +112,7 @@ export type AdminPropertiesParams = {
   sort?: PropertyAdminSort;
   page?: number;
   limit?: number;
+  archived?: 'true' | 'false';
 };
 
 export function useAdminProperties(params: AdminPropertiesParams) {
@@ -153,6 +169,73 @@ export function useDeleteProperty() {
       apiFetch(`/properties/${id}`, { method: 'DELETE' }),
     onSuccess: () => invalidateProperties(qc),
   });
+}
+
+export function useUnpublishProperty() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch(`/properties/${id}/unpublish`, { method: 'POST' }),
+    onSuccess: () => invalidateProperties(qc),
+  });
+}
+
+export function useRestoreProperty() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch(`/properties/${id}/restore`, { method: 'POST' }),
+    onSuccess: () => invalidateProperties(qc),
+  });
+}
+
+export function useDuplicateProperty() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<{ data: PropertyDetail }>(`/properties/${id}/duplicate`, {
+        method: 'POST',
+      }),
+    onSuccess: () => invalidateProperties(qc),
+  });
+}
+
+export type BulkPropertyResult = { ok: number; failed: { id: string; error: string }[] };
+
+export function useBulkProperties() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      ids: string[];
+      action: 'publish' | 'unpublish' | 'archive' | 'restore' | 'status';
+      status?: CommercialStatus;
+    }) =>
+      apiFetch<{ data: BulkPropertyResult }>('/properties/bulk', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () => invalidateProperties(qc),
+  });
+}
+
+// Prueba de webhooks: ad-hoc a una URL, y disparo de evento a los suscriptores.
+export type WebhookTestResult = { ok: boolean; status: number; error: string | null };
+export function testWebhook(body: { targetUrl: string; secret: string; event?: string }) {
+  return apiFetch<{ data: WebhookTestResult }>('/webhooks/test', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  }).then((r) => r.data);
+}
+export type WebhookEventTest = {
+  event: string;
+  count: number;
+  results: { id: string; name: string; targetUrl: string; ok: boolean; status: number; error: string | null }[];
+};
+export function testWebhookEvent(event: string) {
+  return apiFetch<{ data: WebhookEventTest }>('/webhooks/test-event', {
+    method: 'POST',
+    body: JSON.stringify({ event }),
+  }).then((r) => r.data);
 }
 
 export function useProperty(id: string) {

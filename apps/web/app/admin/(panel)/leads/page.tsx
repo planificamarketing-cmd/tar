@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LEAD_STATUSES, type LeadStatus } from '@tar/shared';
-import { useLeads } from '@/lib/queries';
+import { useBulkLeads, useLeads } from '@/lib/queries';
 import { LeadStatusBadge } from '@/components/lead-status-badge';
 import {
   LEAD_STATUS_META,
@@ -18,6 +18,8 @@ export default function LeadsPage() {
   const router = useRouter();
   const [status, setStatus] = useState<LeadStatus | 'all'>('all');
   const [page, setPage] = useState(1);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const bulk = useBulkLeads();
 
   const { data, isLoading, isError } = useLeads({
     status: status === 'all' ? undefined : status,
@@ -27,10 +29,34 @@ export default function LeadsPage() {
 
   const total = data?.meta.total ?? 0;
   const pages = Math.max(1, Math.ceil(total / PER_PAGE));
+  const rows = data?.data ?? [];
+  const allOnPage = rows.length > 0 && rows.every((l) => selected.has(l.id));
 
   function pick(s: LeadStatus | 'all') {
     setStatus(s);
     setPage(1);
+    setSelected(new Set());
+  }
+
+  function toggleOne(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+  function toggleAll() {
+    setSelected((prev) =>
+      rows.every((l) => prev.has(l.id)) ? new Set() : new Set(rows.map((l) => l.id)),
+    );
+  }
+
+  async function bulkStatus(s: LeadStatus) {
+    const ids = [...selected];
+    if (!ids.length) return;
+    await bulk.mutateAsync({ ids, status: s });
+    setSelected(new Set());
   }
 
   const tab = (active: boolean) =>
@@ -61,6 +87,40 @@ export default function LeadsPage() {
         ))}
       </div>
 
+      {/* Barra de acciones masivas */}
+      {selected.size > 0 && (
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-brand/30 bg-brand-soft/50 px-4 py-2.5 text-sm">
+          <span className="font-semibold text-navy">
+            {selected.size} seleccionado{selected.size === 1 ? '' : 's'}
+          </span>
+          <div className="mx-1 h-4 w-px bg-line" />
+          <select
+            disabled={bulk.isPending}
+            defaultValue=""
+            onChange={(e) => {
+              if (e.target.value) {
+                void bulkStatus(e.target.value as LeadStatus);
+                e.target.value = '';
+              }
+            }}
+            className="rounded-lg border border-line bg-white px-2 py-1 text-xs font-semibold text-ink outline-none focus:border-brand"
+          >
+            <option value="">Cambiar etapa a…</option>
+            {LEAD_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {LEAD_STATUS_META[s].label}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={() => setSelected(new Set())}
+            className="ml-auto text-xs text-muted hover:text-ink"
+          >
+            Limpiar selección
+          </button>
+        </div>
+      )}
+
       <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
         {isError ? (
           <div className="px-6 py-16 text-center text-sm text-red-600">
@@ -76,6 +136,15 @@ export default function LeadsPage() {
           <table className="w-full text-left text-sm">
             <thead className="border-b border-line bg-canvas/60 text-xs uppercase tracking-wide text-muted">
               <tr>
+                <th className="px-4 py-3">
+                  <input
+                    type="checkbox"
+                    checked={allOnPage}
+                    onChange={toggleAll}
+                    className="h-4 w-4 rounded border-line text-brand focus:ring-brand"
+                    aria-label="Seleccionar todos"
+                  />
+                </th>
                 <th className="px-5 py-3 font-semibold">Nombre</th>
                 <th className="px-5 py-3 font-semibold">Contacto</th>
                 <th className="px-5 py-3 font-semibold">Tipo</th>
@@ -84,12 +153,23 @@ export default function LeadsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {data.data.map((lead) => (
+              {rows.map((lead) => (
                 <tr
                   key={lead.id}
                   onClick={() => router.push(`/admin/leads/${lead.id}`)}
-                  className="cursor-pointer transition hover:bg-canvas/60"
+                  className={`cursor-pointer transition hover:bg-canvas/60 ${
+                    selected.has(lead.id) ? 'bg-brand-soft/30' : ''
+                  }`}
                 >
+                  <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selected.has(lead.id)}
+                      onChange={() => toggleOne(lead.id)}
+                      className="h-4 w-4 rounded border-line text-brand focus:ring-brand"
+                      aria-label={`Seleccionar ${lead.name}`}
+                    />
+                  </td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-soft font-display text-[12px] font-bold text-brand">
