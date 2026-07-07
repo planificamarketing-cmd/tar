@@ -8,7 +8,8 @@ import {
   type FeaturedLevel,
   type PropertyType,
 } from '@tar/shared';
-import { useAmenities } from '@/lib/queries';
+import { useState } from 'react';
+import { useAmenities, useCreateAmenity } from '@/lib/queries';
 import type { PropertyFormValues } from '@/lib/property-form';
 import { FEATURED_META, PROPERTY_TYPE_LABEL } from '@/lib/format';
 import { LocationPicker } from './location-picker';
@@ -42,6 +43,8 @@ function Section({
 
 export function PropertyFields({ value, onChange }: Props) {
   const { data: amenities } = useAmenities();
+  const createAmenity = useCreateAmenity();
+  const [newAmenity, setNewAmenity] = useState('');
 
   const Text = (
     key: keyof PropertyFormValues,
@@ -67,6 +70,21 @@ export function PropertyFields({ value, onChange }: Props) {
         ? value.amenities.filter((a) => a !== id)
         : [...value.amenities, id],
     });
+  }
+
+  async function addAmenity() {
+    const name = newAmenity.trim();
+    if (name.length < 2 || createAmenity.isPending) return;
+    try {
+      const { data } = await createAmenity.mutateAsync({ name });
+      setNewAmenity('');
+      // Selecciona la amenidad (nueva o ya existente con ese nombre).
+      if (!value.amenities.includes(data.id)) {
+        onChange({ amenities: [...value.amenities, data.id] });
+      }
+    } catch {
+      /* el error se refleja en createAmenity.isError abajo */
+    }
   }
 
   return (
@@ -148,7 +166,10 @@ export function PropertyFields({ value, onChange }: Props) {
       </Section>
 
       {/* Amenidades */}
-      <Section title="Amenidades">
+      <Section
+        title="Amenidades"
+        desc="Selecciona las que apliquen o agrega una nueva al catálogo."
+      >
         {!amenities?.length ? (
           <p className="text-sm text-muted">No hay amenidades en el catálogo.</p>
         ) : (
@@ -172,6 +193,39 @@ export function PropertyFields({ value, onChange }: Props) {
             })}
           </div>
         )}
+
+        {/* Alta de amenidad nueva */}
+        <div className="mt-4 border-t border-line pt-4">
+          <label className={labelCls}>Agregar amenidad</label>
+          <div className="flex gap-2">
+            <input
+              value={newAmenity}
+              onChange={(e) => setNewAmenity(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  void addAmenity();
+                }
+              }}
+              className={inputCls}
+              placeholder="Ej. Alberca climatizada"
+              maxLength={60}
+            />
+            <button
+              type="button"
+              onClick={() => void addAmenity()}
+              disabled={newAmenity.trim().length < 2 || createAmenity.isPending}
+              className="shrink-0 rounded-xl bg-navy px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+            >
+              {createAmenity.isPending ? 'Agregando…' : 'Agregar'}
+            </button>
+          </div>
+          {createAmenity.isError && (
+            <p className="mt-1.5 text-xs text-red-600">
+              No se pudo agregar la amenidad. Revisa el nombre e inténtalo de nuevo.
+            </p>
+          )}
+        </div>
       </Section>
 
       {/* Destaque */}

@@ -22,6 +22,7 @@ import type {
   UpdateUserInput,
   UpdateWebhookSubscriptionInput,
   UserRole,
+  ParsedMapsLocation,
 } from '@tar/shared';
 import { apiFetch, apiUpload } from './api';
 import type {
@@ -170,6 +171,29 @@ export function useAmenities() {
     select: (r) => r.data,
     staleTime: 5 * 60_000,
   });
+}
+
+// Alta de amenidad desde el editor. Devuelve la amenidad (nueva o existente) para
+// poder seleccionarla al vuelo.
+export function useCreateAmenity() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { name: string; icon?: string }) =>
+      apiFetch<{ data: Amenity }>('/amenities', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['amenities'] }),
+  });
+}
+
+// Resuelve un enlace de Google Maps en el servidor (expande enlaces cortos y
+// extrae coords + dirección). Acción puntual con auth, no un query.
+export function resolveMapsLocation(url: string) {
+  return apiFetch<{ data: ParsedMapsLocation }>('/geo/resolve-maps', {
+    method: 'POST',
+    body: JSON.stringify({ url }),
+  }).then((r) => r.data);
 }
 
 // Ubicaciones existentes para el autocompletado en cascada del editor.

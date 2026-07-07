@@ -1,9 +1,10 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { parseGoogleMapsUrl, isShortMapsUrl } from '@tar/shared';
 import type { PropertyFormValues } from '@/lib/property-form';
 import { Combobox } from './combobox';
-import { useLocations } from '@/lib/queries';
+import { resolveMapsLocation, useLocations } from '@/lib/queries';
 import { normalizeText } from '@/lib/text';
 
 type Props = {
@@ -26,26 +27,18 @@ const labelCls = 'mb-1.5 block text-xs font-semibold uppercase tracking-wide tex
 const inputCls =
   'w-full rounded-xl border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition focus:border-brand';
 
-// Extrae lat,lng de un enlace de Google Maps (.../@19.42,-99.16,... o ?q=lat,lng).
-function parseCoords(text: string): { lat: number; lng: number } | null {
-  const t = text.trim();
-  const at = t.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-  const q = t.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
-  const m = at ?? q;
-  if (!m) return null;
-  const lat = Number(m[1]);
-  const lng = Number(m[2]);
-  if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
-  return { lat, lng };
-}
-
-// LocationPicker — versión sin Google Maps (API key pendiente del cliente).
-// Captura estado/municipio/colonia + dirección y fija el punto por coordenadas
-// (manual o pegando un enlace de Google Maps). Al integrar la API key, este
-// componente se reemplaza por un mapa con pin arrastrable sin tocar el formulario.
+// LocationPicker — versión sin la API de Google (key pendiente del cliente).
+// Captura estado/municipio/colonia + dirección y fija el punto por coordenadas.
+// Al pegar un enlace de Google Maps se autocompletan estado/municipio/colonia/
+// dirección/CP + coordenadas con lo que el enlace permita (los enlaces cortos se
+// expanden en el servidor). Al integrar la API key, se sustituye por un mapa con
+// pin arrastrable sin tocar el formulario.
 export function LocationPicker({ value, onChange }: Props) {
   const [paste, setPaste] = useState('');
-  const [pasteErr, setPasteErr] = useState(false);
+  const [pasteMsg, setPasteMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(
+    null,
+  );
+  const [pasteBusy, setPasteBusy] = useState(false);
   const { data: locs = [] } = useLocations();
 
   const hasGeo = value.lat.trim() !== '' && value.lng.trim() !== '';
@@ -83,15 +76,53 @@ export function LocationPicker({ value, onChange }: Props) {
     onChange(changed ? { municipio, colonia: '' } : { municipio });
   }
 
-  function applyPaste() {
-    const c = parseCoords(paste);
-    if (!c) {
-      setPasteErr(true);
-      return;
+  async function applyPaste() {
+    const text = paste.trim();
+    if (!text) return;
+    setPasteBusy(true);
+    setPasteMsg(null);
+    try {
+      // Enlace largo (barra del navegador): trae todo, se parsea en el cliente.
+      // Enlace corto (Compartir → copiar vínculo): el servidor lo expande.
+      let loc = parseGoogleMapsUrl(text);
+      if (isShortMapsUrl(text) || (loc.lat == null && !loc.address)) {
+        loc = await resolveMapsLocation(text);
+      }
+
+      const patch: Partial<PropertyFormValues> = {};
+      if (loc.lat != null) patch.lat = String(loc.lat);
+      if (loc.lng != null) patch.lng = String(loc.lng);
+      if (loc.estado) patch.estado = loc.estado;
+      if (loc.municipio) patch.municipio = loc.municipio;
+      if (loc.colonia) patch.colonia = loc.colonia;
+      if (loc.address) patch.address = loc.address;
+      if (loc.postalCode) patch.postalCode = loc.postalCode;
+
+      if (Object.keys(patch).length === 0) {
+        setPasteMsg({ type: 'err', text: 'No se reconoció ubicación en el enlace.' });
+        return;
+      }
+      onChange(patch);
+      setPaste('');
+      const campos: string[] = [];
+      if (patch.lat) campos.push('coordenadas');
+      if (patch.estado) campos.push('estado');
+      if (patch.municipio) campos.push('municipio');
+      if (patch.colonia) campos.push('colonia');
+      if (patch.address) campos.push('dirección');
+      if (patch.postalCode) campos.push('CP');
+      setPasteMsg({ type: 'ok', text: `Autocompletado: ${campos.join(', ')}.` });
+    } catch (err) {
+      setPasteMsg({
+        type: 'err',
+        text:
+          err instanceof Error
+            ? err.message
+            : 'No se pudo leer el enlace. Pega el enlace largo desde el navegador.',
+      });
+    } finally {
+      setPasteBusy(false);
     }
-    setPasteErr(false);
-    setPaste('');
-    onChange({ lat: String(c.lat), lng: String(c.lng) });
   }
 
   return (
@@ -184,31 +215,47 @@ export function LocationPicker({ value, onChange }: Props) {
 
         <div className="mt-3">
           <label className={labelCls}>
-            …o pega un enlace de Google Maps
+            …o pega un enlace de Google Maps (autocompleta la ubicación)
           </label>
           <div className="flex gap-2">
             <input
               value={paste}
               onChange={(e) => {
                 setPaste(e.target.value);
-                setPasteErr(false);
+                setPasteMsg(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  void applyPaste();
+                }
               }}
               className={inputCls}
-              placeholder="https://maps.google.com/…@19.42,-99.16…"
+              placeholder="https://maps.app.goo.gl/… o el enlace largo del navegador"
             />
             <button
               type="button"
-              onClick={applyPaste}
-              className="shrink-0 rounded-xl border border-line bg-white px-4 py-2 text-sm font-medium text-ink transition hover:bg-canvas"
+              onClick={() => void applyPaste()}
+              disabled={pasteBusy}
+              className="shrink-0 rounded-xl border border-line bg-white px-4 py-2 text-sm font-medium text-ink transition hover:bg-canvas disabled:opacity-60"
             >
-              Fijar
+              {pasteBusy ? 'Leyendo…' : 'Autocompletar'}
             </button>
           </div>
-          {pasteErr && (
-            <p className="mt-1.5 text-xs text-red-600">
-              No se reconocieron coordenadas en el texto.
+          {pasteMsg && (
+            <p
+              className={`mt-1.5 text-xs ${
+                pasteMsg.type === 'ok' ? 'text-green-700' : 'text-red-600'
+              }`}
+            >
+              {pasteMsg.text}
             </p>
           )}
+          <p className="mt-1.5 text-xs text-muted">
+            Tip: el enlace largo de la barra del navegador trae la dirección completa;
+            los enlaces cortos de “Compartir” también funcionan (se resuelven en el
+            servidor). Revisa siempre los campos autocompletados.
+          </p>
         </div>
       </div>
     </div>

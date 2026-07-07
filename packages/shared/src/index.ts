@@ -6,6 +6,8 @@ export * from './common';
 export * from './auth';
 export * from './user';
 export * from './property';
+export * from './amenity';
+export * from './geo';
 export * from './lead';
 export * from './webhook';
 export * from './script';
