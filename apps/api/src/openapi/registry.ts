@@ -23,6 +23,10 @@ import {
   updateScriptSchema,
   createAmenitySchema,
   expandMapsSchema,
+  propertyBulkSchema,
+  bulkLeadsSchema,
+  testWebhookSchema,
+  testEventSchema,
 } from '@tar/shared';
 
 extendZodWithOpenApi(z);
@@ -287,6 +291,9 @@ export function buildOpenApiDocument() {
         sort: z
           .enum(['recientes', 'actualizados', 'precio_asc', 'precio_desc'])
           .optional(),
+        archived: z.enum(['true', 'false']).optional().openapi({
+          description: "'true' → solo archivadas (soft-deleted)",
+        }),
         page: z.number().optional(),
         limit: z.number().optional(),
       }),
@@ -355,13 +362,49 @@ export function buildOpenApiDocument() {
     responses: { 200: ok('OK'), ...errResponses },
   });
   registry.registerPath({
+    method: 'post',
+    path: '/api/v1/properties/{id}/unpublish',
+    tags: ['Propiedades'],
+    summary: 'Regresar a borrador (despublicar)',
+    security: sec,
+    request: { params: idParam },
+    responses: { 200: ok('A borrador'), 404: ok('No encontrada') },
+  });
+  registry.registerPath({
+    method: 'post',
+    path: '/api/v1/properties/{id}/duplicate',
+    tags: ['Propiedades'],
+    summary: 'Duplicar como borrador (copia datos + amenidades, sin imágenes)',
+    security: sec,
+    request: { params: idParam },
+    responses: { 201: ok('Copia creada'), 404: ok('No encontrada') },
+  });
+  registry.registerPath({
+    method: 'post',
+    path: '/api/v1/properties/{id}/restore',
+    tags: ['Propiedades'],
+    summary: 'Restaurar una propiedad archivada',
+    security: sec,
+    request: { params: idParam },
+    responses: { 200: ok('Restaurada'), 404: ok('No estaba archivada') },
+  });
+  registry.registerPath({
+    method: 'post',
+    path: '/api/v1/properties/bulk',
+    tags: ['Propiedades'],
+    summary: 'Acción masiva (publish/unpublish/archive/restore/status)',
+    security: sec,
+    request: { body: json(propertyBulkSchema) },
+    responses: { 200: ok('{ data: { ok, failed[] } }'), ...errResponses },
+  });
+  registry.registerPath({
     method: 'delete',
     path: '/api/v1/properties/{id}',
     tags: ['Propiedades'],
-    summary: 'Soft delete (solo admin)',
+    summary: 'Archivar (soft delete, solo admin)',
     security: sec,
     request: { params: idParam },
-    responses: { 204: ok('Borrada') },
+    responses: { 204: ok('Archivada') },
   });
 
   // ── Amenidades ──
@@ -505,6 +548,15 @@ export function buildOpenApiDocument() {
     request: { params: idParam, body: json(updateLeadSchema) },
     responses: { 200: ok('OK') },
   });
+  registry.registerPath({
+    method: 'post',
+    path: '/api/v1/leads/bulk',
+    tags: ['Leads'],
+    summary: 'Cambio de etapa masivo',
+    security: sec,
+    request: { body: json(bulkLeadsSchema) },
+    responses: { 200: ok('{ data: { ok, failed[] } }'), ...errResponses },
+  });
 
   // ── Webhooks ──
   registry.registerPath({
@@ -541,6 +593,24 @@ export function buildOpenApiDocument() {
     security: sec,
     request: { params: idParam },
     responses: { 204: ok('Borrada') },
+  });
+  registry.registerPath({
+    method: 'post',
+    path: '/api/v1/webhooks/test',
+    tags: ['Webhooks'],
+    summary: 'Prueba ad-hoc: envía un payload de ejemplo a una URL (con firma), sin guardar',
+    security: sec,
+    request: { body: json(testWebhookSchema) },
+    responses: { 200: ok('{ data: { ok, status, error } }'), ...errResponses },
+  });
+  registry.registerPath({
+    method: 'post',
+    path: '/api/v1/webhooks/test-event',
+    tags: ['Webhooks'],
+    summary: 'Dispara un evento de prueba a todas las suscripciones activas',
+    security: sec,
+    request: { body: json(testEventSchema) },
+    responses: { 200: ok('{ data: { event, count, results[] } }'), ...errResponses },
   });
   registry.registerPath({
     method: 'get',

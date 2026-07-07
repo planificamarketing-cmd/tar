@@ -111,7 +111,9 @@ En la ficha de la propiedad, sección **Imágenes**:
   portada es la que se ve en los listados.
 
 ### 4.6 Amenidades y destaque
-- **Amenidades:** marca las que apliquen (alberca, elevador, seguridad…).
+- **Amenidades:** marca las que apliquen (alberca, elevador, seguridad…). Si te falta
+  una, escríbela en **"Agregar amenidad"** y pulsa **Agregar**: se añade al catálogo y
+  queda seleccionada. La próxima vez ya aparece para todas las propiedades.
 - **Destaque:** Normal, **Destacada** o **Premium**. Premium y Destacada **suben** en
   el orden del listado público.
 
@@ -128,6 +130,27 @@ web (slug)**, que es **permanente** (no cambia, para no perder posicionamiento).
 > hace visible al público. En una propiedad ya publicada, usa el selector de **estatus
 > comercial** para cambiar entre Disponible/Apartado/Vendido/etc.
 
+### 4.8 Acciones en la tabla de propiedades
+En cada fila (columna **Acciones**):
+
+- **Publicar** (si es borrador) / **A borrador** (si está publicada, la despublica y la
+  regresa a borrador).
+- **Editar** — abre la ficha.
+- **Duplicar** — crea una **copia como borrador** (con "(copia)" en el título) para
+  publicar variantes rápido. Copia datos y amenidades; no copia las fotos.
+- **Archivar** — la quita del inventario. **No se borra de verdad**: puedes recuperarla.
+
+**Pestaña "Archivadas":** muestra las archivadas; cada una tiene botón **Restaurar**
+para devolverla al inventario.
+
+**Acciones masivas:** marca la casilla de varias filas (o la del encabezado para toda
+la página) y aparece una barra para aplicar a todas a la vez: **Publicar**, **Regresar
+a borrador**, **Cambiar estatus a…** o **Archivar** (en Archivadas: **Restaurar**).
+
+**Probar webhooks:** el botón arriba a la derecha envía un evento
+`property.published` de **prueba** a los webhooks suscritos y te muestra si cada uno
+respondió (útil para validar tu integración sin publicar nada real).
+
 ---
 
 ## 5. Leads (prospectos / CRM)
@@ -138,7 +161,8 @@ recibirlos y los webhooks externos también pueden crearlos.)
 
 ### 5.1 Tablero
 En **Leads** ves la lista con filtro por etapa y buscador. Cada fila muestra nombre,
-contacto, tipo (contacto/cita) y etapa.
+contacto, tipo (contacto/cita) y etapa. Puedes **seleccionar varios** (casillas) y
+**cambiar su etapa en bloque** con la barra de acciones masivas.
 
 ### 5.2 Ficha del lead
 Al abrir un lead ves sus datos, su mensaje y la **bitácora** (historial de todo lo que
@@ -163,7 +187,14 @@ En **Usuarios** gestionas quién entra al panel.
 - **Editar:** cambia el nombre, el rol, **restablece la contraseña** (déjala en blanco
   para no cambiarla) o activa/desactiva la cuenta.
 - **Desactivar (baja):** la cuenta deja de poder entrar y se le cierran las sesiones
-  abiertas. No se borra; puede reactivarse después.
+  abiertas. **No se borra** (se conserva su historial); aparece como **Inactivo**.
+- **Reactivar:** los usuarios inactivos muestran el botón **Reactivar** para volver a
+  darles acceso.
+- **Filtro por estado:** usa **Activos / Inactivos / Todos** para ocultar o revisar las
+  cuentas dadas de baja.
+
+> Los usuarios no se eliminan por completo a propósito: así no se rompe el historial de
+> quién hizo cada cambio ni los leads que tuvieran asignados.
 
 ### Protecciones automáticas (para no quedarte sin acceso)
 - No puedes **cambiarte el rol** ni **desactivarte a ti mismo**.
@@ -194,6 +225,11 @@ envía un aviso automático a la dirección (URL) que configures.
 - **Bitácora de entregas:** tabla con cada envío, su estado (Pendiente/Entregado/
   Fallido), el código de respuesta y los intentos. En las **fallidas** puedes pulsar
   **Reintentar**.
+- **Enviar prueba:** cada webhook tiene un botón **Probar** (y también lo hay al
+  crearlo/editarlo): envía un payload de ejemplo a su URL y te dice al instante si el
+  destino respondió bien. Ideal para validar tu integración (n8n, etc.) **sin** tener
+  que publicar una propiedad real. También hay un botón **"Probar webhooks"** en la
+  sección de Propiedades que dispara un evento de prueba a todos los suscritos.
 
 #### Cómo es el aviso que envía TAR (para configurar n8n, Make, Zapier…)
 Cada aviso es una **petición `POST`** (no `GET`) con el cuerpo en JSON. Así se ve

@@ -1260,6 +1260,19 @@
           },
           {
             "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "description": "'true' → solo archivadas (soft-deleted)"
+            },
+            "required": false,
+            "name": "archived",
+            "in": "query"
+          },
+          {
+            "schema": {
               "type": "number"
             },
             "required": false,
@@ -1596,7 +1609,7 @@
         "tags": [
           "Propiedades"
         ],
-        "summary": "Soft delete (solo admin)",
+        "summary": "Archivar (soft delete, solo admin)",
         "security": [
           {
             "bearerAuth": []
@@ -1615,7 +1628,7 @@
         ],
         "responses": {
           "204": {
-            "description": "Borrada"
+            "description": "Archivada"
           }
         }
       }
@@ -1701,6 +1714,184 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "description": "Validación / petición inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{id}/unpublish": {
+      "post": {
+        "tags": [
+          "Propiedades"
+        ],
+        "summary": "Regresar a borrador (despublicar)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A borrador"
+          },
+          "404": {
+            "description": "No encontrada"
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{id}/duplicate": {
+      "post": {
+        "tags": [
+          "Propiedades"
+        ],
+        "summary": "Duplicar como borrador (copia datos + amenidades, sin imágenes)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Copia creada"
+          },
+          "404": {
+            "description": "No encontrada"
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{id}/restore": {
+      "post": {
+        "tags": [
+          "Propiedades"
+        ],
+        "summary": "Restaurar una propiedad archivada",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Restaurada"
+          },
+          "404": {
+            "description": "No estaba archivada"
+          }
+        }
+      }
+    },
+    "/api/v1/properties/bulk": {
+      "post": {
+        "tags": [
+          "Propiedades"
+        ],
+        "summary": "Acción masiva (publish/unpublish/archive/restore/status)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "minItems": 1,
+                    "maxItems": 200
+                  },
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "publish",
+                      "unpublish",
+                      "archive",
+                      "restore",
+                      "status"
+                    ]
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "disponible",
+                      "apartado",
+                      "rentado",
+                      "vendido",
+                      "pausado"
+                    ]
+                  }
+                },
+                "required": [
+                  "ids",
+                  "action"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: { ok, failed[] } }"
           },
           "400": {
             "description": "Validación / petición inválida",
@@ -2332,6 +2523,79 @@
         }
       }
     },
+    "/api/v1/leads/bulk": {
+      "post": {
+        "tags": [
+          "Leads"
+        ],
+        "summary": "Cambio de etapa masivo",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "minItems": 1,
+                    "maxItems": 200
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "nuevo",
+                      "cita_agendada",
+                      "cita_concretada",
+                      "apartado",
+                      "firma_contrato",
+                      "descartado"
+                    ]
+                  }
+                },
+                "required": [
+                  "ids",
+                  "status"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: { ok, failed[] } }"
+          },
+          "400": {
+            "description": "Validación / petición inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/webhooks/subscriptions": {
       "get": {
         "tags": [
@@ -2506,6 +2770,136 @@
         "responses": {
           "204": {
             "description": "Borrada"
+          }
+        }
+      }
+    },
+    "/api/v1/webhooks/test": {
+      "post": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Prueba ad-hoc: envía un payload de ejemplo a una URL (con firma), sin guardar",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "targetUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "secret": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "event": {
+                    "type": "string",
+                    "enum": [
+                      "lead.created",
+                      "lead.status_changed",
+                      "property.published",
+                      "property.status_changed"
+                    ],
+                    "default": "property.published"
+                  }
+                },
+                "required": [
+                  "targetUrl",
+                  "secret"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: { ok, status, error } }"
+          },
+          "400": {
+            "description": "Validación / petición inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webhooks/test-event": {
+      "post": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Dispara un evento de prueba a todas las suscripciones activas",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "event": {
+                    "type": "string",
+                    "enum": [
+                      "lead.created",
+                      "lead.status_changed",
+                      "property.published",
+                      "property.status_changed"
+                    ],
+                    "default": "property.published"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: { event, count, results[] } }"
+          },
+          "400": {
+            "description": "Validación / petición inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
