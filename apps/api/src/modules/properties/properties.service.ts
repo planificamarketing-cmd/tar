@@ -21,6 +21,7 @@ import type {
   UpdatePropertyInput,
 } from '@tar/shared';
 import { ApiError } from '../../middleware/error-handler';
+import { env } from '../../env';
 import { emitEvent } from '../../lib/events';
 import { toMxn } from '../../lib/pricing';
 import { generateUniqueSlug, slugify } from '../../lib/slug';
@@ -574,6 +575,48 @@ export async function updateProperty(id: string, input: UpdatePropertyInput) {
   return getPropertyByIdAdmin(id);
 }
 
+// Payload enriquecido para el webhook `property.published`: incluye datos útiles
+// (título, descripción, precio, fotos, amenidades, ubicación y enlace) para que el
+// consumidor (n8n, CRM…) no tenga que hacer una segunda llamada.
+type PropertyDetailShape = Awaited<ReturnType<typeof getPropertyByIdAdmin>>;
+function buildPublishedPayload(
+  d: PropertyDetailShape,
+  slug: string,
+): Record<string, unknown> {
+  const num = (v: unknown) => (v == null ? null : Number(v));
+  return {
+    id: d.id,
+    slug,
+    url: `${env.PUBLIC_SITE_URL}/propiedades/${slug}`,
+    title: d.title,
+    description: d.description,
+    propertyType: d.propertyType,
+    status: d.status,
+    featured: d.featured,
+    price: {
+      sale: num(d.priceSale),
+      saleCurrency: d.currencySale,
+      rent: num(d.priceRent),
+      rentCurrency: d.currencyRent,
+    },
+    bedrooms: d.bedrooms,
+    bathrooms: d.bathrooms,
+    halfBathrooms: d.halfBathrooms,
+    parking: d.parking,
+    areaM2: num(d.areaM2),
+    lotM2: num(d.lotM2),
+    address: d.address,
+    postalCode: d.postalCode,
+    location: d.location,
+    lat: d.lat,
+    lng: d.lng,
+    cover:
+      d.images.find((i) => i.isCover)?.urlWebp ?? d.images[0]?.urlWebp ?? null,
+    images: d.images.map((i) => i.urlWebp),
+    amenities: d.amenities.map((a) => a.name),
+  };
+}
+
 // POST /properties/:id/publish — valida geo + campos, slug inmutable, evento.
 export async function publishProperty(id: string) {
   const [p] = await db
@@ -615,8 +658,9 @@ export async function publishProperty(id: string) {
     })
     .where(eq(properties.id, id));
 
-  await emitEvent('property.published', { id, slug });
-  return getPropertyByIdAdmin(id);
+  const detail = await getPropertyByIdAdmin(id);
+  await emitEvent('property.published', buildPublishedPayload(detail, slug));
+  return detail;
 }
 
 // PATCH /properties/:id/status — estatus comercial + evento.

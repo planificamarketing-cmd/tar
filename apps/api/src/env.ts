@@ -21,6 +21,8 @@ const EnvSchema = z
     STORAGE_DRIVER: z.enum(['local']).default('local'),
     MEDIA_DIR: z.string().default('./uploads'),
     MEDIA_BASE_URL: z.string().url().default('http://localhost:4000/media'),
+    // Base del sitio público (para armar el enlace de la propiedad en los webhooks).
+    PUBLIC_SITE_URL: z.string().url().default('http://localhost:3000'),
     USD_MXN_RATE: z.coerce.number().positive().default(18.5),
     SENDGRID_API_KEY: z.string().optional(),
     LEADS_NOTIFY_TO: z.string().email().optional(),

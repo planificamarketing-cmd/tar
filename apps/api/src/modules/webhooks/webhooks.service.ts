@@ -21,7 +21,34 @@ function samplePayload(event: WebhookEvent): Record<string, unknown> {
   const id = '00000000-0000-0000-0000-000000000000';
   switch (event) {
     case 'property.published':
-      return { id, slug: 'propiedad-de-ejemplo' };
+      return {
+        id,
+        slug: 'propiedad-de-ejemplo',
+        url: 'https://tu-sitio.com/propiedades/propiedad-de-ejemplo',
+        title: 'Casa de ejemplo en Polanco',
+        description: 'Descripción de la propiedad…',
+        propertyType: 'casa',
+        status: 'disponible',
+        featured: 'normal',
+        price: { sale: 8500000, saleCurrency: 'MXN', rent: null, rentCurrency: null },
+        bedrooms: 3,
+        bathrooms: 2,
+        halfBathrooms: 1,
+        parking: 2,
+        areaM2: 220,
+        lotM2: 300,
+        address: 'Calle Ejemplo 123',
+        postalCode: '11560',
+        location: { estado: 'Ciudad de México', municipio: 'Miguel Hidalgo', colonia: 'Polanco' },
+        lat: 19.4326,
+        lng: -99.1932,
+        cover: 'https://tu-sitio.com/media/ejemplo/portada.webp',
+        images: [
+          'https://tu-sitio.com/media/ejemplo/1.webp',
+          'https://tu-sitio.com/media/ejemplo/2.webp',
+        ],
+        amenities: ['Alberca', 'Seguridad 24h'],
+      };
     case 'property.status_changed':
       return { id, from: 'disponible', to: 'apartado' };
     case 'lead.created':
