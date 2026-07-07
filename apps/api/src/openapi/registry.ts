@@ -21,6 +21,8 @@ import {
   createUserSchema,
   createScriptSchema,
   updateScriptSchema,
+  createAmenitySchema,
+  expandMapsSchema,
 } from '@tar/shared';
 
 extendZodWithOpenApi(z);
@@ -370,6 +372,15 @@ export function buildOpenApiDocument() {
     summary: 'Catálogo de amenidades (selector del backoffice)',
     responses: { 200: ok('{ data: Amenity[] }') },
   });
+  registry.registerPath({
+    method: 'post',
+    path: '/api/v1/amenities',
+    tags: ['Propiedades'],
+    summary: 'Crear amenidad (admin/editor; idempotente por nombre case-insensitive)',
+    security: sec,
+    request: { body: json(createAmenitySchema) },
+    responses: { 201: ok('{ data: Amenity }'), ...errResponses },
+  });
 
   // ── Ubicaciones ──
   registry.registerPath({
@@ -379,6 +390,22 @@ export function buildOpenApiDocument() {
     summary: 'Catálogo de ubicaciones existentes (autocompletado de estado/municipio/colonia)',
     security: sec,
     responses: { 200: ok('{ data: { estado, municipio, colonia }[] }') },
+  });
+
+  // ── Geo (autocompletado desde Google Maps) ──
+  registry.registerPath({
+    method: 'post',
+    path: '/api/v1/geo/resolve-maps',
+    tags: ['Propiedades'],
+    summary:
+      'Resolver un enlace de Google Maps → ubicación (coords + estado/municipio/colonia/dirección/CP). Expande enlaces cortos en el servidor. Admin/editor.',
+    security: sec,
+    request: { body: json(expandMapsSchema) },
+    responses: {
+      200: ok('{ data: { lat?, lng?, estado?, municipio?, colonia?, address?, postalCode? } }'),
+      422: ok('Enlace no válido / no resoluble'),
+      ...errResponses,
+    },
   });
 
   // ── Media ──

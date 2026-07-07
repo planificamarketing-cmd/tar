@@ -1736,6 +1736,65 @@
             "description": "{ data: Amenity[] }"
           }
         }
+      },
+      "post": {
+        "tags": [
+          "Propiedades"
+        ],
+        "summary": "Crear amenidad (admin/editor; idempotente por nombre case-insensitive)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 60
+                  },
+                  "icon": {
+                    "type": "string",
+                    "maxLength": 60
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "{ data: Amenity }"
+          },
+          "400": {
+            "description": "Validación / petición inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/locations": {
@@ -1752,6 +1811,65 @@
         "responses": {
           "200": {
             "description": "{ data: { estado, municipio, colonia }[] }"
+          }
+        }
+      }
+    },
+    "/api/v1/geo/resolve-maps": {
+      "post": {
+        "tags": [
+          "Propiedades"
+        ],
+        "summary": "Resolver un enlace de Google Maps → ubicación (coords + estado/municipio/colonia/dirección/CP). Expande enlaces cortos en el servidor. Admin/editor.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ data: { lat?, lng?, estado?, municipio?, colonia?, address?, postalCode? } }"
+          },
+          "400": {
+            "description": "Validación / petición inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Enlace no válido / no resoluble"
           }
         }
       }
