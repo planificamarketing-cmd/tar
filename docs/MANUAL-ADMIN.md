@@ -195,6 +195,45 @@ envía un aviso automático a la dirección (URL) que configures.
   Fallido), el código de respuesta y los intentos. En las **fallidas** puedes pulsar
   **Reintentar**.
 
+#### Cómo es el aviso que envía TAR (para configurar n8n, Make, Zapier…)
+Cada aviso es una **petición `POST`** (no `GET`) con el cuerpo en JSON. Así se ve
+exactamente lo que llega al publicar una propiedad:
+
+- **Método:** `POST`
+- **Cabeceras:**
+  - `Content-Type: application/json`
+  - `X-TAR-Event: property.published` (el nombre del evento)
+  - `X-TAR-Signature: <hmac>` (firma HMAC-SHA256 del cuerpo con tu secreto)
+- **Cuerpo (body):**
+  ```json
+  {
+    "event": "property.published",
+    "data": { "id": "b9373cc9-…", "slug": "demo-webhook" },
+    "timestamp": "2026-07-07T04:54:08.361Z"
+  }
+  ```
+  > El cuerpo trae el **id** y el **slug** de la propiedad. Si necesitas todos los
+  > datos (precio, fotos…), tu flujo puede consultarlos después con ese id/slug.
+
+**Pasos en n8n:**
+1. Agrega un nodo **Webhook**. En **HTTP Method** elige **POST** (viene en `GET` por
+   defecto — esa suele ser la razón por la que "no deja" recibir el aviso).
+2. Copia la **URL** del nodo y pégala en TAR → *Ajustes → Integraciones → Nuevo
+   webhook*, elige el evento (`property.published`) y un **secreto**; guárdalo activo.
+3. En n8n, la **Test URL** solo escucha mientras pulsas **"Listen for test event"**
+   (un disparo). Para que funcione siempre, **activa** el workflow y usa la
+   **Production URL**.
+4. **Que n8n sea alcanzable desde el servidor de TAR:** si usas **n8n Cloud** funciona
+   directo. Si corres n8n **en tu PC** y TAR está en otra máquina/WSL, `localhost` no
+   sirve: usa la IP o el dominio público de n8n (un túnel tipo ngrok/cloudflared o el
+   host correcto). Si la entrega sale **Fallida** en la bitácora, casi siempre es esto.
+5. (Opcional) Para verificar la firma en n8n: calcula HMAC-SHA256 del cuerpo con tu
+   secreto y compáralo con `X-TAR-Signature`.
+
+> Recuerda: `property.published` se dispara **solo al publicar**. Cambiar el estatus
+> luego dispara `property.status_changed`; un nuevo contacto dispara `lead.created`.
+> Suscribe el webhook a los eventos que te interesen.
+
 ### 7.2 Entrantes — tus sistemas actualizan TAR (Llaves de API)
 Con una **llave de API**, un sistema externo puede actualizar datos en TAR (por
 ejemplo, mover un lead de etapa) de forma segura.
