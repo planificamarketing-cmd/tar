@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
@@ -70,11 +71,16 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen bg-canvas">
       {/* Sidebar — blanco, igual al prototipo */}
       <aside className="fixed inset-y-0 left-0 flex w-60 flex-col border-r border-line bg-white px-3.5 py-6">
-        {/* Logo block: cuadro rojo TAR + título */}
+        {/* Logo block: logotipo TAR + título */}
         <div className="mb-3.5 flex items-center gap-2.5 border-b border-line px-3 pb-5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-[9px] bg-brand">
-            <span className="font-display text-[13px] font-bold text-white">TAR</span>
-          </div>
+          <Image
+            src="/brand/tar-logo.svg"
+            alt="TAR Internacional"
+            width={111}
+            height={85}
+            priority
+            className="h-11 w-auto"
+          />
           <div>
             <div className="font-display text-[15px] font-bold leading-tight text-navy">
               Admin Panel

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { loginSchema } from '@tar/shared';
 import { useAuth } from '@/lib/auth';
@@ -49,9 +50,14 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-7 flex flex-col items-center text-center">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand">
-              <span className="font-display text-base font-bold text-white">TAR</span>
-            </div>
+            <Image
+              src="/brand/tar-logo.svg"
+              alt="TAR Internacional"
+              width={111}
+              height={85}
+              priority
+              className="h-12 w-auto"
+            />
             <div className="text-left">
               <div className="font-display text-lg font-bold leading-tight text-navy">
                 Admin Panel
