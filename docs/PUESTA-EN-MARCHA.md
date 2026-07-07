@@ -77,11 +77,38 @@ pnpm db:web:down   # apaga el visor de BD
 pnpm db:down       # apaga la base de datos (los datos persisten en el volumen)
 ```
 
-## 6. Glosario y significados
+## 6. Mover los datos entre dos PC (snapshot portátil)
+La **estructura** de la base viaja por git (schema + migraciones + `db:seed`), pero el
+**estado vivo** NO: las propiedades importadas, los leads capturados en el panel, los
+usuarios creados, las ediciones del backoffice y las **imágenes** viven solo en el
+volumen de Docker y en `apps/api/uploads/` de cada máquina. Por eso, al abrir el
+proyecto en otra PC, esa PC no tiene esos datos aunque el código sea idéntico.
+
+Para llevarlos de una máquina a otra se empaqueta todo en **un solo archivo `.tgz`**:
+
+```bash
+pnpm db:dump [etiqueta]        # crea snapshots/tar-snapshot-<fecha>[-etiqueta].tgz
+pnpm db:snapshots              # lista los snapshots que tienes
+pnpm db:restore <archivo.tgz>  # restaura BD + imágenes desde un snapshot
+```
+
+**Flujo típico (PC-A → PC-B):**
+1. En la PC-A (con `pnpm db:up` encendido): `pnpm db:dump` → genera el `.tgz` en `snapshots/`.
+2. Copia ese `.tgz` a la PC-B por USB, Google Drive o `scp`.
+3. En la PC-B (con `pnpm db:up` encendido): `pnpm db:restore tar-snapshot-...tgz` y confirma.
+
+Notas:
+- El snapshot es **idempotente** al restaurar (reemplaza la BD y `uploads/` de esa PC;
+  pide confirmación antes). Incluye un manifiesto con fecha, PC de origen, nº de
+  imágenes y commit de git.
+- **Es información del cliente (PII):** contiene leads. Trátalo como los `.env` —
+  **nunca va a git** (`snapshots/` está ignorado) y muévelo con cuidado.
+
+## 7. Glosario y significados
 ¿No sabes qué es un “slug”, un “webhook”, “PostGIS”, los estatus o el pipeline de leads?
 → **[GLOSARIO.md](GLOSARIO.md)**. ¿Cómo está armado todo? → **[ARQUITECTURA.md](ARQUITECTURA.md)**.
 
-## 7. Notas de producción (resumen; detalle en Lanzamiento)
+## 8. Notas de producción (resumen; detalle en Lanzamiento)
 - En el VPS **no** se exponen los puertos de Postgres ni de la API: solo **Caddy**
   (80/443) es público (TLS automático). La media la sirve Caddy desde el disco.
 - Migración al VPS = clonar repo + `.env` de prod + desplegar. La guía completa de
