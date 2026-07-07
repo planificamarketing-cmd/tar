@@ -49,24 +49,14 @@ export default function LoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-canvas px-6 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-7 flex flex-col items-center text-center">
-          <div className="flex items-center gap-2.5">
-            <Image
-              src="/brand/tar-logo.svg"
-              alt="TAR Internacional"
-              width={111}
-              height={85}
-              priority
-              className="h-12 w-auto"
-            />
-            <div className="text-left">
-              <div className="font-display text-lg font-bold leading-tight text-navy">
-                Admin Panel
-              </div>
-              <div className="text-[10px] uppercase tracking-[0.15em] text-muted">
-                TAR Internacional
-              </div>
-            </div>
-          </div>
+          <Image
+            src="/brand/tar-logo.svg"
+            alt="TAR Internacional"
+            width={111}
+            height={85}
+            priority
+            className="h-20 w-auto"
+          />
           <h1 className="mt-7 font-display text-2xl text-navy">Iniciar sesión</h1>
           <p className="mt-1 text-sm text-muted">
             Acceso exclusivo para el equipo de TAR Internacional.
