@@ -1,18 +1,86 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, arrayContains } from 'drizzle-orm';
 import { db, schema } from '@tar/db';
 import type {
   CreateApiKeyInput,
   CreateWebhookSubscriptionInput,
   InboundWebhookInput,
   UpdateWebhookSubscriptionInput,
+  WebhookEvent,
 } from '@tar/shared';
 import { ApiError } from '../../middleware/error-handler';
 import { enqueueRetry } from '../../lib/queue';
+import { deliverWebhook } from '../../lib/webhooks';
 import { updateLead } from '../leads/leads.service';
 import { updateStatus as updatePropertyStatus } from '../properties/properties.service';
 
 const { webhookSubscriptions, webhookDeliveries, apiKeys } = schema;
+
+// Payload de ejemplo por evento, para las pruebas de webhook (marcado test:true).
+function samplePayload(event: WebhookEvent): Record<string, unknown> {
+  const id = '00000000-0000-0000-0000-000000000000';
+  switch (event) {
+    case 'property.published':
+      return { id, slug: 'propiedad-de-ejemplo' };
+    case 'property.status_changed':
+      return { id, from: 'disponible', to: 'apartado' };
+    case 'lead.created':
+      return { id, name: 'Lead de prueba', propertyId: id };
+    case 'lead.status_changed':
+      return { id, from: 'nuevo', to: 'cita_agendada' };
+    default:
+      return { id };
+  }
+}
+
+// Prueba ad-hoc: envía un payload de ejemplo a una URL (con firma) sin guardar nada
+// ni tocar la bitácora. Devuelve el resultado para mostrarlo en el panel.
+export async function testWebhook(
+  targetUrl: string,
+  secret: string,
+  event: WebhookEvent,
+) {
+  const result = await deliverWebhook(
+    { targetUrl, secret },
+    event,
+    { ...samplePayload(event), test: true },
+    new Date().toISOString(),
+  );
+  return { ok: result.ok, status: result.status, error: result.error ?? null };
+}
+
+// Dispara un evento de PRUEBA a todas las suscripciones activas de ese evento.
+// Envío directo (no crea registros de entrega): feedback inmediato por suscripción.
+export async function testEvent(event: WebhookEvent) {
+  const subs = await db
+    .select()
+    .from(webhookSubscriptions)
+    .where(
+      and(
+        eq(webhookSubscriptions.isActive, true),
+        arrayContains(webhookSubscriptions.events, [event]),
+      ),
+    );
+  const results = await Promise.all(
+    subs.map(async (s) => {
+      const r = await deliverWebhook(
+        { targetUrl: s.targetUrl, secret: s.secret },
+        event,
+        { ...samplePayload(event), test: true },
+        new Date().toISOString(),
+      );
+      return {
+        id: s.id,
+        name: s.name,
+        targetUrl: s.targetUrl,
+        ok: r.ok,
+        status: r.status,
+        error: r.error ?? null,
+      };
+    }),
+  );
+  return { event, count: results.length, results };
+}
 
 // ── Suscripciones (salientes) ──
 export function listSubscriptions() {

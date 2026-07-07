@@ -24,6 +24,22 @@ export type UpdateWebhookSubscriptionInput = z.infer<
   typeof updateWebhookSubscriptionSchema
 >;
 
+// Prueba ad-hoc de un webhook: envía un payload de ejemplo a una URL (con firma) sin
+// guardar nada. Sirve para el botón "Enviar prueba" al crear/editar y en la lista.
+export const testWebhookSchema = z.object({
+  targetUrl: z.string().url(),
+  secret: z.string().min(1),
+  event: webhookEventSchema.default('property.published'),
+});
+export type TestWebhookInput = z.infer<typeof testWebhookSchema>;
+
+// Dispara un evento de PRUEBA a todas las suscripciones activas de ese evento
+// (botón "Probar webhooks" desde Propiedades). No toca datos reales.
+export const testEventSchema = z.object({
+  event: webhookEventSchema.default('property.published'),
+});
+export type TestEventInput = z.infer<typeof testEventSchema>;
+
 // PRD §5.5 — API keys para webhooks entrantes.
 export const createApiKeySchema = z.object({
   name: z.string().trim().min(1).max(120),

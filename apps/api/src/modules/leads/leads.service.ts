@@ -141,3 +141,23 @@ export async function updateLead(
   }
   return getLead(id);
 }
+
+// POST /leads/bulk — cambia la etapa de varios leads. Reusa updateLead por id
+// (registra bitácora + emite evento por cada uno). Reporta ok/errores.
+export async function bulkUpdateLeads(
+  ids: string[],
+  status: UpdateLeadInput['status'],
+  userId: string | null,
+): Promise<{ ok: number; failed: { id: string; error: string }[] }> {
+  const failed: { id: string; error: string }[] = [];
+  let ok = 0;
+  for (const id of ids) {
+    try {
+      await updateLead(id, { status }, userId);
+      ok += 1;
+    } catch (err) {
+      failed.push({ id, error: err instanceof ApiError ? err.message : 'Error' });
+    }
+  }
+  return { ok, failed };
+}

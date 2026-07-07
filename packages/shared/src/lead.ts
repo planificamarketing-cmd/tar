@@ -48,6 +48,13 @@ export const updateLeadSchema = z
   .partial();
 export type UpdateLeadInput = z.infer<typeof updateLeadSchema>;
 
+// POST /leads/bulk — cambio de etapa masivo del backoffice.
+export const bulkLeadsSchema = z.object({
+  ids: z.array(z.string().uuid()).min(1).max(200),
+  status: leadStatusSchema,
+});
+export type BulkLeadsInput = z.infer<typeof bulkLeadsSchema>;
+
 // PRD §5.4 — POST /events/track (analítica).
 export const trackEventSchema = z.object({
   propertyId: z.string().uuid(),

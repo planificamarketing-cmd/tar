@@ -21,9 +21,14 @@ propertiesRouter.get('/:slug', c.detail);
 
 // ── Protegidas (admin/editor) ──
 propertiesRouter.post('/', ...staff, c.create);
+// /bulk antes de /:id/... (no colisiona, pero se agrupa con las acciones masivas).
+propertiesRouter.post('/bulk', ...staff, c.bulk);
 propertiesRouter.patch('/:id', ...staff, c.update);
 propertiesRouter.post('/:id/publish', ...staff, c.publish);
+propertiesRouter.post('/:id/unpublish', ...staff, c.unpublish);
+propertiesRouter.post('/:id/duplicate', ...staff, c.duplicate);
+propertiesRouter.post('/:id/restore', ...staff, c.restore);
 propertiesRouter.patch('/:id/status', ...staff, c.status);
 
-// Soft delete: solo admin.
+// Soft delete (archivar): solo admin.
 propertiesRouter.delete('/:id', requireAuth, requireRole('admin'), c.remove);

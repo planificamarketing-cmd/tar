@@ -13,6 +13,7 @@ const COLONIA = 'Colonia Prueba Props';
 let token: string;
 let adminId: string;
 let propId: string;
+let dupId: string;
 let slug: string;
 
 beforeAll(async () => {
@@ -40,6 +41,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   if (propId) await db.delete(schema.properties).where(eq(schema.properties.id, propId));
+  if (dupId) await db.delete(schema.properties).where(eq(schema.properties.id, dupId));
   await db.delete(schema.locations).where(eq(schema.locations.colonia, COLONIA));
   await db.delete(schema.refreshTokens).where(eq(schema.refreshTokens.userId, adminId));
   await db.delete(schema.users).where(eq(schema.users.id, adminId));
@@ -178,6 +180,51 @@ describe('Properties /api/v1/properties', () => {
     );
     expect(res.status).toBe(200);
     expect(res.body.data.departamento).toBeGreaterThanOrEqual(1);
+  });
+
+  it('regresa a borrador con unpublish (200)', async () => {
+    const res = await auth(
+      request(app).post(`/api/v1/properties/${propId}/unpublish`),
+    );
+    expect(res.status).toBe(200);
+    expect(res.body.data.status).toBe('borrador');
+    expect(res.body.data.publishedAt).toBeNull();
+  });
+
+  it('duplica como borrador con «(copia)» y sin slug (201)', async () => {
+    const res = await auth(
+      request(app).post(`/api/v1/properties/${propId}/duplicate`),
+    );
+    expect(res.status).toBe(201);
+    expect(res.body.data.status).toBe('borrador');
+    expect(res.body.data.slug).toBeNull();
+    expect(res.body.data.title).toMatch(/\(copia\)$/);
+    dupId = res.body.data.id;
+  });
+
+  it('archiva y restaura la copia; aparece en ?archived=true', async () => {
+    const del = await auth(request(app).delete(`/api/v1/properties/${dupId}`));
+    expect(del.status).toBe(204);
+
+    const archived = await auth(
+      request(app).get('/api/v1/properties/admin').query({ archived: 'true', limit: 50 }),
+    );
+    expect(archived.body.data.some((p: { id: string }) => p.id === dupId)).toBe(true);
+
+    const restore = await auth(
+      request(app).post(`/api/v1/properties/${dupId}/restore`),
+    );
+    expect(restore.status).toBe(200);
+  });
+
+  it('acción masiva archive reporta ok por id (bulk)', async () => {
+    const res = await auth(request(app).post('/api/v1/properties/bulk')).send({
+      ids: [dupId],
+      action: 'archive',
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.data.ok).toBe(1);
+    expect(res.body.data.failed).toHaveLength(0);
   });
 
   it('soft delete (204) y luego 404 por slug', async () => {

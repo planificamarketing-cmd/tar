@@ -105,4 +105,20 @@ describe('Leads /api/v1/leads', () => {
     expect(res.body.data.events.length).toBeGreaterThanOrEqual(1);
     expect(res.body.data.events[0].type).toBe('status_changed');
   });
+
+  it('cambio de etapa masivo (bulk) reporta ok por id', async () => {
+    const res = await request(app)
+      .post('/api/v1/leads/bulk')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ ids: [leadId], status: 'apartado' });
+    expect(res.status).toBe(200);
+    expect(res.body.data.ok).toBe(1);
+    expect(res.body.data.failed).toHaveLength(0);
+
+    const [row] = await db
+      .select({ status: schema.leads.status })
+      .from(schema.leads)
+      .where(eq(schema.leads.id, leadId));
+    expect(row!.status).toBe('apartado');
+  });
 });

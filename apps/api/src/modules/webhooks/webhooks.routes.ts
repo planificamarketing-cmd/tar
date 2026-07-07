@@ -13,6 +13,10 @@ webhooksRouter.post('/subscriptions', ...admin, c.createSubscription);
 webhooksRouter.patch('/subscriptions/:id', ...admin, c.updateSubscription);
 webhooksRouter.delete('/subscriptions/:id', ...admin, c.deleteSubscription);
 
+// Pruebas: envío ad-hoc a una URL, y disparo de un evento de prueba a los activos.
+webhooksRouter.post('/test', ...admin, c.testSubscription);
+webhooksRouter.post('/test-event', ...admin, c.testEvent);
+
 // Bitácora de entregas + reintento manual.
 webhooksRouter.get('/deliveries', ...admin, c.listDeliveries);
 webhooksRouter.post('/deliveries/:id/retry', ...admin, c.retryDelivery);

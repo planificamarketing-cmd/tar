@@ -3,6 +3,8 @@ import {
   createApiKeySchema,
   createWebhookSubscriptionSchema,
   inboundWebhookSchema,
+  testEventSchema,
+  testWebhookSchema,
   updateWebhookSubscriptionSchema,
   uuidSchema,
 } from '@tar/shared';
@@ -11,6 +13,18 @@ import * as svc from './webhooks.service';
 // Suscripciones
 export async function listSubscriptions(_req: Request, res: Response) {
   res.json({ data: await svc.listSubscriptions() });
+}
+
+// Prueba ad-hoc de una URL (crear/editar y lista de Ajustes).
+export async function testSubscription(req: Request, res: Response) {
+  const { targetUrl, secret, event } = testWebhookSchema.parse(req.body);
+  res.json({ data: await svc.testWebhook(targetUrl, secret, event) });
+}
+
+// Dispara un evento de prueba a todas las suscripciones activas (desde Propiedades).
+export async function testEvent(req: Request, res: Response) {
+  const { event } = testEventSchema.parse(req.body);
+  res.json({ data: await svc.testEvent(event) });
 }
 export async function createSubscription(req: Request, res: Response) {
   const input = createWebhookSubscriptionSchema.parse(req.body);

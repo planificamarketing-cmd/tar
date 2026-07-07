@@ -172,4 +172,22 @@ describe('Webhooks /api/v1/webhooks', () => {
       .where(eq(schema.leads.id, leadId));
     expect(row!.status).toBe('apartado');
   });
+
+  it('prueba ad-hoc de webhook a un destino inaccesible reporta ok:false', async () => {
+    const res = await auth(request(app).post('/api/v1/webhooks/test')).send({
+      targetUrl: 'http://127.0.0.1:9/inexistente',
+      secret: 'secreto-de-prueba',
+      event: 'property.published',
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.data.ok).toBe(false);
+    expect(res.body.data.error).toBeTruthy();
+  });
+
+  it('prueba de webhook exige autenticación (401)', async () => {
+    const res = await request(app)
+      .post('/api/v1/webhooks/test')
+      .send({ targetUrl: 'http://example.com', secret: 'x'.repeat(8) });
+    expect(res.status).toBe(401);
+  });
 });

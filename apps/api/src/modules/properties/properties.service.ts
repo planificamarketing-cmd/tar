@@ -188,7 +188,11 @@ export async function listProperties(q: PropertyQuery): Promise<Paginated<unknow
 export async function listPropertiesAdmin(
   q: PropertyAdminQuery,
 ): Promise<Paginated<unknown>> {
-  const c: SQL[] = [isNull(properties.deletedAt)];
+  const c: SQL[] = [
+    q.archived === 'true'
+      ? isNotNull(properties.deletedAt)
+      : isNull(properties.deletedAt),
+  ];
   if (q.status) c.push(eq(properties.status, q.status));
   if (q.type) c.push(eq(properties.propertyType, q.type));
   if (q.featured) c.push(eq(properties.featured, q.featured));
@@ -655,4 +659,119 @@ export async function softDeleteProperty(id: string) {
     .update(properties)
     .set({ deletedAt: new Date(), updatedAt: new Date() })
     .where(eq(properties.id, id));
+}
+
+// POST /properties/:id/restore — des-archiva (recupera una propiedad archivada).
+export async function restoreProperty(id: string) {
+  const [p] = await db
+    .select({ id: properties.id })
+    .from(properties)
+    .where(and(eq(properties.id, id), isNotNull(properties.deletedAt)))
+    .limit(1);
+  if (!p) throw new ApiError(404, 'not_found', 'Propiedad archivada no encontrada.');
+  await db
+    .update(properties)
+    .set({ deletedAt: null, updatedAt: new Date() })
+    .where(eq(properties.id, id));
+  return getPropertyByIdAdmin(id);
+}
+
+// POST /properties/:id/unpublish — regresa una propiedad publicada a borrador.
+export async function unpublishProperty(id: string) {
+  const [p] = await db
+    .select({ id: properties.id, status: properties.status })
+    .from(properties)
+    .where(and(eq(properties.id, id), isNull(properties.deletedAt)))
+    .limit(1);
+  if (!p) throw new ApiError(404, 'not_found', 'Propiedad no encontrada.');
+  if (p.status === 'borrador') return getPropertyByIdAdmin(id);
+  await db
+    .update(properties)
+    .set({ status: 'borrador', publishedAt: null, updatedAt: new Date() })
+    .where(eq(properties.id, id));
+  await emitEvent('property.status_changed', { id, from: p.status, to: 'borrador' });
+  return getPropertyByIdAdmin(id);
+}
+
+// POST /properties/:id/duplicate — crea un BORRADOR copiando los datos (sin
+// imágenes ni slug; el slug se genera al publicar). Copia amenidades y ubicación.
+export async function duplicateProperty(id: string, userId: string) {
+  const [src] = await db
+    .select()
+    .from(properties)
+    .where(and(eq(properties.id, id), isNull(properties.deletedAt)))
+    .limit(1);
+  if (!src) throw new ApiError(404, 'not_found', 'Propiedad no encontrada.');
+
+  const [copy] = await db
+    .insert(properties)
+    .values({
+      title: `${src.title} (copia)`,
+      description: src.description,
+      propertyType: src.propertyType,
+      externalRef: null, // el external_ref es único por origen: no se copia
+      priceSale: src.priceSale,
+      currencySale: src.currencySale,
+      priceRent: src.priceRent,
+      currencyRent: src.currencyRent,
+      priceSaleMxn: src.priceSaleMxn,
+      priceRentMxn: src.priceRentMxn,
+      bedrooms: src.bedrooms,
+      bathrooms: src.bathrooms,
+      halfBathrooms: src.halfBathrooms,
+      parking: src.parking,
+      floor: src.floor,
+      areaM2: src.areaM2,
+      lotM2: src.lotM2,
+      locationId: src.locationId,
+      address: src.address,
+      postalCode: src.postalCode,
+      geo: src.geo,
+      featured: src.featured,
+      status: 'borrador',
+      slug: null,
+      publishedAt: null,
+      createdBy: userId,
+    })
+    .returning({ id: properties.id });
+
+  const ams = await db
+    .select({ amenityId: propertyAmenities.amenityId })
+    .from(propertyAmenities)
+    .where(eq(propertyAmenities.propertyId, id));
+  if (ams.length) {
+    await db
+      .insert(propertyAmenities)
+      .values(ams.map((a) => ({ propertyId: copy!.id, amenityId: a.amenityId })))
+      .onConflictDoNothing();
+  }
+  return getPropertyByIdAdmin(copy!.id);
+}
+
+// POST /properties/bulk — acción masiva. Devuelve conteo de ok/errores por id,
+// aplicando la misma validación que las acciones individuales (p.ej. publish
+// exige geo + precio, así que las que no cumplan se reportan como error).
+export async function bulkProperties(
+  ids: string[],
+  action: 'publish' | 'unpublish' | 'archive' | 'restore' | 'status',
+  status?: (typeof PUBLIC_STATUSES)[number] | string,
+): Promise<{ ok: number; failed: { id: string; error: string }[] }> {
+  const failed: { id: string; error: string }[] = [];
+  let ok = 0;
+  for (const id of ids) {
+    try {
+      if (action === 'publish') await publishProperty(id);
+      else if (action === 'unpublish') await unpublishProperty(id);
+      else if (action === 'archive') await softDeleteProperty(id);
+      else if (action === 'restore') await restoreProperty(id);
+      else if (action === 'status') await updateStatus(id, status!);
+      ok += 1;
+    } catch (err) {
+      failed.push({
+        id,
+        error: err instanceof ApiError ? err.message : 'Error',
+      });
+    }
+  }
+  return { ok, failed };
 }

@@ -68,6 +68,8 @@ export const propertyAdminQuerySchema = paginationSchema.extend({
   featured: featuredLevelSchema.optional(),
   q: z.string().trim().min(1).optional(),
   sort: propertyAdminSortSchema,
+  // 'true' → solo archivadas (soft-deleted); por defecto solo las activas.
+  archived: z.enum(['true', 'false']).optional(),
 });
 export type PropertyAdminQuery = z.infer<typeof propertyAdminQuerySchema>;
 
@@ -181,6 +183,27 @@ export const updateStatusSchema = z.object({
   status: commercialStatusSchema,
 });
 export type UpdateStatusInput = z.infer<typeof updateStatusSchema>;
+
+// POST /properties/bulk — acciones masivas del backoffice sobre varias propiedades.
+// `status` es obligatorio solo cuando la acción es 'status'.
+export const PROPERTY_BULK_ACTIONS = [
+  'publish',
+  'unpublish',
+  'archive',
+  'restore',
+  'status',
+] as const;
+export const propertyBulkSchema = z
+  .object({
+    ids: z.array(z.string().uuid()).min(1).max(200),
+    action: z.enum(PROPERTY_BULK_ACTIONS),
+    status: commercialStatusSchema.optional(),
+  })
+  .refine((d) => d.action !== 'status' || !!d.status, {
+    path: ['status'],
+    message: 'status es requerido cuando la acción es "status".',
+  });
+export type PropertyBulkInput = z.infer<typeof propertyBulkSchema>;
 
 // PATCH /properties/:id/images/:imgId — reordenar / set cover / alt (§5.3).
 export const updateImageSchema = z

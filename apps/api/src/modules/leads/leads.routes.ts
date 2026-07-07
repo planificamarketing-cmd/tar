@@ -22,5 +22,6 @@ leadsRouter.post('/', leadLimiter, c.create);
 // Admin/editor.
 const staff = [requireAuth, requireRole('admin', 'editor')] as const;
 leadsRouter.get('/', ...staff, c.list);
+leadsRouter.post('/bulk', ...staff, c.bulk);
 leadsRouter.get('/:id', ...staff, c.detail);
 leadsRouter.patch('/:id', ...staff, c.update);

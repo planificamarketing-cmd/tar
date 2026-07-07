@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import {
   createPropertySchema,
   propertyAdminQuerySchema,
+  propertyBulkSchema,
   propertyMapQuerySchema,
   propertyQuerySchema,
   updatePropertySchema,
@@ -73,4 +74,25 @@ export async function remove(req: Request, res: Response): Promise<void> {
   const id = uuidSchema.parse(req.params.id);
   await svc.softDeleteProperty(id);
   res.status(204).end();
+}
+
+export async function unpublish(req: Request, res: Response): Promise<void> {
+  const id = uuidSchema.parse(req.params.id);
+  res.json({ data: await svc.unpublishProperty(id) });
+}
+
+export async function restore(req: Request, res: Response): Promise<void> {
+  const id = uuidSchema.parse(req.params.id);
+  res.json({ data: await svc.restoreProperty(id) });
+}
+
+export async function duplicate(req: Request, res: Response): Promise<void> {
+  const id = uuidSchema.parse(req.params.id);
+  res.status(201).json({ data: await svc.duplicateProperty(id, req.user!.sub) });
+}
+
+export async function bulk(req: Request, res: Response): Promise<void> {
+  const input = propertyBulkSchema.parse(req.body);
+  const result = await svc.bulkProperties(input.ids, input.action, input.status);
+  res.json({ data: result });
 }
