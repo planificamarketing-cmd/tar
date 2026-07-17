@@ -22,6 +22,7 @@ import {
   type WebhookEventTest,
 } from '@/lib/queries';
 import { mediaUrl } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import {
   FeaturedBadge,
   PropertyStatusBadge,
@@ -52,6 +53,10 @@ function priceLabel(p: {
 }
 
 export default function PropertiesPage() {
+  const { can } = useAuth();
+  // ventas/lector solo tienen properties:read → ven el catálogo pero sin acciones.
+  const canWrite = can('properties:write');
+  const canWebhooks = can('webhooks:manage');
   const [tabSel, setTabSel] = useState<Tab>('all');
   const [q, setQ] = useState('');
   const [search, setSearch] = useState('');
@@ -172,20 +177,24 @@ export default function PropertiesPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => void onProbeWebhooks()}
-            disabled={testing}
-            className="inline-flex items-center gap-2 rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm font-medium text-ink shadow-sm transition hover:bg-canvas disabled:opacity-50"
-            title="Envía un evento property.published de prueba a los webhooks suscritos"
-          >
-            {testing ? 'Probando…' : 'Probar webhooks'}
-          </button>
-          <Link
-            href="/admin/propiedades/nueva"
-            className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-hover"
-          >
-            <NPlus s={16} /> Nueva propiedad
-          </Link>
+          {canWebhooks && (
+            <button
+              onClick={() => void onProbeWebhooks()}
+              disabled={testing}
+              className="inline-flex items-center gap-2 rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm font-medium text-ink shadow-sm transition hover:bg-canvas disabled:opacity-50"
+              title="Envía un evento property.published de prueba a los webhooks suscritos"
+            >
+              {testing ? 'Probando…' : 'Probar webhooks'}
+            </button>
+          )}
+          {canWrite && (
+            <Link
+              href="/admin/propiedades/nueva"
+              className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-hover"
+            >
+              <NPlus s={16} /> Nueva propiedad
+            </Link>
+          )}
         </div>
       </header>
 
@@ -260,8 +269,8 @@ export default function PropertiesPage() {
         </form>
       </div>
 
-      {/* Barra de acciones masivas */}
-      {selected.size > 0 && (
+      {/* Barra de acciones masivas (solo con permiso de escritura) */}
+      {canWrite && selected.size > 0 && (
         <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-brand/30 bg-brand-soft/50 px-4 py-2.5 text-sm">
           <span className="font-semibold text-navy">
             {selected.size} seleccionada{selected.size === 1 ? '' : 's'}
@@ -343,15 +352,17 @@ export default function PropertiesPage() {
           <table className="w-full min-w-[880px] text-left text-sm">
             <thead className="border-b border-line bg-canvas/60 text-xs uppercase tracking-wide text-muted">
               <tr>
-                <th className="px-4 py-3">
-                  <input
-                    type="checkbox"
-                    checked={allOnPage}
-                    onChange={toggleAll}
-                    className="h-4 w-4 rounded border-line text-brand focus:ring-brand"
-                    aria-label="Seleccionar todas"
-                  />
-                </th>
+                {canWrite && (
+                  <th className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={allOnPage}
+                      onChange={toggleAll}
+                      className="h-4 w-4 rounded border-line text-brand focus:ring-brand"
+                      aria-label="Seleccionar todas"
+                    />
+                  </th>
+                )}
                 <th className="px-5 py-3 font-semibold">Propiedad</th>
                 <th className="px-5 py-3 font-semibold">Tipo</th>
                 <th className="px-5 py-3 font-semibold">Precio</th>
@@ -368,15 +379,17 @@ export default function PropertiesPage() {
                     selected.has(p.id) ? 'bg-brand-soft/30' : ''
                   }`}
                 >
-                  <td className="px-4 py-3.5">
-                    <input
-                      type="checkbox"
-                      checked={selected.has(p.id)}
-                      onChange={() => toggleOne(p.id)}
-                      className="h-4 w-4 rounded border-line text-brand focus:ring-brand"
-                      aria-label={`Seleccionar ${p.title}`}
-                    />
-                  </td>
+                  {canWrite && (
+                    <td className="px-4 py-3.5">
+                      <input
+                        type="checkbox"
+                        checked={selected.has(p.id)}
+                        onChange={() => toggleOne(p.id)}
+                        className="h-4 w-4 rounded border-line text-brand focus:ring-brand"
+                        aria-label={`Seleccionar ${p.title}`}
+                      />
+                    </td>
+                  )}
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
                       <div className="relative h-11 w-14 shrink-0 overflow-hidden rounded-lg bg-canvas ring-1 ring-line">
@@ -416,7 +429,7 @@ export default function PropertiesPage() {
                   </td>
                   <td className="px-5 py-3.5 font-mono text-ink">{priceLabel(p)}</td>
                   <td className="px-5 py-3.5">
-                    {archived || p.status === 'borrador' ? (
+                    {!canWrite || archived || p.status === 'borrador' ? (
                       <PropertyStatusBadge status={p.status} />
                     ) : (
                       <select
@@ -441,7 +454,14 @@ export default function PropertiesPage() {
                   <td className="px-5 py-3.5 text-muted">{formatDate(p.createdAt)}</td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center justify-end gap-2">
-                      {archived ? (
+                      {!canWrite ? (
+                        <Link
+                          href={`/admin/propiedades/${p.id}`}
+                          className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:bg-canvas"
+                        >
+                          Ver
+                        </Link>
+                      ) : archived ? (
                         <button
                           disabled={busy}
                           onClick={() => void restore.mutate(p.id)}

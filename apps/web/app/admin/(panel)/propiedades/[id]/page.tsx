@@ -13,6 +13,7 @@ import {
   useUpdateProperty,
   useUpdatePropertyStatus,
 } from '@/lib/queries';
+import { useAuth } from '@/lib/auth';
 import { PropertyFields } from '@/components/property-fields';
 import { ImageUploader } from '@/components/image-uploader';
 import { PropertyStatusBadge } from '@/components/property-status-badge';
@@ -26,6 +27,10 @@ import {
 
 export default function EditPropertyPage() {
   const { id } = useParams<{ id: string }>();
+  const { can } = useAuth();
+  // ventas/lector llegan aquí en modo consulta: sin capacidad de escritura, el
+  // formulario queda de solo lectura y no se muestran los botones de acción.
+  const canWrite = can('properties:write');
   const { data: prop, isLoading, isError } = useProperty(id);
   const update = useUpdateProperty(id);
   const publish = usePublishProperty();
@@ -102,9 +107,20 @@ export default function EditPropertyPage() {
         </div>
       </header>
 
+      {!canWrite && (
+        <div className="mb-5 rounded-xl border border-line bg-canvas px-4 py-3 text-sm text-muted">
+          Estás viendo esta propiedad en <strong>modo consulta</strong>: tu rol no
+          puede editarla.
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">
-        {/* Columna principal: campos + imágenes */}
-        <div className="space-y-5">
+        {/* Columna principal: campos + imágenes. En solo lectura, el fieldset
+            deshabilita todos los inputs y controles anidados. */}
+        <fieldset
+          disabled={!canWrite}
+          className="m-0 min-w-0 space-y-5 border-0 p-0"
+        >
           <PropertyFields value={value} onChange={patch} />
 
           <section className="rounded-2xl border border-line bg-white p-6 shadow-sm">
@@ -116,10 +132,11 @@ export default function EditPropertyPage() {
               <ImageUploader propertyId={id} images={prop.images} />
             </div>
           </section>
-        </div>
+        </fieldset>
 
-        {/* Panel lateral: guardar / publicar / estatus */}
+        {/* Panel lateral: guardar / publicar / estatus (solo con escritura) */}
         <aside className="space-y-4 lg:sticky lg:top-8 lg:self-start">
+          {canWrite && (
           <div className="rounded-2xl border border-line bg-white p-5 shadow-sm">
             <h3 className="font-display text-base text-navy">Publicación</h3>
 
@@ -178,6 +195,7 @@ export default function EditPropertyPage() {
               </p>
             )}
           </div>
+          )}
 
           {prop.slug && (
             <div className="rounded-2xl border border-line bg-white p-5 text-sm shadow-sm">

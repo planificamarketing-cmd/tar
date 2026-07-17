@@ -1,7 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { USER_ROLES, type UpdateUserInput, type UserRole } from '@tar/shared';
+import {
+  ROLE_LABEL,
+  USER_ROLES,
+  type UpdateUserInput,
+  type UserRole,
+} from '@tar/shared';
 import { useAuth } from '@/lib/auth';
 import {
   useCreateUser,
@@ -15,21 +20,21 @@ import { formatDate, initials } from '@/lib/format';
 import { NPlus } from '@/components/icons';
 
 const PER_PAGE = 20;
-const ROLE_LABEL: Record<UserRole, string> = {
-  admin: 'Administrador',
-  editor: 'Editor',
+
+// Colores del badge por rol: admin (rojo de marca), editor (azul), ventas (ámbar),
+// lector (gris). Coherente con los niveles de permiso.
+const ROLE_BADGE: Record<UserRole, { backgroundColor: string; color: string }> = {
+  admin: { backgroundColor: '#FFF0F2', color: '#D2103E' },
+  editor: { backgroundColor: '#EFF6FF', color: '#2563EB' },
+  ventas: { backgroundColor: '#FEF6E7', color: '#B45309' },
+  lector: { backgroundColor: '#F1F3F5', color: '#4B5563' },
 };
 
 function RoleBadge({ role }: { role: UserRole }) {
-  const isAdmin = role === 'admin';
   return (
     <span
       className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
-      style={
-        isAdmin
-          ? { backgroundColor: '#FFF0F2', color: '#D2103E' }
-          : { backgroundColor: '#EFF6FF', color: '#2563EB' }
-      }
+      style={ROLE_BADGE[role]}
     >
       {ROLE_LABEL[role]}
     </span>

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LEAD_STATUSES, type LeadStatus } from '@tar/shared';
 import { useBulkLeads, useLeads } from '@/lib/queries';
+import { useAuth } from '@/lib/auth';
 import { LeadStatusBadge } from '@/components/lead-status-badge';
 import {
   LEAD_STATUS_META,
@@ -16,6 +17,9 @@ const PER_PAGE = 20;
 
 export default function LeadsPage() {
   const router = useRouter();
+  const { can } = useAuth();
+  // lector solo tiene leads:read → ve el pipeline pero no cambia etapas.
+  const canWrite = can('leads:write');
   const [status, setStatus] = useState<LeadStatus | 'all'>('all');
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -87,8 +91,8 @@ export default function LeadsPage() {
         ))}
       </div>
 
-      {/* Barra de acciones masivas */}
-      {selected.size > 0 && (
+      {/* Barra de acciones masivas (solo con permiso de escritura) */}
+      {canWrite && selected.size > 0 && (
         <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-brand/30 bg-brand-soft/50 px-4 py-2.5 text-sm">
           <span className="font-semibold text-navy">
             {selected.size} seleccionado{selected.size === 1 ? '' : 's'}
@@ -137,15 +141,17 @@ export default function LeadsPage() {
           <table className="w-full min-w-[720px] text-left text-sm">
             <thead className="border-b border-line bg-canvas/60 text-xs uppercase tracking-wide text-muted">
               <tr>
-                <th className="px-4 py-3">
-                  <input
-                    type="checkbox"
-                    checked={allOnPage}
-                    onChange={toggleAll}
-                    className="h-4 w-4 rounded border-line text-brand focus:ring-brand"
-                    aria-label="Seleccionar todos"
-                  />
-                </th>
+                {canWrite && (
+                  <th className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={allOnPage}
+                      onChange={toggleAll}
+                      className="h-4 w-4 rounded border-line text-brand focus:ring-brand"
+                      aria-label="Seleccionar todos"
+                    />
+                  </th>
+                )}
                 <th className="px-5 py-3 font-semibold">Nombre</th>
                 <th className="px-5 py-3 font-semibold">Contacto</th>
                 <th className="px-5 py-3 font-semibold">Tipo</th>
@@ -162,15 +168,17 @@ export default function LeadsPage() {
                     selected.has(lead.id) ? 'bg-brand-soft/30' : ''
                   }`}
                 >
-                  <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
-                    <input
-                      type="checkbox"
-                      checked={selected.has(lead.id)}
-                      onChange={() => toggleOne(lead.id)}
-                      className="h-4 w-4 rounded border-line text-brand focus:ring-brand"
-                      aria-label={`Seleccionar ${lead.name}`}
-                    />
-                  </td>
+                  {canWrite && (
+                    <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selected.has(lead.id)}
+                        onChange={() => toggleOne(lead.id)}
+                        className="h-4 w-4 rounded border-line text-brand focus:ring-brand"
+                        aria-label={`Seleccionar ${lead.name}`}
+                      />
+                    </td>
+                  )}
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-soft font-display text-[12px] font-bold text-brand">

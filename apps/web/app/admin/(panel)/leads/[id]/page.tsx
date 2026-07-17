@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { LEAD_STATUSES, type LeadStatus } from '@tar/shared';
 import { useLead, useUpdateLead } from '@/lib/queries';
+import { useAuth } from '@/lib/auth';
 import { LeadStatusBadge } from '@/components/lead-status-badge';
 import {
   LEAD_STATUS_META,
@@ -39,6 +40,8 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 
 export default function LeadDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { can } = useAuth();
+  const canWrite = can('leads:write');
   const { data: lead, isLoading, isError } = useLead(id);
   const update = useUpdateLead(id);
 
@@ -131,6 +134,15 @@ export default function LeadDetailPage() {
         <aside>
           <section className="rounded-2xl border border-line bg-white p-6 shadow-sm lg:sticky lg:top-8">
             <h2 className="mb-1 font-display text-lg text-navy">Estado del lead</h2>
+            {!canWrite ? (
+              <div className="mt-2">
+                <LeadStatusBadge status={lead.status} />
+                <p className="mt-3 text-xs text-muted">
+                  Tu rol es de solo lectura: no puedes cambiar la etapa.
+                </p>
+              </div>
+            ) : (
+              <>
             <p className="mb-4 text-xs text-muted">
               Cada cambio queda en la bitácora y dispara el webhook configurado.
             </p>
@@ -158,6 +170,8 @@ export default function LeadDetailPage() {
               <p className="mt-3 text-xs text-red-600">
                 No se pudo actualizar. Intenta de nuevo.
               </p>
+            )}
+              </>
             )}
           </section>
         </aside>

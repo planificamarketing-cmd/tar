@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { type Capability, ROLE_LABEL } from '@tar/shared';
 import { useAuth } from '@/lib/auth';
 import {
   NDash,
@@ -24,6 +25,9 @@ type NavItem = {
   label: string;
   Icon: (p: IconProps) => React.ReactNode;
   ready?: boolean;
+  // Capacidad requerida para ver el item (si falta, el item se oculta). Sin `cap`
+  // = visible para cualquier sesión autenticada.
+  cap?: Capability;
 };
 
 // Misma estructura que el prototipo (v3-admin.jsx): General / CRM / Configuración.
@@ -32,21 +36,21 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
     label: 'General',
     items: [
       { href: '/admin', label: 'Dashboard', Icon: NDash, ready: true },
-      { href: '/admin/propiedades', label: 'Propiedades', Icon: NHome, ready: true },
-      { href: '/admin/propiedades/nueva', label: 'Nueva propiedad', Icon: NPlus, ready: true },
+      { href: '/admin/propiedades', label: 'Propiedades', Icon: NHome, ready: true, cap: 'properties:read' },
+      { href: '/admin/propiedades/nueva', label: 'Nueva propiedad', Icon: NPlus, ready: true, cap: 'properties:write' },
     ],
   },
   {
     label: 'CRM',
     items: [
-      { href: '/admin/leads', label: 'Leads', Icon: NTenant, ready: true },
-      { href: '/admin/usuarios', label: 'Usuarios', Icon: NUser, ready: true },
-      { href: '/admin/scripts', label: 'Scripts', Icon: NScript, ready: true },
+      { href: '/admin/leads', label: 'Leads', Icon: NTenant, ready: true, cap: 'leads:read' },
+      { href: '/admin/usuarios', label: 'Usuarios', Icon: NUser, ready: true, cap: 'users:manage' },
+      { href: '/admin/scripts', label: 'Scripts', Icon: NScript, ready: true, cap: 'scripts:manage' },
     ],
   },
   {
     label: 'Configuración',
-    items: [{ href: '/admin/ajustes', label: 'Ajustes', Icon: NCog, ready: true }],
+    items: [{ href: '/admin/ajustes', label: 'Ajustes', Icon: NCog, ready: true, cap: 'webhooks:manage' }],
   },
 ];
 
@@ -59,10 +63,17 @@ function Spinner() {
 }
 
 export default function PanelLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, can } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [navOpen, setNavOpen] = useState(false);
+
+  // Cada rol solo ve las secciones para las que tiene capacidad; los grupos que
+  // quedan vacíos no se pintan.
+  const navGroups = NAV_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => !item.cap || can(item.cap)),
+  })).filter((group) => group.items.length > 0);
 
   useEffect(() => {
     if (!loading && !user) router.replace('/admin/login');
@@ -132,7 +143,7 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
         </div>
 
         <nav className="flex-1 overflow-y-auto">
-          {NAV_GROUPS.map((group) => (
+          {navGroups.map((group) => (
             <div key={group.label} className="mb-4">
               <div className="px-3 pb-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-muted">
                 {group.label}
@@ -192,7 +203,7 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
             <div className="min-w-0">
               <p className="truncate text-[13px] font-semibold text-navy">{user.name}</p>
               <p className="truncate text-[11px] text-muted">
-                {user.role === 'admin' ? 'Administrador' : 'Editor'}
+                {ROLE_LABEL[user.role]}
               </p>
             </div>
           </div>

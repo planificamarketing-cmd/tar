@@ -5,8 +5,10 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
+import { type Capability, roleCan } from '@tar/shared';
 import * as api from './api';
 import type { AdminUser } from './api';
 
@@ -15,6 +17,8 @@ type AuthState = {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  // ¿El rol de la sesión tiene la capacidad? (mismo mapa que el backend, @tar/shared).
+  can: (capability: Capability) => boolean;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -52,11 +56,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }, []);
 
-  return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
-      {children}
-    </AuthContext.Provider>
+  const can = useCallback(
+    (capability: Capability) => (user ? roleCan(user.role, capability) : false),
+    [user],
   );
+
+  const value = useMemo(
+    () => ({ user, loading, login, logout, can }),
+    [user, loading, login, logout, can],
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthState {
