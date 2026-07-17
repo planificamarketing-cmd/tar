@@ -118,6 +118,11 @@ En la ficha de la propiedad, sección **Imágenes**:
 - Pasa el cursor sobre una foto para **marcarla como Portada** o **Eliminarla**. La
   portada es la que se ve en los listados.
 
+En la sección **Videos** (debajo de Imágenes) puedes subir videos en **horizontal o
+vertical** (MP4, WebM o MOV, hasta 50 MB). Al elegir el archivo, el sistema **detecta
+la orientación** automáticamente y puedes corregirla antes de subir. Cada video se
+puede previsualizar y eliminar.
+
 ### 4.6 Características y metraje
 - **Características:** recámaras, baños, medios baños, estacionamientos, construcción
   y terreno (m²).
@@ -322,6 +327,23 @@ ejemplo, mover un lead de etapa) de forma segura.
 - **Revocar:** desactiva la llave de inmediato.
 - El sistema externo llama a `POST /webhooks/inbound` enviando su llave en la cabecera
   `X-API-Key`. (Detalle técnico para quien haga la integración.)
+
+### 7.3 Segmentos · Meta
+
+Un **segmento** es un conjunto de propiedades definido por **filtros estrictos**
+(operación, tipo, rango de precio, recámaras, ubicación, destaque, en remate). Cada
+segmento genera un **feed** (catálogo) que puedes conectar a **Meta** (Facebook /
+Instagram) para anunciar solo ese subconjunto.
+
+- **Nuevo segmento:** ponle nombre y elige los filtros. Verás cuántas propiedades
+  cumplen (**conteo de coincidencias**).
+- **Copiar feed:** botón que copia la **URL del feed** (termina en `.csv`). Esa URL es
+  la que se pega en Meta (catálogo → origen de datos → feed programado). La URL lleva
+  un **código único** que hace de llave; compártela solo con quien deba.
+- El feed incluye **solo propiedades disponibles** que cumplen **todos** los filtros;
+  se actualiza solo cuando cambia el inventario.
+- **Activar/Desactivar:** un segmento inactivo deja de servir su feed. **Editar** y
+  **Eliminar** disponibles en cada uno.
 
 ---
 
