@@ -154,6 +154,10 @@ En cada fila (columna **Acciones**):
 
 - **Publicar** (si es borrador) / **A borrador** (si está publicada, la despublica y la
   regresa a borrador).
+- **Flyer** — descarga una **imagen lista para compartir** (formato vertical, tipo
+  historia/post) con la foto de portada, el precio, la ubicación, los datos clave y las
+  etiquetas (En remate / Premium). Disponible para todos los roles. También está en la
+  ficha, como **Descargar flyer**.
 - **Editar** — abre la ficha.
 - **Duplicar** — crea una **copia como borrador** (con "(copia)" en el título) para
   publicar variantes rápido. Copia datos y amenidades; no copia las fotos.
