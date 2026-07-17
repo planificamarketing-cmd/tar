@@ -15,6 +15,13 @@
       "when": 1784264770100,
       "tag": "0001_daily_namora",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784265547768,
+      "tag": "0002_glossy_jackal",
+      "breakpoints": true
     }
   ]
 }

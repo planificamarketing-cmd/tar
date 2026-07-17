@@ -46,6 +46,16 @@ export function PropertyFields({ value, onChange }: Props) {
   const createAmenity = useCreateAmenity();
   const [newAmenity, setNewAmenity] = useState('');
 
+  // Aplicabilidad por tipo: m² útil/rentable solo en oficina; patio/terraza/balcón
+  // en depto/casa/oficina; jardín en casa/depto.
+  const isOffice = value.propertyType === 'oficina';
+  const showPatioTerraceBalcony = (
+    ['departamento', 'casa', 'oficina'] as PropertyType[]
+  ).includes(value.propertyType);
+  const showGarden = (['casa', 'departamento'] as PropertyType[]).includes(
+    value.propertyType,
+  );
+
   const Text = (
     key: keyof PropertyFormValues,
     label: string,
@@ -155,7 +165,28 @@ export function PropertyFields({ value, onChange }: Props) {
           {Text('areaM2', 'Construcción (m²)', { type: 'number' })}
           {Text('lotM2', 'Terreno (m²)', { type: 'number' })}
         </div>
+        {isOffice && (
+          <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+            {Text('usableAreaM2', 'Superficie útil (m²)', { type: 'number' })}
+            {Text('rentableAreaM2', 'Superficie rentable (m²)', { type: 'number' })}
+          </div>
+        )}
       </Section>
+
+      {/* Áreas exteriores (con metraje) — aplicabilidad por tipo de inmueble */}
+      {(showPatioTerraceBalcony || showGarden) && (
+        <Section
+          title="Áreas exteriores"
+          desc="Opcionales, con su metraje. Se muestran según el tipo de inmueble."
+        >
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {showPatioTerraceBalcony && Text('patioM2', 'Patio (m²)', { type: 'number' })}
+            {showPatioTerraceBalcony && Text('terraceM2', 'Terraza (m²)', { type: 'number' })}
+            {showPatioTerraceBalcony && Text('balconyM2', 'Balcón (m²)', { type: 'number' })}
+            {showGarden && Text('gardenM2', 'Jardín (m²)', { type: 'number' })}
+          </div>
+        </Section>
+      )}
 
       {/* Ubicación */}
       <Section
@@ -253,6 +284,22 @@ export function PropertyFields({ value, onChange }: Props) {
             );
           })}
         </div>
+
+        {/* Etiqueta "en remate" — independiente del destaque; aplica a venta y renta */}
+        <label className="mt-4 flex items-center gap-3 border-t border-line pt-4">
+          <input
+            type="checkbox"
+            checked={value.isRemate}
+            onChange={(e) => onChange({ isRemate: e.target.checked })}
+            className="h-4 w-4 rounded border-line text-brand focus:ring-brand"
+          />
+          <span className="text-sm font-medium text-ink">
+            En remate
+            <span className="ml-2 font-normal text-muted">
+              Muestra una etiqueta de remate en el listado (venta y renta).
+            </span>
+          </span>
+        </label>
       </Section>
     </div>
   );

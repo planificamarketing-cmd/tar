@@ -335,7 +335,9 @@
                     "type": "string",
                     "enum": [
                       "admin",
-                      "editor"
+                      "editor",
+                      "ventas",
+                      "lector"
                     ],
                     "default": "editor"
                   }
@@ -450,7 +452,9 @@
                     "type": "string",
                     "enum": [
                       "admin",
-                      "editor"
+                      "editor",
+                      "ventas",
+                      "lector"
                     ]
                   },
                   "isActive": {
@@ -1046,6 +1050,36 @@
                     "nullable": true,
                     "minimum": 0
                   },
+                  "usableAreaM2": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0
+                  },
+                  "rentableAreaM2": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0
+                  },
+                  "patioM2": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0
+                  },
+                  "terraceM2": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0
+                  },
+                  "balconyM2": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0
+                  },
+                  "gardenM2": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0
+                  },
                   "address": {
                     "type": "string"
                   },
@@ -1080,6 +1114,9 @@
                       "destacada",
                       "premium"
                     ]
+                  },
+                  "isRemate": {
+                    "type": "boolean"
                   },
                   "amenities": {
                     "type": "array",
@@ -1532,6 +1569,36 @@
                     "nullable": true,
                     "minimum": 0
                   },
+                  "usableAreaM2": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0
+                  },
+                  "rentableAreaM2": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0
+                  },
+                  "patioM2": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0
+                  },
+                  "terraceM2": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0
+                  },
+                  "balconyM2": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0
+                  },
+                  "gardenM2": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0
+                  },
                   "address": {
                     "type": "string"
                   },
@@ -1566,6 +1633,9 @@
                       "destacada",
                       "premium"
                     ]
+                  },
+                  "isRemate": {
+                    "type": "boolean"
                   },
                   "amenities": {
                     "type": "array",

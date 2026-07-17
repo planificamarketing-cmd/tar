@@ -28,3 +28,16 @@ export function FeaturedBadge({ level }: { level: FeaturedLevel }) {
     </span>
   );
 }
+
+// Chip "En remate" — convive con el destaque y con cualquier estatus.
+export function RemateBadge({ isRemate }: { isRemate: boolean }) {
+  if (!isRemate) return null;
+  return (
+    <span
+      className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold"
+      style={{ backgroundColor: '#D2103E22', color: '#D2103E' }}
+    >
+      En remate
+    </span>
+  );
+}

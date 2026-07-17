@@ -108,6 +108,7 @@ export type AdminPropertiesParams = {
   status?: PropertyStatus;
   type?: PropertyType;
   featured?: FeaturedLevel;
+  remate?: 'true' | 'false';
   q?: string;
   sort?: PropertyAdminSort;
   page?: number;

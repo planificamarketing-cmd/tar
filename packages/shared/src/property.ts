@@ -66,6 +66,8 @@ export const propertyAdminQuerySchema = paginationSchema.extend({
   status: propertyStatusSchema.optional(),
   type: propertyTypeSchema.optional(),
   featured: featuredLevelSchema.optional(),
+  // 'true' → solo propiedades marcadas en remate.
+  remate: z.enum(['true', 'false']).optional(),
   q: z.string().trim().min(1).optional(),
   sort: propertyAdminSortSchema,
   // 'true' → solo archivadas (soft-deleted); por defecto solo las activas.
@@ -119,6 +121,15 @@ const basePropertyShape = {
   floor: z.string().trim().optional(),
   areaM2: z.coerce.number().nonnegative().optional(),
   lotM2: z.coerce.number().nonnegative().optional(),
+  // Metraje de oficina (útil / rentable). Solo tiene sentido cuando propertyType
+  // es 'oficina'; el editor lo muestra condicionado a ese tipo.
+  usableAreaM2: z.coerce.number().nonnegative().optional(),
+  rentableAreaM2: z.coerce.number().nonnegative().optional(),
+  // Áreas exteriores con su metraje (patio/terraza/balcón/jardín).
+  patioM2: z.coerce.number().nonnegative().optional(),
+  terraceM2: z.coerce.number().nonnegative().optional(),
+  balconyM2: z.coerce.number().nonnegative().optional(),
+  gardenM2: z.coerce.number().nonnegative().optional(),
   address: z.string().trim().optional(),
   postalCode: z.string().trim().optional(),
   // Ubicación geográfica (PostGIS). geo opcional en borrador, requerido al publicar.
@@ -128,6 +139,8 @@ const basePropertyShape = {
   municipio: z.string().trim().optional(),
   colonia: z.string().trim().optional(),
   featured: featuredLevelSchema.optional(),
+  // Etiqueta "en remate" (convive con cualquier estatus; venta y renta).
+  isRemate: z.boolean().optional(),
   amenities: z.array(z.string().uuid()).optional(),
 };
 

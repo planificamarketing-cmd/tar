@@ -56,10 +56,17 @@ const propertyColumns = {
   floor: properties.floor,
   areaM2: properties.areaM2,
   lotM2: properties.lotM2,
+  usableAreaM2: properties.usableAreaM2,
+  rentableAreaM2: properties.rentableAreaM2,
+  patioM2: properties.patioM2,
+  terraceM2: properties.terraceM2,
+  balconyM2: properties.balconyM2,
+  gardenM2: properties.gardenM2,
   address: properties.address,
   postalCode: properties.postalCode,
   status: properties.status,
   featured: properties.featured,
+  isRemate: properties.isRemate,
   publishedAt: properties.publishedAt,
   createdAt: properties.createdAt,
   updatedAt: properties.updatedAt,
@@ -197,6 +204,7 @@ export async function listPropertiesAdmin(
   if (q.status) c.push(eq(properties.status, q.status));
   if (q.type) c.push(eq(properties.propertyType, q.type));
   if (q.featured) c.push(eq(properties.featured, q.featured));
+  if (q.remate === 'true') c.push(eq(properties.isRemate, true));
   if (q.q)
     c.push(sql`${properties.searchVector} @@ plainto_tsquery('spanish', ${q.q})`);
   const where = and(...c);
@@ -489,6 +497,12 @@ export async function createProperty(
       floor: input.floor,
       areaM2: input.areaM2?.toString() ?? null,
       lotM2: input.lotM2?.toString() ?? null,
+      usableAreaM2: input.usableAreaM2?.toString() ?? null,
+      rentableAreaM2: input.rentableAreaM2?.toString() ?? null,
+      patioM2: input.patioM2?.toString() ?? null,
+      terraceM2: input.terraceM2?.toString() ?? null,
+      balconyM2: input.balconyM2?.toString() ?? null,
+      gardenM2: input.gardenM2?.toString() ?? null,
       locationId,
       address: input.address,
       postalCode: input.postalCode,
@@ -497,6 +511,7 @@ export async function createProperty(
           ? geoSql(input.lat, input.lng)
           : null,
       featured: input.featured ?? 'normal',
+      isRemate: input.isRemate ?? false,
       status: 'borrador',
       createdBy: userId,
     })
@@ -537,8 +552,18 @@ export async function updateProperty(id: string, input: UpdatePropertyInput) {
   assign('address', 'address');
   assign('postalCode', 'postalCode');
   assign('featured', 'featured');
-  if (input.areaM2 !== undefined) set.areaM2 = input.areaM2?.toString() ?? null;
-  if (input.lotM2 !== undefined) set.lotM2 = input.lotM2?.toString() ?? null;
+  assign('isRemate', 'isRemate');
+  const numAssign = (k: keyof UpdatePropertyInput, col: string) => {
+    if (input[k] !== undefined) set[col] = input[k]?.toString() ?? null;
+  };
+  numAssign('areaM2', 'areaM2');
+  numAssign('lotM2', 'lotM2');
+  numAssign('usableAreaM2', 'usableAreaM2');
+  numAssign('rentableAreaM2', 'rentableAreaM2');
+  numAssign('patioM2', 'patioM2');
+  numAssign('terraceM2', 'terraceM2');
+  numAssign('balconyM2', 'balconyM2');
+  numAssign('gardenM2', 'gardenM2');
 
   // Precios + normalización a MXN (merge con lo actual).
   const priceTouched =
@@ -605,6 +630,13 @@ function buildPublishedPayload(
     parking: d.parking,
     areaM2: num(d.areaM2),
     lotM2: num(d.lotM2),
+    usableAreaM2: num(d.usableAreaM2),
+    rentableAreaM2: num(d.rentableAreaM2),
+    patioM2: num(d.patioM2),
+    terraceM2: num(d.terraceM2),
+    balconyM2: num(d.balconyM2),
+    gardenM2: num(d.gardenM2),
+    isRemate: d.isRemate,
     address: d.address,
     postalCode: d.postalCode,
     location: d.location,
@@ -767,11 +799,18 @@ export async function duplicateProperty(id: string, userId: string) {
       floor: src.floor,
       areaM2: src.areaM2,
       lotM2: src.lotM2,
+      usableAreaM2: src.usableAreaM2,
+      rentableAreaM2: src.rentableAreaM2,
+      patioM2: src.patioM2,
+      terraceM2: src.terraceM2,
+      balconyM2: src.balconyM2,
+      gardenM2: src.gardenM2,
       locationId: src.locationId,
       address: src.address,
       postalCode: src.postalCode,
       geo: src.geo,
       featured: src.featured,
+      isRemate: src.isRemate,
       status: 'borrador',
       slug: null,
       publishedAt: null,

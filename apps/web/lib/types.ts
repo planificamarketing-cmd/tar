@@ -17,6 +17,7 @@ export type PropertyListItem = {
   propertyType: PropertyType;
   status: PropertyStatus;
   featured: FeaturedLevel;
+  isRemate: boolean;
   priceSale: string | null;
   currencySale: string | null;
   priceRent: string | null;
@@ -125,6 +126,12 @@ export type PropertyDetail = PropertyListItem & {
   parking: number | null;
   floor: string | null;
   lotM2: string | null;
+  usableAreaM2: string | null;
+  rentableAreaM2: string | null;
+  patioM2: string | null;
+  terraceM2: string | null;
+  balconyM2: string | null;
+  gardenM2: string | null;
   address: string | null;
   postalCode: string | null;
   lat: number | null;

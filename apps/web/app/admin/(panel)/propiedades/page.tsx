@@ -26,6 +26,7 @@ import { useAuth } from '@/lib/auth';
 import {
   FeaturedBadge,
   PropertyStatusBadge,
+  RemateBadge,
 } from '@/components/property-status-badge';
 import { NPlus, NSearch } from '@/components/icons';
 import {
@@ -62,6 +63,7 @@ export default function PropertiesPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [remateOnly, setRemateOnly] = useState(false);
   const [webhookTest, setWebhookTest] = useState<WebhookEventTest | null>(null);
   const [testing, setTesting] = useState(false);
 
@@ -72,6 +74,7 @@ export default function PropertiesPage() {
     page,
     limit: PER_PAGE,
     archived: archived ? 'true' : undefined,
+    remate: remateOnly ? 'true' : undefined,
   });
 
   const publish = usePublishProperty();
@@ -254,6 +257,17 @@ export default function PropertiesPage() {
         <button className={tab(archived)} onClick={() => pick('archived')}>
           Archivadas
         </button>
+        <div className="mx-1 h-5 w-px bg-line" />
+        <button
+          className={tab(remateOnly)}
+          onClick={() => {
+            setRemateOnly((v) => !v);
+            setPage(1);
+          }}
+          title="Mostrar solo propiedades marcadas en remate"
+        >
+          En remate
+        </button>
         <form onSubmit={submitSearch} className="ml-auto flex items-center">
           <div className="relative">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">
@@ -415,6 +429,7 @@ export default function PropertiesPage() {
                         >
                           <span className="truncate">{p.title}</span>
                           <FeaturedBadge level={p.featured} />
+                          <RemateBadge isRemate={p.isRemate} />
                         </Link>
                         <div className="truncate text-xs text-muted">
                           {p.location?.colonia

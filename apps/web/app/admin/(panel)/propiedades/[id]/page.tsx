@@ -16,7 +16,10 @@ import {
 import { useAuth } from '@/lib/auth';
 import { PropertyFields } from '@/components/property-fields';
 import { ImageUploader } from '@/components/image-uploader';
-import { PropertyStatusBadge } from '@/components/property-status-badge';
+import {
+  PropertyStatusBadge,
+  RemateBadge,
+} from '@/components/property-status-badge';
 import { PROPERTY_STATUS_META } from '@/lib/format';
 import {
   fromDetail,
@@ -101,8 +104,9 @@ export default function EditPropertyPage() {
           <h1 className="mt-1 truncate font-display text-3xl text-navy">
             {prop.title}
           </h1>
-          <div className="mt-1.5">
+          <div className="mt-1.5 flex items-center gap-2">
             <PropertyStatusBadge status={prop.status} />
+            <RemateBadge isRemate={prop.isRemate} />
           </div>
         </div>
       </header>

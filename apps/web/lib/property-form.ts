@@ -23,6 +23,12 @@ export type PropertyFormValues = {
   floor: string;
   areaM2: string;
   lotM2: string;
+  usableAreaM2: string;
+  rentableAreaM2: string;
+  patioM2: string;
+  terraceM2: string;
+  balconyM2: string;
+  gardenM2: string;
   address: string;
   postalCode: string;
   estado: string;
@@ -31,6 +37,7 @@ export type PropertyFormValues = {
   lat: string;
   lng: string;
   featured: FeaturedLevel;
+  isRemate: boolean;
   amenities: string[];
 };
 
@@ -49,6 +56,12 @@ export const EMPTY_PROPERTY: PropertyFormValues = {
   floor: '',
   areaM2: '',
   lotM2: '',
+  usableAreaM2: '',
+  rentableAreaM2: '',
+  patioM2: '',
+  terraceM2: '',
+  balconyM2: '',
+  gardenM2: '',
   address: '',
   postalCode: '',
   estado: '',
@@ -57,6 +70,7 @@ export const EMPTY_PROPERTY: PropertyFormValues = {
   lat: '',
   lng: '',
   featured: 'normal',
+  isRemate: false,
   amenities: [],
 };
 
@@ -79,6 +93,12 @@ export function fromDetail(p: PropertyDetail): PropertyFormValues {
     floor: s(p.floor),
     areaM2: s(p.areaM2),
     lotM2: s(p.lotM2),
+    usableAreaM2: s(p.usableAreaM2),
+    rentableAreaM2: s(p.rentableAreaM2),
+    patioM2: s(p.patioM2),
+    terraceM2: s(p.terraceM2),
+    balconyM2: s(p.balconyM2),
+    gardenM2: s(p.gardenM2),
     address: s(p.address),
     postalCode: s(p.postalCode),
     estado: p.location?.estado ?? '',
@@ -87,6 +107,7 @@ export function fromDetail(p: PropertyDetail): PropertyFormValues {
     lat: s(p.lat),
     lng: s(p.lng),
     featured: p.featured,
+    isRemate: p.isRemate ?? false,
     amenities: p.amenities.map((a) => a.id),
   };
 }
@@ -122,6 +143,12 @@ export function toPayload(v: PropertyFormValues): CreatePropertyInput {
     floor: str(v.floor),
     areaM2: num(v.areaM2),
     lotM2: num(v.lotM2),
+    usableAreaM2: num(v.usableAreaM2),
+    rentableAreaM2: num(v.rentableAreaM2),
+    patioM2: num(v.patioM2),
+    terraceM2: num(v.terraceM2),
+    balconyM2: num(v.balconyM2),
+    gardenM2: num(v.gardenM2),
     address: str(v.address),
     postalCode: str(v.postalCode),
     estado: str(v.estado),
@@ -130,6 +157,7 @@ export function toPayload(v: PropertyFormValues): CreatePropertyInput {
     lat: num(v.lat),
     lng: num(v.lng),
     featured: v.featured,
+    isRemate: v.isRemate,
     amenities: v.amenities,
   } as CreatePropertyInput;
 }

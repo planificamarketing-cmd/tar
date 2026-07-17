@@ -161,12 +161,23 @@ export const properties = pgTable(
     floor: text('floor'),
     areaM2: numeric('area_m2', { precision: 10, scale: 2 }),
     lotM2: numeric('lot_m2', { precision: 10, scale: 2 }),
+    // Metraje de oficina: superficie útil y rentable (solo aplica a `oficina`).
+    usableAreaM2: numeric('usable_area_m2', { precision: 10, scale: 2 }),
+    rentableAreaM2: numeric('rentable_area_m2', { precision: 10, scale: 2 }),
+    // Áreas exteriores con su metraje opcional. Aplicabilidad por tipo (se valida en
+    // el editor): patio/terraza/balcón → depto/casa/oficina; jardín → casa/depto.
+    patioM2: numeric('patio_m2', { precision: 10, scale: 2 }),
+    terraceM2: numeric('terrace_m2', { precision: 10, scale: 2 }),
+    balconyM2: numeric('balcony_m2', { precision: 10, scale: 2 }),
+    gardenM2: numeric('garden_m2', { precision: 10, scale: 2 }),
     locationId: uuid('location_id').references(() => locations.id),
     address: text('address'),
     postalCode: text('postal_code'),
     geo: geography('geo'),
     status: propertyStatus('status').notNull().default('borrador'),
     featured: featuredLevel('featured').notNull().default('normal'),
+    // Etiqueta "en remate" (convive con cualquier estatus; aplica a venta y renta).
+    isRemate: boolean('is_remate').notNull().default(false),
     // Full-text en español sobre title+description (filtro `q`).
     searchVector: tsvector('search_vector').generatedAlwaysAs(
       sql`to_tsvector('spanish', coalesce(title, '') || ' ' || coalesce(description, ''))`,
