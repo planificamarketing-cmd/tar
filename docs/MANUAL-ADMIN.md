@@ -335,8 +335,11 @@ Un **segmento** es un conjunto de propiedades definido por **filtros estrictos**
 segmento genera un **feed** (catálogo) que puedes conectar a **Meta** (Facebook /
 Instagram) para anunciar solo ese subconjunto.
 
-- **Nuevo segmento:** ponle nombre y elige los filtros. Verás cuántas propiedades
-  cumplen (**conteo de coincidencias**).
+- **Nuevo segmento:** ponle nombre, elige el **formato del feed** y los filtros. Verás
+  cuántas propiedades cumplen (**conteo de coincidencias**).
+- **Formato del feed:** **Inmobiliario (Home Listings)** —recomendado si tu catálogo en
+  Meta es de bienes raíces; incluye ubicación en el mapa, tipo, recámaras, baños y
+  superficie— o **Catálogo comercial** (genérico).
 - **Copiar feed:** botón que copia la **URL del feed** (termina en `.csv`). Esa URL es
   la que se pega en Meta (catálogo → origen de datos → feed programado). La URL lleva
   un **código único** que hace de llave; compártela solo con quien deba.
