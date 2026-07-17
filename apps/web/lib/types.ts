@@ -9,7 +9,15 @@ import type {
   ApiKeyScope,
   ScriptPlacement,
   SegmentFilters,
+  VideoOrientation,
 } from '@tar/shared';
+
+export type PropertyVideo = {
+  id: string;
+  url: string;
+  orientation: VideoOrientation;
+  position: number;
+};
 
 export type PropertySegment = {
   id: string;
@@ -156,6 +164,7 @@ export type PropertyDetail = PropertyListItem & {
     | null;
   images: PropertyImage[];
   amenities: Amenity[];
+  videos: PropertyVideo[];
 };
 
 // Respuesta paginada estándar de la API (§5): { data, meta }.

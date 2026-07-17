@@ -40,6 +40,7 @@ import type {
   PropertyImage,
   PropertyListItem,
   PropertySegment,
+  PropertyVideo,
   User,
   WebhookDelivery,
   WebhookSubscription,
@@ -367,6 +368,29 @@ export function useDeleteImage(id: string) {
       void qc.invalidateQueries({ queryKey: ['admin-property', id] });
       void qc.invalidateQueries({ queryKey: ['admin-properties'] });
     },
+  });
+}
+
+// ── Videos de propiedad ──
+export function useUploadVideo(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ file, orientation }: { file: File; orientation: string }) => {
+      const form = new FormData();
+      form.append('orientation', orientation);
+      form.append('video', file);
+      return apiUpload<{ data: PropertyVideo }>(`/properties/${id}/videos`, form);
+    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['admin-property', id] }),
+  });
+}
+
+export function useDeleteVideo(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (videoId: string) =>
+      apiFetch(`/properties/${id}/videos/${videoId}`, { method: 'DELETE' }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['admin-property', id] }),
   });
 }
 

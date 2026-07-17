@@ -14,6 +14,7 @@ import { usersRouter } from './modules/users/users.routes';
 import { scriptsRouter } from './modules/scripts/scripts.routes';
 import { propertiesRouter } from './modules/properties/properties.routes';
 import { mediaRouter } from './modules/media/media.routes';
+import { videosRouter } from './modules/videos/videos.routes';
 import { amenitiesRouter } from './modules/amenities/amenities.routes';
 import { locationsRouter } from './modules/locations/locations.routes';
 import { geoRouter } from './modules/geo/geo.routes';
@@ -71,6 +72,7 @@ export function createApp(): Express {
   app.use('/api/v1/scripts', scriptsRouter);
   app.use('/api/v1/properties', propertiesRouter);
   app.use('/api/v1/properties', mediaRouter);
+  app.use('/api/v1/properties', videosRouter);
   app.use('/api/v1/amenities', amenitiesRouter);
   app.use('/api/v1/locations', locationsRouter);
   app.use('/api/v1/geo', geoRouter);

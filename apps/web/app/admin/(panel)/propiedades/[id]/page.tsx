@@ -16,6 +16,7 @@ import {
 import { useAuth } from '@/lib/auth';
 import { PropertyFields } from '@/components/property-fields';
 import { ImageUploader } from '@/components/image-uploader';
+import { VideoUploader } from '@/components/video-uploader';
 import {
   PropertyStatusBadge,
   RemateBadge,
@@ -141,6 +142,17 @@ export default function EditPropertyPage() {
             </p>
             <div className="mt-4">
               <ImageUploader propertyId={id} images={prop.images} />
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-line bg-white p-6 shadow-sm">
+            <h2 className="font-display text-lg text-navy">Videos</h2>
+            <p className="mt-0.5 text-sm text-muted">
+              Sube videos en horizontal o vertical. La orientación se detecta sola
+              y puedes corregirla antes de subir.
+            </p>
+            <div className="mt-4">
+              <VideoUploader propertyId={id} videos={prop.videos} />
             </div>
           </section>
         </fieldset>

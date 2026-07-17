@@ -80,6 +80,10 @@ export const scriptPlacement = pgEnum('script_placement', [
   'body',
   'footer',
 ]);
+export const videoOrientation = pgEnum('video_orientation', [
+  'horizontal',
+  'vertical',
+]);
 
 const timestamps = {
   createdAt: timestamp('created_at', { withTimezone: true })
@@ -246,6 +250,26 @@ export const propertyImages = pgTable(
     isCover: boolean('is_cover').notNull().default(false),
   },
   (t) => [index('property_images_position_idx').on(t.propertyId, t.position)],
+);
+
+// --- property_videos ---
+// Videos de la propiedad (horizontal / vertical). Se guardan tal cual en disco
+// (sin transcodificar) vía lib/storage; la orientación la fija quien sube.
+export const propertyVideos = pgTable(
+  'property_videos',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    propertyId: uuid('property_id')
+      .notNull()
+      .references(() => properties.id, { onDelete: 'cascade' }),
+    url: text('url').notNull(),
+    orientation: videoOrientation('orientation').notNull().default('horizontal'),
+    position: integer('position').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => [index('property_videos_prop_idx').on(t.propertyId, t.position)],
 );
 
 // --- leads ---

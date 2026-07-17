@@ -13,5 +13,6 @@ export * from './lead';
 export * from './webhook';
 export * from './script';
 export * from './segment';
+export * from './video';
 
 export const SHARED_PACKAGE_VERSION = '0.1.0';

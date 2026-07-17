@@ -27,7 +27,14 @@ import { toMxn } from '../../lib/pricing';
 import { generateUniqueSlug, slugify } from '../../lib/slug';
 import { normalizeText } from '../../lib/text';
 
-const { properties, locations, propertyImages, amenities, propertyAmenities } =
+const {
+  properties,
+  locations,
+  propertyImages,
+  amenities,
+  propertyAmenities,
+  propertyVideos,
+} =
   schema;
 
 // Estatus visibles en el sitio público (§4.1).
@@ -383,7 +390,18 @@ async function withImagesAndAmenities<T extends { id: string }>(prop: T) {
     .innerJoin(amenities, eq(amenities.id, propertyAmenities.amenityId))
     .where(eq(propertyAmenities.propertyId, prop.id));
 
-  return { ...prop, images, amenities: ams };
+  const videos = await db
+    .select({
+      id: propertyVideos.id,
+      url: propertyVideos.url,
+      orientation: propertyVideos.orientation,
+      position: propertyVideos.position,
+    })
+    .from(propertyVideos)
+    .where(eq(propertyVideos.propertyId, prop.id))
+    .orderBy(asc(propertyVideos.position));
+
+  return { ...prop, images, amenities: ams, videos };
 }
 
 // Imagen de portada por propiedad (para el listado).

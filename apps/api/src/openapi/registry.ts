@@ -512,6 +512,48 @@ export function buildOpenApiDocument() {
     },
     responses: { 204: ok('Borrada') },
   });
+  // Videos (horizontal / vertical) — se guardan sin transcodificar.
+  registry.registerPath({
+    method: 'get',
+    path: '/api/v1/properties/{id}/videos',
+    tags: ['Media'],
+    summary: 'Listar videos de la propiedad',
+    security: sec,
+    request: { params: idParam },
+    responses: { 200: ok('{ data: Video[] }'), ...errResponses },
+  });
+  registry.registerPath({
+    method: 'post',
+    path: '/api/v1/properties/{id}/videos',
+    tags: ['Media'],
+    summary: 'Subir video (MP4/WebM/MOV, ≤50 MB, orientación H/V)',
+    security: sec,
+    request: {
+      params: idParam,
+      body: {
+        content: {
+          'multipart/form-data': {
+            schema: z.object({
+              video: z.string().openapi({ format: 'binary' }),
+              orientation: z.enum(['horizontal', 'vertical']),
+            }),
+          },
+        },
+      },
+    },
+    responses: { 201: ok('Video creado'), ...errResponses },
+  });
+  registry.registerPath({
+    method: 'delete',
+    path: '/api/v1/properties/{id}/videos/{videoId}',
+    tags: ['Media'],
+    summary: 'Eliminar video (disco + BD)',
+    security: sec,
+    request: {
+      params: z.object({ id: z.string().uuid(), videoId: z.string().uuid() }),
+    },
+    responses: { 204: ok('Borrado') },
+  });
 
   // ── Leads ──
   registry.registerPath({
