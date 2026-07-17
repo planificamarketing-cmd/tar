@@ -28,6 +28,7 @@ import {
   PropertyStatusBadge,
   RemateBadge,
 } from '@/components/property-status-badge';
+import { FlyerButton } from '@/components/flyer-button';
 import { NPlus, NSearch } from '@/components/icons';
 import {
   PROPERTY_STATUS_META,
@@ -469,6 +470,13 @@ export default function PropertiesPage() {
                   <td className="px-5 py-3.5 text-muted">{formatDate(p.createdAt)}</td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center justify-end gap-2">
+                      {!archived && (
+                        <FlyerButton
+                          id={p.id}
+                          name={p.title}
+                          className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:bg-canvas disabled:opacity-50"
+                        />
+                      )}
                       {!canWrite ? (
                         <Link
                           href={`/admin/propiedades/${p.id}`}

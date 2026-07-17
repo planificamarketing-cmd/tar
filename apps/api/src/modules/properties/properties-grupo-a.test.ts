@@ -109,3 +109,20 @@ describe('Grupo A — metraje de oficina, áreas exteriores y remate', () => {
     expect(ids).not.toContain(officeId);
   });
 });
+
+describe('Flyer — GET /properties/:id/flyer', () => {
+  it('exige autenticación (401)', async () => {
+    const res = await request(app).get(`/api/v1/properties/${officeId}/flyer`);
+    expect(res.status).toBe(401);
+  });
+
+  it('genera un PNG del flyer (200, image/png)', async () => {
+    const res = await auth(
+      request(app).get(`/api/v1/properties/${officeId}/flyer`),
+    ).buffer(true);
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toBe('image/png');
+    // Firma PNG (\x89PNG) al inicio del cuerpo.
+    expect(res.body.slice(0, 4).toString('latin1')).toBe('\x89PNG');
+  });
+});

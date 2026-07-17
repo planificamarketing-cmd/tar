@@ -15,6 +15,10 @@ propertiesRouter.get('/admin/status-counts', ...canRead, c.statusCounts);
 propertiesRouter.get('/admin/type-counts', ...canRead, c.typeCounts);
 propertiesRouter.get('/admin/:id', ...canRead, c.detailAdmin);
 
+// Flyer compartible (imagen PNG). Lectura (cualquier staff). 2 segmentos → no
+// colisiona con /:slug.
+propertiesRouter.get('/:id/flyer', ...canRead, c.flyer);
+
 // ── Públicas ──
 // /map antes que /:slug para que no lo capture el comodín.
 propertiesRouter.get('/', c.list);

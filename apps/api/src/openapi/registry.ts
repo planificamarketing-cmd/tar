@@ -344,6 +344,21 @@ export function buildOpenApiDocument() {
     responses: { 200: ok('Actualizada'), ...errResponses },
   });
   registry.registerPath({
+    method: 'get',
+    path: '/api/v1/properties/{id}/flyer',
+    tags: ['Propiedades'],
+    summary: 'Flyer compartible (imagen PNG 1080×1350)',
+    security: sec,
+    request: { params: idParam },
+    responses: {
+      200: {
+        description: 'Imagen PNG del flyer',
+        content: { 'image/png': { schema: { type: 'string', format: 'binary' } } },
+      },
+      ...errResponses,
+    },
+  });
+  registry.registerPath({
     method: 'post',
     path: '/api/v1/properties/{id}/publish',
     tags: ['Propiedades'],

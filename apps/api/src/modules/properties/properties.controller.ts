@@ -10,6 +10,7 @@ import {
   uuidSchema,
 } from '@tar/shared';
 import * as svc from './properties.service';
+import { generateFlyer } from './flyer.service';
 
 export async function list(req: Request, res: Response): Promise<void> {
   const q = propertyQuerySchema.parse(req.query);
@@ -95,4 +96,14 @@ export async function bulk(req: Request, res: Response): Promise<void> {
   const input = propertyBulkSchema.parse(req.body);
   const result = await svc.bulkProperties(input.ids, input.action, input.status);
   res.json({ data: result });
+}
+
+// Flyer compartible (imagen PNG) de una propiedad. Lectura (staff).
+export async function flyer(req: Request, res: Response): Promise<void> {
+  const id = uuidSchema.parse(req.params.id);
+  const png = await generateFlyer(id);
+  res.setHeader('Content-Type', 'image/png');
+  res.setHeader('Content-Disposition', `inline; filename="flyer-${id}.png"`);
+  res.setHeader('Cache-Control', 'no-store');
+  res.send(png);
 }

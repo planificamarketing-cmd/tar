@@ -20,6 +20,7 @@ import {
   PropertyStatusBadge,
   RemateBadge,
 } from '@/components/property-status-badge';
+import { FlyerButton } from '@/components/flyer-button';
 import { PROPERTY_STATUS_META } from '@/lib/format';
 import {
   fromDetail,
@@ -109,6 +110,12 @@ export default function EditPropertyPage() {
             <RemateBadge isRemate={prop.isRemate} />
           </div>
         </div>
+        <FlyerButton
+          id={id}
+          name={prop.title}
+          label="Descargar flyer"
+          className="shrink-0 rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm font-medium text-ink shadow-sm transition hover:bg-canvas disabled:opacity-50"
+        />
       </header>
 
       {!canWrite && (

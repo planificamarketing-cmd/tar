@@ -190,6 +190,30 @@ export async function apiUpload<T>(
   return (await res.json()) as T;
 }
 
+// Descarga un binario (p. ej. el flyer PNG) con auth Bearer. Mismo manejo de
+// 401 → refresh → reintento una vez. Devuelve el Blob.
+export async function apiBlob(path: string, _retry = false): Promise<Blob> {
+  const h = new Headers();
+  if (accessToken) h.set('Authorization', `Bearer ${accessToken}`);
+
+  const res = await fetch(`${getApiBase()}${path}`, {
+    headers: h,
+    credentials: 'include',
+  });
+
+  if (res.status === 401 && !_retry) {
+    try {
+      await refresh();
+    } catch {
+      throw await toError(res);
+    }
+    return apiBlob(path, true);
+  }
+
+  if (!res.ok) throw await toError(res);
+  return res.blob();
+}
+
 // ── Endpoints de autenticación ───────────────────────────────────────────────
 export async function login(email: string, password: string): Promise<AuthResponse> {
   const data = await apiFetch<AuthResponse>('/auth/login', {

@@ -24,7 +24,7 @@ import type {
   UserRole,
   ParsedMapsLocation,
 } from '@tar/shared';
-import { apiFetch, apiUpload } from './api';
+import { apiBlob, apiFetch, apiUpload } from './api';
 import type {
   Amenity,
   ApiKey,
@@ -237,6 +237,26 @@ export function testWebhookEvent(event: string) {
     method: 'POST',
     body: JSON.stringify({ event }),
   }).then((r) => r.data);
+}
+
+// Descarga el flyer PNG de una propiedad (fetch autenticado → archivo local).
+export async function downloadFlyer(id: string, name: string): Promise<void> {
+  const blob = await apiBlob(`/properties/${id}/flyer`);
+  const slug = (name || id)
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+    .slice(0, 60);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `flyer-${slug || 'propiedad'}.png`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 export function useProperty(id: string) {
