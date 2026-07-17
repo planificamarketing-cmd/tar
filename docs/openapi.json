@@ -3550,6 +3550,14 @@
                     "default": {},
                     "additionalProperties": false
                   },
+                  "feedFormat": {
+                    "type": "string",
+                    "enum": [
+                      "home_listings",
+                      "commerce"
+                    ],
+                    "default": "home_listings"
+                  },
                   "isActive": {
                     "type": "boolean",
                     "default": true
@@ -3686,6 +3694,14 @@
                     },
                     "default": {},
                     "additionalProperties": false
+                  },
+                  "feedFormat": {
+                    "type": "string",
+                    "enum": [
+                      "home_listings",
+                      "commerce"
+                    ],
+                    "default": "home_listings"
                   },
                   "isActive": {
                     "type": "boolean",

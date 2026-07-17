@@ -1,0 +1,1 @@
+ALTER TABLE "property_segments" ADD COLUMN "feed_format" text DEFAULT 'home_listings' NOT NULL;

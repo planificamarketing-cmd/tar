@@ -4,6 +4,7 @@ import { useState } from 'react';
 import {
   FEATURED_LEVELS,
   PROPERTY_TYPES,
+  type FeedFormat,
   type SegmentFilters,
 } from '@tar/shared';
 import {
@@ -101,6 +102,9 @@ export function SegmentsSection() {
                 <span className="rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-semibold text-brand">
                   {seg.matchCount ?? 0} propiedades
                 </span>
+                <span className="rounded-full bg-canvas px-2 py-0.5 text-[11px] font-medium text-muted ring-1 ring-inset ring-line">
+                  {seg.feedFormat === 'commerce' ? 'Comercial' : 'Inmobiliario'}
+                </span>
                 <div className="ml-auto flex items-center gap-2">
                   <button
                     onClick={() => copyFeed(seg)}
@@ -169,6 +173,9 @@ function SegmentModal({
 
   const f = segment?.filters ?? {};
   const [name, setName] = useState(segment?.name ?? '');
+  const [feedFormat, setFeedFormat] = useState<FeedFormat>(
+    segment?.feedFormat ?? 'home_listings',
+  );
   const [operation, setOperation] = useState(f.operation ?? '');
   const [type, setType] = useState(f.type ?? '');
   const [minPrice, setMinPrice] = useState(f.minPrice != null ? String(f.minPrice) : '');
@@ -213,8 +220,13 @@ function SegmentModal({
       if (filters[k] === undefined) delete filters[k];
     });
     try {
-      if (isNew) await create.mutateAsync({ name: name.trim(), filters, isActive: true });
-      else await update.mutateAsync({ id: segment!.id, body: { name: name.trim(), filters } });
+      if (isNew)
+        await create.mutateAsync({ name: name.trim(), filters, feedFormat, isActive: true });
+      else
+        await update.mutateAsync({
+          id: segment!.id,
+          body: { name: name.trim(), filters, feedFormat },
+        });
       onClose();
     } catch {
       setError('No se pudo guardar. Revisa los datos.');
@@ -237,6 +249,21 @@ function SegmentModal({
           <div>
             <label className={labelCls}>Nombre</label>
             <input value={name} onChange={(e) => setName(e.target.value)} className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>Formato del feed</label>
+            <select
+              value={feedFormat}
+              onChange={(e) => setFeedFormat(e.target.value as FeedFormat)}
+              className={inputCls}
+            >
+              <option value="home_listings">Inmobiliario (Home Listings)</option>
+              <option value="commerce">Catálogo comercial</option>
+            </select>
+            <p className="mt-1 text-[11px] text-muted">
+              Usa <strong>Inmobiliario</strong> si tu catálogo en Meta es de bienes
+              raíces; <strong>Comercial</strong> para un catálogo genérico.
+            </p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

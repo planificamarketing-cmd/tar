@@ -9,6 +9,7 @@ import type {
   ApiKeyScope,
   ScriptPlacement,
   SegmentFilters,
+  FeedFormat,
   VideoOrientation,
 } from '@tar/shared';
 
@@ -24,6 +25,7 @@ export type PropertySegment = {
   name: string;
   feedToken: string;
   filters: SegmentFilters;
+  feedFormat: FeedFormat;
   isActive: boolean;
   matchCount?: number;
   createdAt: string;

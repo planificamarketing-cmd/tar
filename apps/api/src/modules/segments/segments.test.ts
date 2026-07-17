@@ -114,15 +114,30 @@ describe('Segmentos /api/v1/segments', () => {
 });
 
 describe('Feed público /api/v1/feeds/meta/:token', () => {
-  it('devuelve CSV con la propiedad que casa (sin auth)', async () => {
+  it('por defecto sirve el catálogo inmobiliario (Home Listings) sin auth', async () => {
     const res = await request(app).get(`/api/v1/feeds/meta/${feedToken}.csv`);
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toContain('text/csv');
+    const header = res.text.split('\n')[0]!;
+    expect(header.startsWith('home_listing_id,name,availability')).toBe(true);
+    expect(header).toContain('latitude');
+    expect(header).toContain('property_type');
+    expect(res.text).toContain('Depto en segmento de prueba');
+    expect(res.text).toContain('for_sale'); // operación venta
+    expect(res.text).toContain('apartment'); // departamento → apartment
+    expect(res.text).toContain('3000000 MXN');
+  });
+
+  it('cambiando el formato a comercial sirve el catálogo genérico', async () => {
+    await auth(request(app).patch(`/api/v1/segments/${segId}`), adminToken).send({
+      feedFormat: 'commerce',
+    });
+    const res = await request(app).get(`/api/v1/feeds/meta/${feedToken}.csv`);
+    expect(res.status).toBe(200);
     expect(res.text.split('\n')[0]).toBe(
       'id,title,description,availability,condition,price,link,image_link,brand',
     );
     expect(res.text).toContain('Depto en segmento de prueba');
-    expect(res.text).toContain('3000000 MXN');
   });
 
   it('token inválido → 404', async () => {

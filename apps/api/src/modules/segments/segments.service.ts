@@ -39,6 +39,7 @@ export async function createSegment(input: CreateSegmentInput) {
     .values({
       name: input.name,
       filters: input.filters,
+      feedFormat: input.feedFormat,
       isActive: input.isActive,
       feedToken: newFeedToken(),
     })
@@ -50,6 +51,7 @@ export async function updateSegment(id: string, input: UpdateSegmentInput) {
   const set: Record<string, unknown> = { updatedAt: new Date() };
   if (input.name !== undefined) set.name = input.name;
   if (input.filters !== undefined) set.filters = input.filters;
+  if (input.feedFormat !== undefined) set.feedFormat = input.feedFormat;
   if (input.isActive !== undefined) set.isActive = input.isActive;
   const [row] = await db
     .update(propertySegments)
@@ -129,10 +131,21 @@ export async function generateFeedCsv(token: string): Promise<string> {
       slug: properties.slug,
       title: properties.title,
       description: properties.description,
+      propertyType: properties.propertyType,
       priceSale: properties.priceSale,
       currencySale: properties.currencySale,
       priceRent: properties.priceRent,
       currencyRent: properties.currencyRent,
+      bedrooms: properties.bedrooms,
+      bathrooms: properties.bathrooms,
+      areaM2: properties.areaM2,
+      postalCode: properties.postalCode,
+      address: properties.address,
+      lat: sql<number | null>`ST_Y(${properties.geo}::geometry)`,
+      lng: sql<number | null>`ST_X(${properties.geo}::geometry)`,
+      estado: locations.estado,
+      municipio: locations.municipio,
+      colonia: locations.colonia,
     })
     .from(properties)
     .leftJoin(locations, eq(properties.locationId, locations.id))
@@ -153,25 +166,136 @@ export async function generateFeedCsv(token: string): Promise<string> {
   }
 
   const site = env.PUBLIC_SITE_URL.replace(/\/$/, '');
-  const header =
-    'id,title,description,availability,condition,price,link,image_link,brand';
-  const lines = rows.map((r) => {
-    const useRent = filters.operation === 'renta';
-    const price = useRent
+  const useRent = filters.operation === 'renta';
+  const priceOf = (r: FeedRow) =>
+    useRent
       ? r.priceRent && `${Number(r.priceRent)} ${r.currencyRent ?? 'MXN'}`
       : (r.priceSale && `${Number(r.priceSale)} ${r.currencySale ?? 'MXN'}`) ||
         (r.priceRent && `${Number(r.priceRent)} ${r.currencyRent ?? 'MXN'}`);
-    return [
+  const linkOf = (slug: string | null) =>
+    slug ? `${site}/propiedades/${slug}` : site;
+
+  return seg.feedFormat === 'commerce'
+    ? commerceCsv(rows, covers, priceOf, linkOf)
+    : homeListingsCsv(rows, covers, useRent, priceOf, linkOf);
+}
+
+type FeedRow = {
+  id: string;
+  slug: string | null;
+  title: string;
+  description: string | null;
+  propertyType: string;
+  priceSale: string | null;
+  currencySale: string | null;
+  priceRent: string | null;
+  currencyRent: string | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  areaM2: string | null;
+  postalCode: string | null;
+  address: string | null;
+  lat: number | null;
+  lng: number | null;
+  estado: string | null;
+  municipio: string | null;
+  colonia: string | null;
+};
+
+// Catálogo comercial genérico de Meta (Advantage+ / commerce).
+function commerceCsv(
+  rows: FeedRow[],
+  covers: Map<string, string>,
+  priceOf: (r: FeedRow) => string | null | undefined | false,
+  linkOf: (slug: string | null) => string,
+): string {
+  const header =
+    'id,title,description,availability,condition,price,link,image_link,brand';
+  const lines = rows.map((r) =>
+    [
       csv(r.id),
       csv(r.title),
       csv(r.description ?? r.title),
       csv('in stock'),
       csv('new'),
-      csv(price || '0 MXN'),
-      csv(r.slug ? `${site}/propiedades/${r.slug}` : site),
+      csv(priceOf(r) || '0 MXN'),
+      csv(linkOf(r.slug)),
       csv(covers.get(r.id) ?? ''),
       csv('TAR Internacional'),
-    ].join(',');
-  });
+    ].join(','),
+  );
+  return [header, ...lines].join('\n');
+}
+
+// Mapa de tipo de propiedad → property_type del catálogo inmobiliario de Meta.
+const META_PROPERTY_TYPE: Record<string, string> = {
+  casa: 'house',
+  departamento: 'apartment',
+  oficina: 'other',
+  local_comercial: 'other',
+  bodega_industrial: 'other',
+  terreno_industrial: 'land',
+  terreno: 'land',
+  edificio: 'multi_family',
+};
+
+// Catálogo inmobiliario de Meta (Home Listings). Campos específicos del vertical
+// de bienes raíces. Requiere lat/long (las propiedades disponibles siempre las
+// tienen: publicar exige geo).
+function homeListingsCsv(
+  rows: FeedRow[],
+  covers: Map<string, string>,
+  useRent: boolean,
+  priceOf: (r: FeedRow) => string | null | undefined | false,
+  linkOf: (slug: string | null) => string,
+): string {
+  const header = [
+    'home_listing_id',
+    'name',
+    'availability',
+    'description',
+    'price',
+    'url',
+    'image[0].url',
+    'latitude',
+    'longitude',
+    'address.addr1',
+    'address.city',
+    'address.region',
+    'address.postal_code',
+    'address.country',
+    'property_type',
+    'listing_type',
+    'num_beds',
+    'num_baths',
+    'area_size',
+    'area_unit',
+  ].join(',');
+  const availability = useRent ? 'for_rent' : 'for_sale';
+  const listingType = useRent ? 'for_rent_by_agent' : 'for_sale_by_agent';
+  const lines = rows.map((r) =>
+    [
+      csv(r.id),
+      csv(r.title),
+      csv(availability),
+      csv(r.description ?? r.title),
+      csv(priceOf(r) || '0 MXN'),
+      csv(linkOf(r.slug)),
+      csv(covers.get(r.id) ?? ''),
+      csv(r.lat ?? ''),
+      csv(r.lng ?? ''),
+      csv(r.address ?? r.colonia ?? ''),
+      csv(r.municipio ?? ''),
+      csv(r.estado ?? ''),
+      csv(r.postalCode ?? ''),
+      csv('MX'),
+      csv(META_PROPERTY_TYPE[r.propertyType] ?? 'other'),
+      csv(listingType),
+      csv(r.bedrooms ?? ''),
+      csv(r.bathrooms ?? ''),
+      csv(r.areaM2 != null ? Number(r.areaM2) : ''),
+      csv('sqm'),
+    ].join(','),
+  );
   return [header, ...lines].join('\n');
 }

@@ -401,6 +401,9 @@ export const propertySegments = pgTable('property_segments', {
   name: text('name').notNull(),
   feedToken: text('feed_token').notNull().unique(),
   filters: jsonb('filters').notNull(),
+  // Formato del feed: 'home_listings' (catálogo inmobiliario de Meta) o
+  // 'commerce' (catálogo comercial genérico).
+  feedFormat: text('feed_format').notNull().default('home_listings'),
   isActive: boolean('is_active').notNull().default(true),
   ...timestamps,
 });
