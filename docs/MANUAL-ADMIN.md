@@ -22,10 +22,16 @@ personas **no técnicas**: explica, pantalla por pantalla, qué se puede hacer y
   desde **Usuarios** (ver §6). No hay autoservicio de "olvidé mi contraseña".
 
 ### Roles (qué puede hacer cada quien)
-| Rol | Puede |
-|---|---|
-| **Administrador** | Todo: propiedades, leads, **usuarios**, **ajustes/integraciones**, **scripts**. |
-| **Editor** | El día a día: propiedades, imágenes y leads. **No** ve Usuarios, Ajustes ni Scripts. |
+El panel se **adapta al rol**: oculta las secciones y los botones que esa persona
+no puede usar. Además, cada acción sensible está protegida también en el servidor:
+aunque el botón no se muestre, la operación se rechaza si el rol no tiene permiso.
+
+| Rol | Para quién | Puede |
+|---|---|---|
+| **Administrador** | Dirección / responsable del sistema | Todo: propiedades, leads, **usuarios**, **ajustes/integraciones**, **scripts**. |
+| **Editor** | Equipo que carga y publica inmuebles | El día a día: propiedades, imágenes y leads. **No** ve Usuarios, Ajustes ni Scripts. |
+| **Ventas** | Asesores comerciales | Atiende los **leads** (da seguimiento y cambia etapas). **Consulta** el catálogo, pero **no lo edita**. |
+| **Lector** | Consulta / auditoría | **Solo lectura**: ve propiedades y leads, sin modificar nada. |
 
 ---
 
@@ -182,8 +188,8 @@ externos conectados (ver Integraciones).
 
 En **Usuarios** gestionas quién entra al panel.
 
-- **Alta:** botón **Nuevo usuario** → nombre, correo, rol (Administrador/Editor) y
-  contraseña.
+- **Alta:** botón **Nuevo usuario** → nombre, correo, rol (Administrador / Editor /
+  Ventas / Lector) y contraseña.
 - **Editar:** cambia el nombre, el rol, **restablece la contraseña** (déjala en blanco
   para no cambiarla) o activa/desactiva la cuenta.
 - **Desactivar (baja):** la cuenta deja de poder entrar y se le cierran las sesiones
