@@ -26,6 +26,7 @@ import { NPlus } from '@/components/icons';
 import { WebhookModal } from '@/components/webhook-modal';
 import { WebhookPayloadReference } from '@/components/webhook-payloads';
 import { ApiKeyModal } from '@/components/api-key-modal';
+import { SegmentsSection } from '@/components/segments-section';
 
 const sectionCls = 'rounded-2xl border border-line bg-white p-6 shadow-sm';
 const overline =
@@ -392,6 +393,8 @@ export default function SettingsPage() {
           cifrada.
         </p>
       </section>
+
+      <SegmentsSection />
 
       {webhookModal && (
         <WebhookModal

@@ -8,7 +8,19 @@ import type {
   WebhookEvent,
   ApiKeyScope,
   ScriptPlacement,
+  SegmentFilters,
 } from '@tar/shared';
+
+export type PropertySegment = {
+  id: string;
+  name: string;
+  feedToken: string;
+  filters: SegmentFilters;
+  isActive: boolean;
+  matchCount?: number;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type PropertyListItem = {
   id: string;

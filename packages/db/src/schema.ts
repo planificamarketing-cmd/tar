@@ -367,3 +367,16 @@ export const marketingScripts = pgTable('marketing_scripts', {
   isActive: boolean('is_active').notNull().default(true),
   ...timestamps,
 });
+
+// --- property_segments (segmentación para catálogos de Meta) ---
+// Conjunto con nombre de filtros estrictos sobre el catálogo. Cada segmento
+// expone un feed CSV público (catálogo de Meta) en una URL con token no
+// adivinable; Meta lo jala. Solo incluye propiedades publicadas que casan.
+export const propertySegments = pgTable('property_segments', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  feedToken: text('feed_token').notNull().unique(),
+  filters: jsonb('filters').notNull(),
+  isActive: boolean('is_active').notNull().default(true),
+  ...timestamps,
+});

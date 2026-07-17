@@ -190,6 +190,11 @@ export async function apiUpload<T>(
   return (await res.json()) as T;
 }
 
+// URL absoluta de un endpoint (para enlaces copiables, p. ej. el feed de Meta).
+export function apiUrl(path: string): string {
+  return `${getApiBase()}${path}`;
+}
+
 // Descarga un binario (p. ej. el flyer PNG) con auth Bearer. Mismo manejo de
 // 401 → refresh → reintento una vez. Devuelve el Blob.
 export async function apiBlob(path: string, _retry = false): Promise<Blob> {

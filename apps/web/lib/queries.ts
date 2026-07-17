@@ -23,6 +23,8 @@ import type {
   UpdateWebhookSubscriptionInput,
   UserRole,
   ParsedMapsLocation,
+  CreateSegmentInput,
+  UpdateSegmentInput,
 } from '@tar/shared';
 import { apiBlob, apiFetch, apiUpload } from './api';
 import type {
@@ -37,6 +39,7 @@ import type {
   PropertyDetail,
   PropertyImage,
   PropertyListItem,
+  PropertySegment,
   User,
   WebhookDelivery,
   WebhookSubscription,
@@ -685,5 +688,40 @@ export function useDashboard() {
         recentLeads: leads.slice(0, 5),
       };
     },
+  });
+}
+
+// ── Segmentos (Meta) ─────────────────────────────────────────────────────────
+export function useSegments() {
+  return useQuery({
+    queryKey: ['segments'],
+    queryFn: () => apiFetch<{ data: PropertySegment[] }>('/segments'),
+    select: (r) => r.data,
+  });
+}
+
+export function useCreateSegment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateSegmentInput) =>
+      apiFetch('/segments', { method: 'POST', body: JSON.stringify(body) }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['segments'] }),
+  });
+}
+
+export function useUpdateSegment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: UpdateSegmentInput }) =>
+      apiFetch(`/segments/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['segments'] }),
+  });
+}
+
+export function useDeleteSegment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiFetch(`/segments/${id}`, { method: 'DELETE' }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['segments'] }),
   });
 }

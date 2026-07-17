@@ -28,6 +28,9 @@
       "name": "Webhooks"
     },
     {
+      "name": "Segmentos"
+    },
+    {
       "name": "Sistema"
     }
   ],
@@ -3260,6 +3263,382 @@
           },
           "403": {
             "description": "Scope insuficiente"
+          }
+        }
+      }
+    },
+    "/api/v1/segments": {
+      "get": {
+        "tags": [
+          "Segmentos"
+        ],
+        "summary": "Listar segmentos (con conteo de coincidencias)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ data: Segment[] }"
+          },
+          "400": {
+            "description": "Validación / petición inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Segmentos"
+        ],
+        "summary": "Crear segmento",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "filters": {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "enum": [
+                          "venta",
+                          "renta"
+                        ]
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "casa",
+                          "departamento",
+                          "oficina",
+                          "local_comercial",
+                          "bodega_industrial",
+                          "terreno_industrial",
+                          "edificio",
+                          "terreno"
+                        ]
+                      },
+                      "minPrice": {
+                        "type": "number",
+                        "nullable": true,
+                        "minimum": 0
+                      },
+                      "maxPrice": {
+                        "type": "number",
+                        "nullable": true,
+                        "minimum": 0
+                      },
+                      "minBedrooms": {
+                        "type": "integer",
+                        "nullable": true,
+                        "minimum": 0
+                      },
+                      "estado": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "municipio": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "colonia": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "featured": {
+                        "type": "string",
+                        "enum": [
+                          "normal",
+                          "destacada",
+                          "premium"
+                        ]
+                      },
+                      "remate": {
+                        "type": "boolean"
+                      }
+                    },
+                    "default": {},
+                    "additionalProperties": false
+                  },
+                  "isActive": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Creado"
+          },
+          "400": {
+            "description": "Validación / petición inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/segments/{id}": {
+      "patch": {
+        "tags": [
+          "Segmentos"
+        ],
+        "summary": "Actualizar segmento",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "filters": {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "enum": [
+                          "venta",
+                          "renta"
+                        ]
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "casa",
+                          "departamento",
+                          "oficina",
+                          "local_comercial",
+                          "bodega_industrial",
+                          "terreno_industrial",
+                          "edificio",
+                          "terreno"
+                        ]
+                      },
+                      "minPrice": {
+                        "type": "number",
+                        "nullable": true,
+                        "minimum": 0
+                      },
+                      "maxPrice": {
+                        "type": "number",
+                        "nullable": true,
+                        "minimum": 0
+                      },
+                      "minBedrooms": {
+                        "type": "integer",
+                        "nullable": true,
+                        "minimum": 0
+                      },
+                      "estado": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "municipio": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "colonia": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "featured": {
+                        "type": "string",
+                        "enum": [
+                          "normal",
+                          "destacada",
+                          "premium"
+                        ]
+                      },
+                      "remate": {
+                        "type": "boolean"
+                      }
+                    },
+                    "default": {},
+                    "additionalProperties": false
+                  },
+                  "isActive": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Actualizado"
+          },
+          "400": {
+            "description": "Validación / petición inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Segmentos"
+        ],
+        "summary": "Eliminar segmento",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Eliminado"
+          },
+          "400": {
+            "description": "Validación / petición inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/feeds/meta/{token}.csv": {
+      "get": {
+        "tags": [
+          "Segmentos"
+        ],
+        "summary": "Feed CSV de catálogo de Meta (público, por token)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "token",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Feed CSV",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Token no válido o segmento inactivo"
           }
         }
       }

@@ -18,6 +18,7 @@ export const CAPABILITIES = [
   'users:manage',
   'webhooks:manage',
   'scripts:manage',
+  'segments:manage',
 ] as const;
 export const capabilitySchema = z.enum(CAPABILITIES);
 export type Capability = z.infer<typeof capabilitySchema>;
@@ -42,6 +43,7 @@ export const ROLE_CAPABILITIES: Record<UserRole, readonly Capability[]> = {
   ventas: ['properties:read', 'leads:read', 'leads:write'],
   lector: ['properties:read', 'leads:read'],
 };
+// Nota: 'segments:manage' es admin-only (queda cubierto por admin: todas).
 
 // ¿El rol tiene la capacidad? Única función de decisión (API + panel la usan).
 export function roleCan(role: UserRole, cap: Capability): boolean {

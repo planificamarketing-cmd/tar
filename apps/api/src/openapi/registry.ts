@@ -27,6 +27,8 @@ import {
   bulkLeadsSchema,
   testWebhookSchema,
   testEventSchema,
+  createSegmentSchema,
+  updateSegmentSchema,
 } from '@tar/shared';
 
 extendZodWithOpenApi(z);
@@ -681,6 +683,58 @@ export function buildOpenApiDocument() {
   });
 
   // ── Salud ──
+  // ── Segmentos para Meta (solo admin: segments:manage) ──
+  const segmentIdParam = z.object({ id: z.string().uuid() });
+  registry.registerPath({
+    method: 'get',
+    path: '/api/v1/segments',
+    tags: ['Segmentos'],
+    summary: 'Listar segmentos (con conteo de coincidencias)',
+    security: userSec,
+    responses: { 200: ok('{ data: Segment[] }'), ...errResponses },
+  });
+  registry.registerPath({
+    method: 'post',
+    path: '/api/v1/segments',
+    tags: ['Segmentos'],
+    summary: 'Crear segmento',
+    security: userSec,
+    request: { body: json(createSegmentSchema) },
+    responses: { 201: ok('Creado'), ...errResponses },
+  });
+  registry.registerPath({
+    method: 'patch',
+    path: '/api/v1/segments/{id}',
+    tags: ['Segmentos'],
+    summary: 'Actualizar segmento',
+    security: userSec,
+    request: { params: segmentIdParam, body: json(updateSegmentSchema) },
+    responses: { 200: ok('Actualizado'), ...errResponses },
+  });
+  registry.registerPath({
+    method: 'delete',
+    path: '/api/v1/segments/{id}',
+    tags: ['Segmentos'],
+    summary: 'Eliminar segmento',
+    security: userSec,
+    request: { params: segmentIdParam },
+    responses: { 204: ok('Eliminado'), ...errResponses },
+  });
+  registry.registerPath({
+    method: 'get',
+    path: '/api/v1/feeds/meta/{token}.csv',
+    tags: ['Segmentos'],
+    summary: 'Feed CSV de catálogo de Meta (público, por token)',
+    request: { params: z.object({ token: z.string() }) },
+    responses: {
+      200: {
+        description: 'Feed CSV',
+        content: { 'text/csv': { schema: { type: 'string' } } },
+      },
+      404: { description: 'Token no válido o segmento inactivo' },
+    },
+  });
+
   registry.registerPath({
     method: 'get',
     path: '/health',
@@ -705,6 +759,7 @@ export function buildOpenApiDocument() {
       { name: 'Media' },
       { name: 'Leads' },
       { name: 'Webhooks' },
+      { name: 'Segmentos' },
       { name: 'Sistema' },
     ],
   });
