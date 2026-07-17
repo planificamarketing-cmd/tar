@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
-import { requireAuth, requireRole } from '../../middleware/require-auth';
+import { requireAuth, requirePermission } from '../../middleware/require-auth';
 import * as c from './webhooks.controller';
 
 export const webhooksRouter: Router = Router();
 
-const admin = [requireAuth, requireRole('admin')] as const;
+const admin = [requireAuth, requirePermission('webhooks:manage')] as const;
 
 // Suscripciones salientes.
 webhooksRouter.get('/subscriptions', ...admin, c.listSubscriptions);

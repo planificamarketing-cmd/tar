@@ -30,7 +30,12 @@ const geography = customType<{ data: string }>({
 const tsvector = customType<{ data: string }>({ dataType: () => 'tsvector' });
 
 // --- Enums ---
-export const userRole = pgEnum('user_role', ['admin', 'editor']);
+export const userRole = pgEnum('user_role', [
+  'admin',
+  'editor',
+  'ventas',
+  'lector',
+]);
 export const propertyType = pgEnum('property_type', [
   'casa',
   'departamento',

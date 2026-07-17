@@ -2,6 +2,7 @@
 // La validación de TODA entrada de API vive aquí (la guía del proyecto, regla de oro 4; PRD §5).
 
 export * from './enums';
+export * from './rbac';
 export * from './common';
 export * from './auth';
 export * from './user';

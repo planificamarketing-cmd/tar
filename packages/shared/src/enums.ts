@@ -2,7 +2,9 @@
 // Fuente única para validación Zod (API) y tipados del frontend.
 import { z } from 'zod';
 
-export const USER_ROLES = ['admin', 'editor'] as const;
+// Roles operativos de la inmobiliaria (PRD §4.1/§5.6). Los permisos finos por
+// módulo viven en el mapa de capacidades (rbac.ts); aquí solo la identidad del rol.
+export const USER_ROLES = ['admin', 'editor', 'ventas', 'lector'] as const;
 export const userRoleSchema = z.enum(USER_ROLES);
 export type UserRole = z.infer<typeof userRoleSchema>;
 

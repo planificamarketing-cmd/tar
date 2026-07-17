@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
-import { requireAuth, requireRole } from '../../middleware/require-auth';
+import { requireAuth, requirePermission } from '../../middleware/require-auth';
 import * as c from './leads.controller';
 
 export const leadsRouter: Router = Router();
@@ -19,9 +19,10 @@ const leadLimiter = rateLimit({
 // Público.
 leadsRouter.post('/', leadLimiter, c.create);
 
-// Admin/editor.
-const staff = [requireAuth, requireRole('admin', 'editor')] as const;
-leadsRouter.get('/', ...staff, c.list);
-leadsRouter.post('/bulk', ...staff, c.bulk);
-leadsRouter.get('/:id', ...staff, c.detail);
-leadsRouter.patch('/:id', ...staff, c.update);
+// Prospectos: lectura (admin/editor/ventas/lector) vs escritura (admin/editor/ventas).
+const canRead = [requireAuth, requirePermission('leads:read')] as const;
+const canWrite = [requireAuth, requirePermission('leads:write')] as const;
+leadsRouter.get('/', ...canRead, c.list);
+leadsRouter.post('/bulk', ...canWrite, c.bulk);
+leadsRouter.get('/:id', ...canRead, c.detail);
+leadsRouter.patch('/:id', ...canWrite, c.update);

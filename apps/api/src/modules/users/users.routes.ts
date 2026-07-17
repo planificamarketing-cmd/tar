@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { requireAuth, requireRole } from '../../middleware/require-auth';
+import { requireAuth, requirePermission } from '../../middleware/require-auth';
 import * as c from './users.controller';
 
-// Gestión de operadores (§5.6) — SOLO administradores.
+// Gestión de operadores (§5.6) — capacidad users:manage (solo admin).
 export const usersRouter: Router = Router();
 
-const adminOnly = [requireAuth, requireRole('admin')] as const;
+const adminOnly = [requireAuth, requirePermission('users:manage')] as const;
 
 usersRouter.get('/', ...adminOnly, c.list);
 usersRouter.post('/', ...adminOnly, c.create);

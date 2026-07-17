@@ -1,5 +1,5 @@
 import type { RequestHandler } from 'express';
-import type { UserRole } from '@tar/shared';
+import { type Capability, roleCan, type UserRole } from '@tar/shared';
 import { verifyAccessToken, type AccessClaims } from '../lib/jwt';
 import { ApiError } from './error-handler';
 
@@ -37,6 +37,22 @@ export const requireRole =
       return;
     }
     if (!roles.includes(req.user.role)) {
+      next(new ApiError(403, 'forbidden', 'No tienes permisos para esta acción.'));
+      return;
+    }
+    next();
+  };
+
+// requirePermission — exige que el rol del usuario tenga la capacidad indicada
+// (RBAC de grano fino, mapa único en @tar/shared). Cada ruta declara su capacidad.
+export const requirePermission =
+  (capability: Capability): RequestHandler =>
+  (req, _res, next) => {
+    if (!req.user) {
+      next(new ApiError(401, 'unauthorized', 'No autenticado.'));
+      return;
+    }
+    if (!roleCan(req.user.role, capability)) {
       next(new ApiError(403, 'forbidden', 'No tienes permisos para esta acción.'));
       return;
     }
