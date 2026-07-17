@@ -71,6 +71,8 @@ En **Propiedades** ves **todas** las propiedades, en cualquier estado (incluidos
   Pausado) y **buscador** por título.
 - Cada fila muestra: miniatura, título, ubicación, tipo, precio, estatus y fecha.
 - La etiqueta dorada **Premium**/**Destacada** indica las propiedades resaltadas.
+- La etiqueta roja **En remate** marca las propiedades en remate. El botón
+  **En remate** (junto a *Archivadas*) filtra para ver solo esas.
 
 ### 4.2 Acciones rápidas (desde la tabla)
 - **Publicar** (solo en borradores): pasa la propiedad a *disponible* (ver requisitos
@@ -116,14 +118,25 @@ En la ficha de la propiedad, sección **Imágenes**:
 - Pasa el cursor sobre una foto para **marcarla como Portada** o **Eliminarla**. La
   portada es la que se ve en los listados.
 
-### 4.6 Amenidades y destaque
+### 4.6 Características y metraje
+- **Características:** recámaras, baños, medios baños, estacionamientos, construcción
+  y terreno (m²).
+- **Metraje de oficina:** cuando el **tipo** es *Oficina*, aparecen además
+  **Superficie útil (m²)** y **Superficie rentable (m²)**.
+- **Áreas exteriores (con metraje):** según el tipo de inmueble se muestran
+  **Patio**, **Terraza** y **Balcón** (departamento, casa y oficina) y **Jardín**
+  (casa y departamento). Cada una es opcional y lleva sus m².
+
+### 4.7 Amenidades, destaque y remate
 - **Amenidades:** marca las que apliquen (alberca, elevador, seguridad…). Si te falta
   una, escríbela en **"Agregar amenidad"** y pulsa **Agregar**: se añade al catálogo y
   queda seleccionada. La próxima vez ya aparece para todas las propiedades.
 - **Destaque:** Normal, **Destacada** o **Premium**. Premium y Destacada **suben** en
   el orden del listado público.
+- **En remate:** casilla independiente del destaque. Aplica a **venta y renta** y
+  convive con cualquier estatus; muestra la etiqueta **En remate** en el listado.
 
-### 4.7 Publicar
+### 4.8 Publicar
 Pulsa **Publicar** (en la ficha o en la tabla). Para publicar, la propiedad debe tener:
 
 - ✅ **Ubicación** fijada en el mapa.
@@ -136,7 +149,7 @@ web (slug)**, que es **permanente** (no cambia, para no perder posicionamiento).
 > hace visible al público. En una propiedad ya publicada, usa el selector de **estatus
 > comercial** para cambiar entre Disponible/Apartado/Vendido/etc.
 
-### 4.8 Acciones en la tabla de propiedades
+### 4.9 Acciones en la tabla de propiedades
 En cada fila (columna **Acciones**):
 
 - **Publicar** (si es borrador) / **A borrador** (si está publicada, la despublica y la
