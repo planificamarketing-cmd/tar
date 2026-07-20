@@ -20,10 +20,27 @@
   - **Verificado en vivo** contra la API dev: `/`, `/propiedades` (filtros combinados cambian el conteo: 11 → venta+depto 1, polanco 1, renta 6), `/propiedades/[slug]` 200 + 404 correcto, **lead 201 / honeypot 400**, `/nosotros`,`/contacto`,`/aviso-privacidad`,`/sitemap.xml`,`/robots.txt` 200. `typecheck`+`lint`+**`build` (18 rutas)** en verde.
   - **Webhook del formulario enriquecido** (`lead.created`): el `POST /leads` público ya disparaba el webhook; ahora el payload incluye el **lead completo** + un **snapshot de la propiedad** con los campos del Grupo A/B (m² útil/rentable, patio/terraza/balcón/jardín, remate, precio, ubicación, `url`, portada), como `property.published`. El CRM/n8n recibe todo sin 2ª llamada. Reflejado en el panel (Ajustes → Integraciones → referencia de payloads). Prueba de contrato + verificado por la bitácora de entregas. **El flujo requiere suscribir un webhook a `lead.created`** en Ajustes → Integraciones (apuntando a la URL del CRM/n8n).
 
-## Siguiente (máx. 3)
-1. **Pulido de Fase B**: revisar el sitio en el navegador (WSL) con el cliente; ajustar textos/datos de contacto reales (footer, contacto, aviso), y publicar inventario real (los 105 importados están en `borrador` sin geo → al llegar coords se publican y aparecen en el sitio). Actualizar `MANUAL`/reportes con la Fase B.
-2. **FASE QA (§9)**: aprovisionar el servidor Ubuntu cuando el cliente dé accesos; staging; **Lighthouse** sobre `/propiedades` móvil hasta cumplir métricas (LCP<2.5s, INP<100ms, CLS<0.10, TTFB<600ms, Perf≥90); E2E Playwright (login admin, publicar, buscar, enviar lead); caché HTTP/ETag en GET públicos.
-3. **FASE Lanzamiento**: deploy prod (Caddy/TLS), respaldos 3 capas, corrida definitiva del importador (antes de cancelar EasyBroker), capacitación, entrega.
+## Siguiente — BACKLOG DE PULIDO FASE B (acordado con el cliente 2026-07-19; retomar aquí)
+> El usuario pidió avanzar con TODO esto en la próxima sesión. Orden sugerido: Grupo 2 (código) → capturar datos del Grupo 1 → Grupo 3 (QA).
+
+**Grupo 1 — Depende del cliente (no es código; bloquea "cerrar", no "avanzar"):**
+- Datos reales de contacto en footer, `/contacto` y `/aviso-privacidad` (hoy son los del prototipo, ficticios) + **texto oficial del aviso** (el PDF era escaneado).
+- **Publicar inventario real**: 105 propiedades importadas siguen en `borrador` sin `geo` (publicar exige ubicación) → el sitio se ve vacío (solo ~11 de muestra `disponible`). Geocodificar o fijar pines a mano.
+- Dominio definitivo + SendGrid (correo de aviso de lead) + `NEXT_PUBLIC_MEDIA_HOSTNAME` en prod.
+
+**Grupo 2 — Pulido de código que YO puedo hacer ya (por impacto):**
+1. **`error.tsx`** del sitio público (falta; solo hay `not-found.tsx`). El PRD pide not-found **y error** personalizadas. Rápido.
+2. **Revalidación on-demand al publicar/cambiar estatus** (falta): hoy una propiedad recién publicada tarda hasta **1 h** (ISR `revalidate=3600`) en aparecer. Usar `revalidatePath('/propiedades', …)` disparado al publicar/despublicar/cambiar estatus. Alto valor.
+3. **Scripts de marketing en `<head>` real (SSR)**: hoy `marketing-scripts.tsx` los inyecta tras la hidratación (client-side, `useEffect`). Para GTM/consent que quieran cargar antes, renderizar los de placement `head` en el `<head>` en SSR.
+4. **Feedback de carga en filtros del listado**: la navegación SSR al cambiar filtros no muestra estado "cargando"; añadir `loading.tsx` o indicador.
+5. **Menores**: paginación con "…" si hay muchas páginas; **imagen OG por defecto** (home/listado no llevan imagen social); JSON-LD `Organization`/`WebSite` en la home; subir el tope de 40 páginas del `sitemap` si el inventario crece.
+
+**Grupo 3 — FASE QA (§9), formalmente fuera de Fase B pero necesario para "calidad de entrega":**
+- **Lighthouse** sobre `/propiedades` móvil en staging hasta cumplir métricas (LCP<2.5s, INP<100ms, CLS<0.10, TTFB<600ms, Perf≥90). Atención al LCP: el hero de la home carga una imagen grande.
+- **Caché HTTP + ETag** en los GET públicos.
+- **E2E Playwright** (login admin, publicar, buscar con filtros, enviar lead). Requiere el servidor Ubuntu (accesos del cliente).
+
+**Después:** FASE Lanzamiento — deploy prod (Caddy/TLS), respaldos 3 capas, corrida definitiva del importador (antes de cancelar EasyBroker), capacitación, entrega.
 
 ## Decisiones / desviaciones respecto al PRD
 - **2026-07-19: diseño APROBADO por el cliente** → Fase B desbloqueada.
