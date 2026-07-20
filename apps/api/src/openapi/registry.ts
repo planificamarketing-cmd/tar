@@ -177,6 +177,14 @@ export function buildOpenApiDocument() {
     responses: { 200: ok('{ data: Script[] }'), ...errResponses },
   });
   registry.registerPath({
+    method: 'get',
+    path: '/api/v1/scripts/public',
+    tags: ['Scripts'],
+    summary:
+      'Scripts de marketing ACTIVOS agrupados por placement (head/body/footer). Público: lo consume el sitio para inyectarlos (§7.1).',
+    responses: { 200: ok('{ data: { head: Script[], body: Script[], footer: Script[] } }') },
+  });
+  registry.registerPath({
     method: 'post',
     path: '/api/v1/scripts',
     tags: ['Scripts'],
@@ -447,8 +455,8 @@ export function buildOpenApiDocument() {
     method: 'get',
     path: '/api/v1/locations',
     tags: ['Propiedades'],
-    summary: 'Catálogo de ubicaciones existentes (autocompletado de estado/municipio/colonia)',
-    security: sec,
+    summary:
+      'Catálogo de ubicaciones existentes (autocompletado de estado/municipio/colonia). Público: lo consume el backoffice y el buscador del sitio (§7.1).',
     responses: { 200: ok('{ data: { estado, municipio, colonia }[] }') },
   });
 

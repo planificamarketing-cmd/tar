@@ -666,6 +666,19 @@
         }
       }
     },
+    "/api/v1/scripts/public": {
+      "get": {
+        "tags": [
+          "Scripts"
+        ],
+        "summary": "Scripts de marketing ACTIVOS agrupados por placement (head/body/footer). Público: lo consume el sitio para inyectarlos (§7.1).",
+        "responses": {
+          "200": {
+            "description": "{ data: { head: Script[], body: Script[], footer: Script[] } }"
+          }
+        }
+      }
+    },
     "/api/v1/scripts/{id}": {
       "get": {
         "tags": [
@@ -2123,12 +2136,7 @@
         "tags": [
           "Propiedades"
         ],
-        "summary": "Catálogo de ubicaciones existentes (autocompletado de estado/municipio/colonia)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "summary": "Catálogo de ubicaciones existentes (autocompletado de estado/municipio/colonia). Público: lo consume el backoffice y el buscador del sitio (§7.1).",
         "responses": {
           "200": {
             "description": "{ data: { estado, municipio, colonia }[] }"
