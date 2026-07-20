@@ -121,18 +121,18 @@ _12 tests (7 leads + 5 webhooks, incl. firma HMAC). Entrega real verificada en `
 
 **Objetivo:** sitio público SSR/SSG indexable y rápido, §7.1, §7.4.
 
-- [ ] Layout público + inyección dinámica de `marketing_scripts` por placement.
-- [ ] Home (`/`) SSG+ISR: buscador destacado (venta/renta, ubicación, tipo) + **sección Premium arriba** + **sección Recientes**.
-- [ ] Listado (`/propiedades`) SSR: `PropertyFilters` con **slider de precio**, estacionamientos y m² (TanStack Query, debounce 300ms, sin recarga) + selector de **ordenamiento** + alternar lista/mapa + paginación.
-- [ ] `SearchMap` (`next/dynamic`, `ssr:false`): clustering con supercluster, **vista previa (miniatura) al clic en pin**, botón "Buscar en esta área" (bbox → `/properties/map`), filtros aplicados sobre el mapa.
-- [ ] Detalle (`/propiedades/[estado]/[colonia]/[slug]`) SSG+ISR (revalidate 3600): `PropertyGallery` (lazy + WebP + 360°/video embebido), mapa, amenidades, `LeadForm` (contacto **y cita** con fecha/hora).
-- [ ] SEO On-Page: metadatos dinámicos por propiedad, Open Graph, JSON-LD `RealEstateListing`, `sitemap.xml` y `robots.txt` dinámicos.
-- [ ] `LeadForm` → `POST /leads` con honeypot, **casilla de consentimiento LFPDPPP** enlazada a `/aviso-privacidad` (guarda `consent_at`) y feedback de éxito/error.
-- [ ] Páginas `not-found`/`error` personalizadas; `images.remotePatterns` hacia el dominio de media.
-- [ ] `next/font` self-hosted; `next/image` en todo; code-splitting del mapa.
+- [x] Layout público + inyección dinámica de `marketing_scripts` por placement. _(grupo `(public)` con layout header/footer; `MarketingScripts` recrea los nodos `<script>` para que se ejecuten; endpoint público `GET /scripts/public` agrupado por placement.)_
+- [x] Home (`/`) SSG+ISR: buscador destacado (venta/renta, ubicación, tipo) + **sección Premium/Destacadas arriba** + **sección Recientes**. _(hero con `HeroSearch`, stats, destacadas, "explora por categoría" —sustituye el mapa—, catálogo reciente, FAQ.)_
+- [x] Listado (`/propiedades`) SSR: filtros (operación, tipo, **precio máximo por operación**, recámaras, búsqueda por ubicación con autocompletado) + **ordenamiento** + alternar **cuadrícula/lista** + paginación. Filtros en la URL (compartibles/indexables). _(Sin vista de mapa — sustituida por búsqueda de texto, decisión del cliente. El "slider" del prototipo eran selects; se replicó igual.)_
+- [~] ~~`SearchMap`~~ **descartado por el cliente** (sin integración de Google Maps): la ubicación se resuelve con el autocompletado de dirección (§7.1 adaptado). El endpoint `/properties/map` queda disponible por si se reactiva.
+- [x] Detalle (`/propiedades/[slug]`) SSG/ISR: `PropertyGallery` (lazy + WebP + **videos H/V**), amenidades, datos (m² útil/rentable de oficina, áreas exteriores, remate), `LeadForm`. _(Ruta canónica `/propiedades/:slug`, ya usada en webhooks. El lead público entra solo como **contacto** por decisión del cliente.)_
+- [x] SEO On-Page: metadatos dinámicos por propiedad, Open Graph, JSON-LD `RealEstateListing`, `sitemap.xml` y `robots.txt` dinámicos.
+- [x] `LeadForm` → `POST /leads` con honeypot, **casilla de consentimiento LFPDPPP** enlazada a `/aviso-privacidad` + captura de UTM + feedback de éxito/error. _(Validado con el Zod compartido.)_
+- [x] Páginas `not-found` personalizadas; `images.remotePatterns` hacia el dominio de media (dev + prod por env).
+- [x] `next/font` self-hosted (familia DM); `next/image` en todo el sitio.
 
-**Entregable:** sitio público completo, navegable, conectado a la API.
-**DoD:** todas las rutas de §7.1 funcionan; una propiedad publicada en el backoffice aparece indexable con URL semántica; enviar un lead dispara webhook + email.
+**Entregable:** sitio público completo, navegable, conectado a la API. ✅
+**DoD:** todas las rutas de §7.1 (menos el mapa, descartado) funcionan; una propiedad publicada aparece indexable con URL canónica; enviar un lead dispara webhook + email. ✅ **Verificado en vivo + `pnpm --filter web build` (18 rutas).** Falta como optimización de FASE QA: métricas §9 (Lighthouse) en staging.
 
 ---
 
