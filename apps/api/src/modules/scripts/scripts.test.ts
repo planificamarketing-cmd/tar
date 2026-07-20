@@ -88,6 +88,18 @@ describe('Scripts /api/v1/scripts', () => {
     expect(res.body.data.every((s: { placement: string }) => s.placement === 'head')).toBe(true);
   });
 
+  it('GET /scripts/public es público y agrupa activos por placement', async () => {
+    const res = await request(app).get('/api/v1/scripts/public');
+    expect(res.status).toBe(200);
+    const { head, body, footer } = res.body.data;
+    expect(Array.isArray(head)).toBe(true);
+    expect(Array.isArray(body)).toBe(true);
+    expect(Array.isArray(footer)).toBe(true);
+    const s = head.find((x: { id: string }) => x.id === scriptId);
+    expect(s).toMatchObject({ name: 'Test GA4' });
+    expect(s.code).toContain('gtag');
+  });
+
   it('desactiva el script (PATCH isActive=false)', async () => {
     const res = await auth(
       request(app).patch(`/api/v1/scripts/${scriptId}`),
@@ -95,6 +107,13 @@ describe('Scripts /api/v1/scripts', () => {
     ).send({ isActive: false });
     expect(res.status).toBe(200);
     expect(res.body.data.isActive).toBe(false);
+  });
+
+  it('GET /scripts/public excluye los inactivos', async () => {
+    const res = await request(app).get('/api/v1/scripts/public');
+    expect(res.status).toBe(200);
+    const all = [...res.body.data.head, ...res.body.data.body, ...res.body.data.footer];
+    expect(all.some((s: { id: string }) => s.id === scriptId)).toBe(false);
   });
 
   it('elimina el script (204) y luego 404', async () => {

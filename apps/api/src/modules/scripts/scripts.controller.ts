@@ -12,6 +12,11 @@ export async function list(req: Request, res: Response): Promise<void> {
   res.json({ data: await svc.listScripts(q) });
 }
 
+// Público: scripts activos agrupados por placement para inyectarlos en el sitio.
+export async function publicList(_req: Request, res: Response): Promise<void> {
+  res.json({ data: await svc.getActiveScriptsByPlacement() });
+}
+
 export async function detail(req: Request, res: Response): Promise<void> {
   const id = uuidSchema.parse(req.params.id);
   res.json({ data: await svc.getScript(id) });

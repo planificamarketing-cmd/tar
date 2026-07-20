@@ -108,9 +108,10 @@ describe('Ubicaciones /api/v1/locations', () => {
     expect(rows[0]!.municipio).toBe(MUNICIPIO);
   });
 
-  it('GET /locations exige sesión (401)', async () => {
+  it('GET /locations es público (200 sin sesión) para el autocompletado del sitio', async () => {
     const res = await request(app).get('/api/v1/locations');
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.data)).toBe(true);
   });
 
   it('GET /locations devuelve el catálogo con la colonia canónica', async () => {

@@ -27,6 +27,32 @@ export async function listScripts(q: ScriptQuery) {
   );
 }
 
+// Scripts activos agrupados por placement, para la inyección en el sitio público
+// (§7.1). Público (sin auth): solo expone name + code de los activos, ya que su
+// finalidad es ejecutarse en el navegador de cualquier visitante.
+export async function getActiveScriptsByPlacement() {
+  const rows = await db
+    .select({
+      id: marketingScripts.id,
+      name: marketingScripts.name,
+      placement: marketingScripts.placement,
+      code: marketingScripts.code,
+    })
+    .from(marketingScripts)
+    .where(eq(marketingScripts.isActive, true))
+    .orderBy(asc(marketingScripts.createdAt));
+
+  const grouped: Record<'head' | 'body' | 'footer', { id: string; name: string; code: string }[]> = {
+    head: [],
+    body: [],
+    footer: [],
+  };
+  for (const r of rows) {
+    grouped[r.placement].push({ id: r.id, name: r.name, code: r.code });
+  }
+  return grouped;
+}
+
 export async function getScript(id: string) {
   const [row] = await db
     .select()
