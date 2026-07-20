@@ -4,20 +4,65 @@ import type { CreateLeadInput, LeadQuery, UpdateLeadInput } from '@tar/shared';
 import { ApiError } from '../../middleware/error-handler';
 import { emitEvent } from '../../lib/events';
 import { sendNewLeadNotification } from '../../lib/mailer';
+import { getPropertyByIdAdmin } from '../properties/properties.service';
+import { env } from '../../env';
 
-const { leads, leadEvents, properties } = schema;
+const { leads, leadEvents } = schema;
+
+const num = (v: unknown) => (v == null ? null : Number(v));
+
+// Snapshot compacto de la propiedad para el webhook `lead.created`: incluye los
+// datos útiles (precio, m² —incl. útil/rentable de oficina y áreas exteriores—,
+// remate, ubicación, enlace y portada) para que el consumidor (n8n, CRM…) reciba
+// el contexto completo del formulario sin una 2ª llamada. Misma filosofía que
+// `property.published`.
+type PropertyDetailShape = Awaited<ReturnType<typeof getPropertyByIdAdmin>>;
+function buildLeadPropertySnapshot(d: PropertyDetailShape): Record<string, unknown> {
+  return {
+    id: d.id,
+    slug: d.slug,
+    url: d.slug ? `${env.PUBLIC_SITE_URL}/propiedades/${d.slug}` : null,
+    title: d.title,
+    propertyType: d.propertyType,
+    status: d.status,
+    featured: d.featured,
+    price: {
+      sale: num(d.priceSale),
+      saleCurrency: d.currencySale,
+      rent: num(d.priceRent),
+      rentCurrency: d.currencyRent,
+    },
+    bedrooms: d.bedrooms,
+    bathrooms: d.bathrooms,
+    halfBathrooms: d.halfBathrooms,
+    parking: d.parking,
+    areaM2: num(d.areaM2),
+    lotM2: num(d.lotM2),
+    usableAreaM2: num(d.usableAreaM2),
+    rentableAreaM2: num(d.rentableAreaM2),
+    patioM2: num(d.patioM2),
+    terraceM2: num(d.terraceM2),
+    balconyM2: num(d.balconyM2),
+    gardenM2: num(d.gardenM2),
+    isRemate: d.isRemate,
+    location: d.location,
+    cover: d.images.find((i) => i.isCover)?.urlWebp ?? d.images[0]?.urlWebp ?? null,
+  };
+}
 
 // POST /leads — creación pública. El consentimiento LFPDPPP ya viene validado
 // por Zod (literal true) → se sella `consent_at`.
 export async function createLead(input: CreateLeadInput) {
   let propertyTitle: string | null = null;
+  let property: Record<string, unknown> | null = null;
   if (input.propertyId) {
-    const [p] = await db
-      .select({ title: properties.title })
-      .from(properties)
-      .where(eq(properties.id, input.propertyId))
-      .limit(1);
-    propertyTitle = p?.title ?? null;
+    try {
+      const detail = await getPropertyByIdAdmin(input.propertyId);
+      propertyTitle = detail.title;
+      property = buildLeadPropertySnapshot(detail);
+    } catch {
+      // Propiedad no encontrada / borrada: el lead se registra igual, sin snapshot.
+    }
   }
 
   const [lead] = await db
@@ -37,12 +82,22 @@ export async function createLead(input: CreateLeadInput) {
     })
     .returning();
 
+  // Payload enriquecido: lead completo + snapshot de la propiedad asociada.
   await emitEvent('lead.created', {
     id: lead!.id,
     name: lead!.name,
     email: lead!.email,
+    phone: lead!.phone,
+    message: lead!.message,
     type: lead!.type,
+    preferredAt: lead!.preferredAt,
+    source: lead!.source,
+    utm: lead!.utm,
+    status: lead!.status,
+    consentAt: lead!.consentAt,
+    createdAt: lead!.createdAt,
     propertyId: lead!.propertyId,
+    property,
   });
   await sendNewLeadNotification({
     name: lead!.name,

@@ -39,8 +39,42 @@ const EXAMPLES: Record<string, unknown> = {
     id: '2a9b…',
     name: 'María López',
     email: 'maria@example.com',
-    type: 'cita',
+    phone: '+52 55 1234 5678',
+    message: 'Me interesa esta propiedad.',
+    type: 'contacto',
+    preferredAt: null,
+    source: 'ficha: Casa en Polanco',
+    utm: { utm_source: 'facebook', utm_campaign: 'remates' },
+    status: 'nuevo',
+    consentAt: '2026-07-19T05:14:54.908Z',
+    createdAt: '2026-07-19T05:14:54.908Z',
     propertyId: '7f3c…',
+    // Snapshot de la propiedad del formulario (null si el lead no trae propiedad).
+    property: {
+      id: '7f3c…',
+      slug: 'casa-en-polanco',
+      url: 'https://tu-sitio.com/propiedades/casa-en-polanco',
+      title: 'Casa en Polanco',
+      propertyType: 'oficina',
+      status: 'disponible',
+      featured: 'premium',
+      price: { sale: null, saleCurrency: null, rent: 30000, rentCurrency: 'MXN' },
+      bedrooms: 0,
+      bathrooms: 2,
+      halfBathrooms: 0,
+      parking: 4,
+      areaM2: 120,
+      lotM2: null,
+      usableAreaM2: 100,
+      rentableAreaM2: 110,
+      patioM2: null,
+      terraceM2: 20,
+      balconyM2: null,
+      gardenM2: null,
+      isRemate: true,
+      location: { estado: 'Ciudad de México', municipio: 'Cuauhtémoc', colonia: 'Polanco' },
+      cover: 'https://tu-sitio.com/media/…/portada.webp',
+    },
   },
   'lead.status_changed': { id: '2a9b…', from: 'nuevo', to: 'cita_agendada' },
 };
@@ -97,9 +131,11 @@ export function WebhookPayloadReference() {
         ))}
       </div>
       <p className="text-xs text-muted">
-        Nota: <span className="font-mono">property.published</span> incluye los datos
-        completos (fotos, descripción, precio, amenidades). Para los demás eventos,
-        puedes obtener el detalle completo con una llamada pública (sin login) a{' '}
+        Nota: <span className="font-mono">property.published</span> y{' '}
+        <span className="font-mono">lead.created</span> incluyen datos enriquecidos
+        (precio, m² —incl. útil/rentable y áreas exteriores—, remate, ubicación,
+        portada). Para los eventos ligeros puedes obtener el detalle completo con una
+        llamada pública (sin login) a{' '}
         <span className="font-mono">/api/v1/properties/&#123;slug&#125;</span>.
       </p>
     </div>
