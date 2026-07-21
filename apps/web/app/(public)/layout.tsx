@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { SiteHeader } from '@/components/public/site-header';
 import { SiteFooter } from '@/components/public/site-footer';
 import { MarketingScripts } from '@/components/public/marketing-scripts';
+import { MarketingScriptsHead } from '@/components/public/marketing-scripts-head';
 import { fetchPublicScripts } from '@/lib/public';
 
 const SITE_URL = process.env.PUBLIC_SITE_URL ?? 'http://localhost:3000';
@@ -25,6 +26,7 @@ export default async function PublicLayout({ children }: { children: React.React
   const scripts = await fetchPublicScripts();
   return (
     <>
+      <MarketingScriptsHead scripts={scripts} />
       <MarketingScripts scripts={scripts} />
       <SiteHeader />
       <main className="min-h-screen">{children}</main>

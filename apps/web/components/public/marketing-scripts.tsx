@@ -3,12 +3,15 @@
 import { useEffect } from 'react';
 import type { PublicScripts } from '@/lib/public';
 
-// Inyección de los scripts de marketing por placement (§6.5/§7.1). El código se
-// captura en el backoffice como snippet arbitrario (GTM, píxeles, chats). Insertar
-// vía innerHTML NO ejecuta los <script>, así que recreamos cada nodo <script>
-// para que corra — igual que lo haría el navegador con el snippet original.
-// Se inyecta una sola vez por id (guarda global anti-duplicado, también en Strict
-// Mode de desarrollo).
+// Inyección de los scripts de marketing con placement `body`/`footer` (§6.5/§7.1).
+// El código se captura en el backoffice como snippet arbitrario (GTM, píxeles,
+// chats). Insertar vía innerHTML NO ejecuta los <script>, así que recreamos cada
+// nodo <script> para que corra — igual que lo haría el navegador con el snippet
+// original. Se inyecta una sola vez por id (guarda global anti-duplicado, también
+// en Strict Mode de desarrollo).
+//
+// Los de placement `head` NO se manejan aquí: se sirven en SSR
+// (`MarketingScriptsHead`) para que carguen antes de la hidratación.
 
 const injected = new Set<string>();
 
@@ -49,7 +52,6 @@ export function MarketingScripts({ scripts }: { scripts: PublicScripts }) {
         }
       }
     };
-    run(scripts.head, document.head);
     run(scripts.body, document.body, true);
     run(scripts.footer, document.body);
   }, [scripts]);
