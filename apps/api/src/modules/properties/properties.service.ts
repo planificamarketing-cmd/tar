@@ -23,6 +23,7 @@ import type {
 import { ApiError } from '../../middleware/error-handler';
 import { env } from '../../env';
 import { emitEvent } from '../../lib/events';
+import { revalidatePublicSite, propertyRevalidatePaths } from '../../lib/revalidate';
 import { toMxn } from '../../lib/pricing';
 import { generateUniqueSlug, slugify } from '../../lib/slug';
 import { normalizeText } from '../../lib/text';
@@ -710,6 +711,8 @@ export async function publishProperty(id: string) {
 
   const detail = await getPropertyByIdAdmin(id);
   await emitEvent('property.published', buildPublishedPayload(detail, slug));
+  // Refresca el sitio público al instante (best-effort, no bloquea la respuesta).
+  void revalidatePublicSite(propertyRevalidatePaths(slug));
   return detail;
 }
 
@@ -719,7 +722,7 @@ export async function updateStatus(
   status: (typeof PUBLIC_STATUSES)[number] | string,
 ) {
   const [p] = await db
-    .select({ id: properties.id, status: properties.status })
+    .select({ id: properties.id, status: properties.status, slug: properties.slug })
     .from(properties)
     .where(and(eq(properties.id, id), isNull(properties.deletedAt)))
     .limit(1);
@@ -738,6 +741,7 @@ export async function updateStatus(
     from: p.status,
     to: status,
   });
+  void revalidatePublicSite(propertyRevalidatePaths(p.slug));
   return getPropertyByIdAdmin(id);
 }
 
@@ -773,7 +777,7 @@ export async function restoreProperty(id: string) {
 // POST /properties/:id/unpublish — regresa una propiedad publicada a borrador.
 export async function unpublishProperty(id: string) {
   const [p] = await db
-    .select({ id: properties.id, status: properties.status })
+    .select({ id: properties.id, status: properties.status, slug: properties.slug })
     .from(properties)
     .where(and(eq(properties.id, id), isNull(properties.deletedAt)))
     .limit(1);
@@ -784,6 +788,8 @@ export async function unpublishProperty(id: string) {
     .set({ status: 'borrador', publishedAt: null, updatedAt: new Date() })
     .where(eq(properties.id, id));
   await emitEvent('property.status_changed', { id, from: p.status, to: 'borrador' });
+  // Al despublicar, la ficha deja de existir (404) y desaparece del listado.
+  void revalidatePublicSite(propertyRevalidatePaths(p.slug));
   return getPropertyByIdAdmin(id);
 }
 

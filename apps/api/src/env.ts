@@ -23,6 +23,10 @@ const EnvSchema = z
     MEDIA_BASE_URL: z.string().url().default('http://localhost:4000/media'),
     // Base del sitio público (para armar el enlace de la propiedad en los webhooks).
     PUBLIC_SITE_URL: z.string().url().default('http://localhost:3000'),
+    // Secreto compartido con el sitio Next.js para disparar la revalidación
+    // on-demand (ISR) al publicar/despublicar/cambiar estatus. Sin él, la
+    // revalidación queda desactivada y el sitio se refresca solo por tiempo.
+    REVALIDATE_SECRET: z.string().optional(),
     USD_MXN_RATE: z.coerce.number().positive().default(18.5),
     SENDGRID_API_KEY: z.string().optional(),
     LEADS_NOTIFY_TO: z.string().email().optional(),
