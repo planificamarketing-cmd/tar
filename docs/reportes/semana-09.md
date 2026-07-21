@@ -34,3 +34,17 @@ Con el **diseño aprobado por el cliente**, iniciar y entregar el núcleo del si
 ## Lo que sigue
 - Revisión del sitio con el cliente y captura de datos reales.
 - FASE QA: medición de rendimiento (Lighthouse) en un ambiente de staging sobre el servidor del cliente, pruebas E2E y afinación.
+
+---
+
+## Actualización — pulido de Fase B (corte 2026-07-20)
+Tras entregar el núcleo, se completó el **pulido de código que no depende del cliente**:
+- **Actualización instantánea del sitio**: cuando en el panel se **publica, despublica o cambia el estatus** de una propiedad, el sitio público se refresca **al momento** (antes podía tardar hasta 1 hora en reflejarse). Verificado en vivo de extremo a extremo.
+- **Página de error propia**: además del "no encontrado", el sitio ahora muestra una página de error con la imagen de marca y opción de reintentar, en lugar de una pantalla genérica.
+- **Códigos de marketing más tempranos**: los scripts de la cabecera (analítica/consentimiento como Google Tag Manager) se cargan antes, para medir desde el primer instante de la visita.
+- **Señal de carga en el catálogo**: al cambiar filtros aparece una vista de "cargando" para que el usuario perciba respuesta inmediata.
+- **Detalles**: paginación con "…" cuando hay muchas páginas; **imagen para redes sociales por defecto** en todas las páginas (antes solo la tenía la ficha); y datos estructurados de la **empresa** y del **sitio** en la portada (mejoran cómo Google entiende y muestra el sitio).
+
+**Evidencia**: probado en vivo — un cambio de estatus desde la API disparó el refresco del sitio (registro `sitio público revalidado` y respuesta `200` del sitio); la imagen social se genera como PNG real (1200×630); los datos estructurados aparecen en la portada. **112 pruebas de backend en verde**; compilación de producción del sitio correcta.
+
+**Pendiente del cliente** para activar el refresco instantáneo en producción: definir una clave compartida (`REVALIDATE_SECRET`) en la configuración del servidor (misma en API y sitio). Mientras tanto el sitio se actualiza solo por tiempo.
