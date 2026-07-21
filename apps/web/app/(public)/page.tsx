@@ -31,8 +31,47 @@ export default async function HomePage() {
   const total = featured.meta.total;
   const heroImg = featured.data.find((p) => p.cover)?.cover?.urlWebp;
 
+  // JSON-LD de sitio: identifica la organización y habilita el sitelinks searchbox
+  // de Google. Sin teléfono/dirección aún (datos del cliente pendientes de confirmar).
+  const siteUrl = process.env.PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'RealEstateAgent',
+        '@id': `${siteUrl}/#organization`,
+        name: 'TAR Internacional',
+        url: siteUrl,
+        logo: `${siteUrl}/brand/tar-logo.webp`,
+        description:
+          'Grupo inmobiliario con más de 60 años de experiencia. Departamentos, oficinas, locales y bodegas en venta y renta en las mejores zonas de México.',
+        areaServed: 'MX',
+      },
+      {
+        '@type': 'WebSite',
+        '@id': `${siteUrl}/#website`,
+        url: siteUrl,
+        name: 'TAR Internacional',
+        publisher: { '@id': `${siteUrl}/#organization` },
+        inLanguage: 'es-MX',
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: {
+            '@type': 'EntryPoint',
+            urlTemplate: `${siteUrl}/propiedades?q={search_term_string}`,
+          },
+          'query-input': 'required name=search_term_string',
+        },
+      },
+    ],
+  };
+
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* ── HERO ── */}
       <section className="bg-canvas px-4 pb-6 pt-[84px] lg:px-6 lg:pb-7 lg:pt-[100px]">
         <div className="mx-auto max-w-[1400px]">

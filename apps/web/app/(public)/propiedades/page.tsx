@@ -21,6 +21,21 @@ function one(v: string | string[] | undefined): string {
   return Array.isArray(v) ? (v[0] ?? '') : (v ?? '');
 }
 
+// Ventana de paginación con elipsis: primera, última, la actual y sus vecinas.
+// Ej. (7, 20) → [1, '…', 6, 7, 8, '…', 20]. Evita cientos de botones si el
+// inventario crece. '…' se renderiza como separador no clicable.
+function paginationRange(current: number, total: number): (number | '…')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const out: (number | '…')[] = [1];
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+  if (start > 2) out.push('…');
+  for (let n = start; n <= end; n++) out.push(n);
+  if (end < total - 1) out.push('…');
+  out.push(total);
+  return out;
+}
+
 export default async function ListingsPage({
   searchParams,
 }: {
@@ -124,21 +139,31 @@ export default async function ListingsPage({
           {/* Paginación */}
           {totalPages > 1 && (
             <div className="mt-9 flex flex-wrap justify-center gap-1.5">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
-                <Link
-                  key={n}
-                  href={pageHref(n)}
-                  scroll
-                  className={[
-                    'flex h-10 w-10 items-center justify-center rounded-full border text-[13px]',
-                    n === page
-                      ? 'border-navy bg-navy font-semibold text-white'
-                      : 'border-line bg-white text-ink hover:border-navy',
-                  ].join(' ')}
-                >
-                  {n}
-                </Link>
-              ))}
+              {paginationRange(page, totalPages).map((n, i) =>
+                n === '…' ? (
+                  <span
+                    key={`gap-${i}`}
+                    className="flex h-10 w-10 items-center justify-center text-[13px] text-muted"
+                  >
+                    …
+                  </span>
+                ) : (
+                  <Link
+                    key={n}
+                    href={pageHref(n)}
+                    scroll
+                    aria-current={n === page ? 'page' : undefined}
+                    className={[
+                      'flex h-10 w-10 items-center justify-center rounded-full border text-[13px]',
+                      n === page
+                        ? 'border-navy bg-navy font-semibold text-white'
+                        : 'border-line bg-white text-ink hover:border-navy',
+                    ].join(' ')}
+                  >
+                    {n}
+                  </Link>
+                ),
+              )}
             </div>
           )}
         </div>
