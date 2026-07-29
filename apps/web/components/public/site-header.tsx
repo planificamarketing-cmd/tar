@@ -104,7 +104,7 @@ export function SiteHeader() {
 
       {/* Mobile menu */}
       {menu && (
-        <div className="flex flex-col gap-1 border-t border-[#F1F1F0] bg-white/98 px-5 pb-5 pt-2.5 shadow-[0_14px_30px_rgba(15,27,45,0.10)] backdrop-blur lg:hidden">
+        <div className="flex flex-col gap-1 border-t border-[#F1F1F0] bg-white/95 px-5 pb-5 pt-2.5 shadow-[0_14px_30px_rgba(15,27,45,0.10)] backdrop-blur lg:hidden">
           {NAV.map((it) => (
             <Link
               key={it.href}

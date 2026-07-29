@@ -92,7 +92,7 @@ export function HeroSearch({ suggestions }: { suggestions: Suggestion[] }) {
   };
 
   return (
-    <div className="rounded-2xl bg-white/98 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.2)] backdrop-blur sm:p-6">
+    <div className="rounded-2xl bg-white/95 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.2)] backdrop-blur sm:p-6">
       {/* Encabezado + toggle de operación (segmentado, claro) */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="font-display text-xl font-bold text-navy">
