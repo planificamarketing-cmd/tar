@@ -170,6 +170,126 @@ export default function PropertiesPage() {
         : 'bg-white text-ink ring-1 ring-inset ring-line hover:bg-canvas'
     }`;
 
+  // Control de estatus (badge o selector) reutilizado por la tabla (escritorio) y
+  // las tarjetas (móvil).
+  type Row = (typeof rows)[number];
+  const statusControl = (p: Row) =>
+    !canWrite || archived || p.status === 'borrador' ? (
+      <PropertyStatusBadge status={p.status} />
+    ) : (
+      <select
+        value={p.status}
+        disabled={busy}
+        onChange={(e) =>
+          void changeStatus.mutate({
+            id: p.id,
+            status: e.target.value as CommercialStatus,
+          })
+        }
+        className="rounded-lg border border-line bg-white px-2 py-1 text-xs font-semibold text-ink outline-none focus:border-brand"
+      >
+        {COMMERCIAL_STATUSES.map((s) => (
+          <option key={s} value={s}>
+            {PROPERTY_STATUS_META[s].label}
+          </option>
+        ))}
+      </select>
+    );
+
+  // Acciones por propiedad, reutilizadas por tabla y tarjetas.
+  const rowActions = (p: Row) => (
+    <>
+      {!archived && (
+        <FlyerButton
+          id={p.id}
+          name={p.title}
+          className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:bg-canvas disabled:opacity-50"
+        />
+      )}
+      {!canWrite ? (
+        <Link
+          href={`/admin/propiedades/${p.id}`}
+          className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:bg-canvas"
+        >
+          Ver
+        </Link>
+      ) : archived ? (
+        <button
+          disabled={busy}
+          onClick={() => void restore.mutate(p.id)}
+          className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:border-green-300 hover:text-green-700 disabled:opacity-50"
+        >
+          Restaurar
+        </button>
+      ) : (
+        <>
+          {p.status === 'borrador' ? (
+            <button
+              disabled={busy}
+              onClick={() => void publish.mutate(p.id)}
+              className="rounded-lg bg-brand px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50"
+            >
+              Publicar
+            </button>
+          ) : (
+            <button
+              disabled={busy}
+              onClick={() => void unpublish.mutate(p.id)}
+              className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:bg-canvas disabled:opacity-50"
+              title="Regresar a borrador (despublicar)"
+            >
+              A borrador
+            </button>
+          )}
+          <Link
+            href={`/admin/propiedades/${p.id}`}
+            className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:bg-canvas"
+          >
+            Editar
+          </Link>
+          <button
+            disabled={busy}
+            onClick={() => void duplicate.mutate(p.id)}
+            className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:bg-canvas disabled:opacity-50"
+            title="Duplicar como borrador"
+          >
+            Duplicar
+          </button>
+          <button
+            disabled={busy}
+            onClick={() => void onDelete(p.id, p.title)}
+            className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-muted transition hover:border-red-300 hover:text-red-600 disabled:opacity-50"
+          >
+            Archivar
+          </button>
+        </>
+      )}
+    </>
+  );
+
+  const cover = (p: Row, big = false) => (
+    <div
+      className={`relative ${
+        big ? 'h-16 w-20' : 'h-11 w-14'
+      } shrink-0 overflow-hidden rounded-lg bg-canvas ring-1 ring-line`}
+    >
+      {p.cover ? (
+        <Image
+          src={mediaUrl(p.cover.urlThumb)}
+          alt=""
+          fill
+          sizes="80px"
+          unoptimized
+          className="object-cover"
+        />
+      ) : (
+        <span className="flex h-full w-full items-center justify-center text-[10px] text-muted">
+          sin foto
+        </span>
+      )}
+    </div>
+  );
+
   return (
     <div>
       <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -269,8 +389,8 @@ export default function PropertiesPage() {
         >
           En remate
         </button>
-        <form onSubmit={submitSearch} className="ml-auto flex items-center">
-          <div className="relative">
+        <form onSubmit={submitSearch} className="flex w-full items-center sm:ml-auto sm:w-auto">
+          <div className="relative w-full sm:w-auto">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">
               <NSearch s={15} />
             </span>
@@ -278,7 +398,7 @@ export default function PropertiesPage() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Buscar por título…"
-              className="w-60 rounded-xl border border-line bg-white py-2 pl-9 pr-3 text-sm text-ink outline-none transition focus:border-brand"
+              className="w-full rounded-xl border border-line bg-white py-2 pl-9 pr-3 text-sm text-ink outline-none transition focus:border-brand sm:w-60"
             />
           </div>
         </form>
@@ -363,7 +483,54 @@ export default function PropertiesPage() {
             {archived ? 'No hay propiedades archivadas.' : 'No hay propiedades con este filtro.'}
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/* Móvil / tablet: tarjetas (la tabla es incómoda en pantallas chicas) */}
+          <ul className="divide-y divide-line lg:hidden">
+            {rows.map((p) => (
+              <li
+                key={p.id}
+                className={`p-4 ${selected.has(p.id) ? 'bg-brand-soft/30' : ''}`}
+              >
+                <div className="flex gap-3">
+                  {canWrite && (
+                    <input
+                      type="checkbox"
+                      checked={selected.has(p.id)}
+                      onChange={() => toggleOne(p.id)}
+                      className="mt-1 h-4 w-4 shrink-0 rounded border-line text-brand focus:ring-brand"
+                      aria-label={`Seleccionar ${p.title}`}
+                    />
+                  )}
+                  {cover(p, true)}
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      href={`/admin/propiedades/${p.id}`}
+                      className="flex flex-wrap items-center gap-1.5 font-medium text-navy"
+                    >
+                      <span className="truncate">{p.title}</span>
+                      <FeaturedBadge level={p.featured} />
+                      <RemateBadge isRemate={p.isRemate} />
+                    </Link>
+                    <div className="mt-0.5 truncate text-xs text-muted">
+                      {p.location?.colonia
+                        ? `${p.location.colonia}, ${p.location.municipio ?? ''}`
+                        : 'Sin ubicación'}
+                    </div>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+                      <span>{PROPERTY_TYPE_LABEL[p.propertyType]}</span>
+                      <span className="font-mono text-ink">{priceLabel(p)}</span>
+                      <span>{formatDate(p.createdAt)}</span>
+                    </div>
+                    <div className="mt-2">{statusControl(p)}</div>
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">{rowActions(p)}</div>
+              </li>
+            ))}
+          </ul>
+
+          {/* Escritorio: tabla */}
+          <div className="hidden overflow-x-auto lg:block">
           <table className="w-full min-w-[880px] text-left text-sm">
             <thead className="border-b border-line bg-canvas/60 text-xs uppercase tracking-wide text-muted">
               <tr>
@@ -407,22 +574,7 @@ export default function PropertiesPage() {
                   )}
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
-                      <div className="relative h-11 w-14 shrink-0 overflow-hidden rounded-lg bg-canvas ring-1 ring-line">
-                        {p.cover ? (
-                          <Image
-                            src={mediaUrl(p.cover.urlThumb)}
-                            alt=""
-                            fill
-                            sizes="56px"
-                            unoptimized
-                            className="object-cover"
-                          />
-                        ) : (
-                          <span className="flex h-full w-full items-center justify-center text-[10px] text-muted">
-                            sin foto
-                          </span>
-                        )}
-                      </div>
+                      {cover(p)}
                       <div className="min-w-0">
                         <Link
                           href={`/admin/propiedades/${p.id}`}
@@ -444,104 +596,17 @@ export default function PropertiesPage() {
                     {PROPERTY_TYPE_LABEL[p.propertyType]}
                   </td>
                   <td className="px-5 py-3.5 font-mono text-ink">{priceLabel(p)}</td>
-                  <td className="px-5 py-3.5">
-                    {!canWrite || archived || p.status === 'borrador' ? (
-                      <PropertyStatusBadge status={p.status} />
-                    ) : (
-                      <select
-                        value={p.status}
-                        disabled={busy}
-                        onChange={(e) =>
-                          void changeStatus.mutate({
-                            id: p.id,
-                            status: e.target.value as CommercialStatus,
-                          })
-                        }
-                        className="rounded-lg border border-line bg-white px-2 py-1 text-xs font-semibold text-ink outline-none focus:border-brand"
-                      >
-                        {COMMERCIAL_STATUSES.map((s) => (
-                          <option key={s} value={s}>
-                            {PROPERTY_STATUS_META[s].label}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </td>
+                  <td className="px-5 py-3.5">{statusControl(p)}</td>
                   <td className="px-5 py-3.5 text-muted">{formatDate(p.createdAt)}</td>
                   <td className="px-5 py-3.5">
-                    <div className="flex items-center justify-end gap-2">
-                      {!archived && (
-                        <FlyerButton
-                          id={p.id}
-                          name={p.title}
-                          className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:bg-canvas disabled:opacity-50"
-                        />
-                      )}
-                      {!canWrite ? (
-                        <Link
-                          href={`/admin/propiedades/${p.id}`}
-                          className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:bg-canvas"
-                        >
-                          Ver
-                        </Link>
-                      ) : archived ? (
-                        <button
-                          disabled={busy}
-                          onClick={() => void restore.mutate(p.id)}
-                          className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:border-green-300 hover:text-green-700 disabled:opacity-50"
-                        >
-                          Restaurar
-                        </button>
-                      ) : (
-                        <>
-                          {p.status === 'borrador' ? (
-                            <button
-                              disabled={busy}
-                              onClick={() => void publish.mutate(p.id)}
-                              className="rounded-lg bg-brand px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50"
-                            >
-                              Publicar
-                            </button>
-                          ) : (
-                            <button
-                              disabled={busy}
-                              onClick={() => void unpublish.mutate(p.id)}
-                              className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:bg-canvas disabled:opacity-50"
-                              title="Regresar a borrador (despublicar)"
-                            >
-                              A borrador
-                            </button>
-                          )}
-                          <Link
-                            href={`/admin/propiedades/${p.id}`}
-                            className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:bg-canvas"
-                          >
-                            Editar
-                          </Link>
-                          <button
-                            disabled={busy}
-                            onClick={() => void duplicate.mutate(p.id)}
-                            className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:bg-canvas disabled:opacity-50"
-                            title="Duplicar como borrador"
-                          >
-                            Duplicar
-                          </button>
-                          <button
-                            disabled={busy}
-                            onClick={() => void onDelete(p.id, p.title)}
-                            className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-muted transition hover:border-red-300 hover:text-red-600 disabled:opacity-50"
-                          >
-                            Archivar
-                          </button>
-                        </>
-                      )}
-                    </div>
+                    <div className="flex items-center justify-end gap-2">{rowActions(p)}</div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
           </div>
+          </>
         )}
       </div>
 

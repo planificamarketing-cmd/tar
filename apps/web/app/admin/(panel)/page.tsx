@@ -238,7 +238,8 @@ export default function DashboardPage() {
           ) : !data?.recentLeads.length ? (
             <div className="py-10 text-center text-sm text-muted">Aún no hay leads.</div>
           ) : (
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[440px] text-sm">
               <thead>
                 <tr className="border-b border-line">
                   {['Cliente', 'Interés', 'Fecha', 'Estado'].map((h) => (
@@ -271,6 +272,7 @@ export default function DashboardPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </div>

@@ -125,7 +125,7 @@ export function ImageUploader({
                   Portada
                 </span>
               )}
-              <div className="absolute inset-x-0 bottom-0 flex justify-between gap-1 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 transition group-hover:opacity-100">
+              <div className="absolute inset-x-0 bottom-0 flex justify-between gap-1 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-100 transition lg:opacity-0 lg:group-hover:opacity-100">
                 {!img.isCover && (
                   <button
                     type="button"

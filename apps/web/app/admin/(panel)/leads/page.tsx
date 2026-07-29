@@ -137,7 +137,54 @@ export default function LeadsPage() {
             No hay leads con este filtro.
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/* Móvil / tablet: tarjetas */}
+          <ul className="divide-y divide-line lg:hidden">
+            {rows.map((lead) => (
+              <li
+                key={lead.id}
+                className={`flex items-start gap-3 p-4 ${
+                  selected.has(lead.id) ? 'bg-brand-soft/30' : ''
+                }`}
+              >
+                {canWrite && (
+                  <input
+                    type="checkbox"
+                    checked={selected.has(lead.id)}
+                    onChange={() => toggleOne(lead.id)}
+                    className="mt-1 h-4 w-4 shrink-0 rounded border-line text-brand focus:ring-brand"
+                    aria-label={`Seleccionar ${lead.name}`}
+                  />
+                )}
+                <button
+                  type="button"
+                  onClick={() => router.push(`/admin/leads/${lead.id}`)}
+                  className="flex min-w-0 flex-1 items-start gap-3 text-left"
+                >
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft font-display text-[12px] font-bold text-brand">
+                    {initials(lead.name)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate font-medium text-navy">{lead.name}</span>
+                      <LeadStatusBadge status={lead.status} />
+                    </div>
+                    <div className="mt-0.5 truncate text-xs text-ink">{lead.email}</div>
+                    {lead.phone && (
+                      <div className="truncate text-xs text-muted">{lead.phone}</div>
+                    )}
+                    <div className="mt-1 flex flex-wrap gap-x-3 text-xs text-muted">
+                      <span>{LEAD_TYPE_LABEL[lead.type]}</span>
+                      <span>{formatDate(lead.createdAt)}</span>
+                    </div>
+                  </div>
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          {/* Escritorio: tabla */}
+          <div className="hidden overflow-x-auto lg:block">
           <table className="w-full min-w-[720px] text-left text-sm">
             <thead className="border-b border-line bg-canvas/60 text-xs uppercase tracking-wide text-muted">
               <tr>
@@ -203,6 +250,7 @@ export default function LeadsPage() {
             </tbody>
           </table>
           </div>
+          </>
         )}
       </div>
 

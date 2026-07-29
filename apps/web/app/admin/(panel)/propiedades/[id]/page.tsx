@@ -95,7 +95,7 @@ export default function EditPropertyPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <header className="mb-6 flex items-center justify-between gap-4">
+      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <Link
             href="/admin/propiedades"
@@ -103,7 +103,7 @@ export default function EditPropertyPage() {
           >
             ← Propiedades
           </Link>
-          <h1 className="mt-1 truncate font-display text-3xl text-navy">
+          <h1 className="mt-1 truncate font-display text-2xl text-navy sm:text-3xl">
             {prop.title}
           </h1>
           <div className="mt-1.5 flex items-center gap-2">
@@ -111,7 +111,7 @@ export default function EditPropertyPage() {
             <RemateBadge isRemate={prop.isRemate} />
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
           <FlyerButton
             id={id}
             name={prop.title}

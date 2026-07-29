@@ -195,7 +195,7 @@ export function WebhookModal({
           </div>
         )}
 
-        <div className="mt-6 flex items-center justify-between gap-3">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
           <button
             onClick={() => void sendTest()}
             disabled={testing}

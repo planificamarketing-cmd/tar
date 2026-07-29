@@ -169,7 +169,71 @@ export default function UsersPage() {
             No hay usuarios con este filtro.
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/* Móvil / tablet: tarjetas */}
+          <ul className="divide-y divide-line lg:hidden">
+            {data.data.map((u) => (
+              <li key={u.id} className="flex items-start gap-3 p-4">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft font-display text-[12px] font-bold text-brand">
+                  {initials(u.name)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="truncate font-medium text-navy">
+                      {u.name}
+                      {u.id === me?.id && (
+                        <span className="ml-1 text-[11px] font-normal text-muted">(tú)</span>
+                      )}
+                    </span>
+                    <span
+                      className="inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-semibold"
+                      style={
+                        u.isActive
+                          ? { backgroundColor: '#DCFCE7', color: '#16A34A' }
+                          : { backgroundColor: '#F3F4F6', color: '#6B7280' }
+                      }
+                    >
+                      {u.isActive ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </div>
+                  <div className="truncate text-xs text-muted">{u.email}</div>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-muted">
+                    <RoleBadge role={u.role} />
+                    <span>{formatDate(u.createdAt)}</span>
+                  </div>
+                  <div className="mt-2.5 flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setEditing(u)}
+                      className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:bg-canvas"
+                    >
+                      Editar
+                    </button>
+                    {u.id !== me?.id &&
+                      (u.isActive ? (
+                        <button
+                          disabled={deactivate.isPending}
+                          onClick={() => void onDeactivate(u)}
+                          className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-muted transition hover:border-red-300 hover:text-red-600 disabled:opacity-50"
+                        >
+                          Desactivar
+                        </button>
+                      ) : (
+                        <button
+                          disabled={update.isPending}
+                          onClick={() => void onReactivate(u)}
+                          className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink transition hover:border-green-300 hover:text-green-700 disabled:opacity-50"
+                        >
+                          Reactivar
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          {/* Escritorio: tabla */}
+          <div className="hidden overflow-x-auto lg:block">
           <table className="w-full min-w-[640px] text-left text-sm">
             <thead className="border-b border-line bg-canvas/60 text-xs uppercase tracking-wide text-muted">
               <tr>
@@ -250,6 +314,7 @@ export default function UsersPage() {
             </tbody>
           </table>
           </div>
+          </>
         )}
       </div>
 
@@ -341,7 +406,7 @@ function UserModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="font-display text-xl text-navy">
