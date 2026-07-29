@@ -163,8 +163,10 @@ export async function listProperties(q: PropertyQuery): Promise<Paginated<unknow
 
   const priceCol =
     q.operation === 'renta' ? properties.priceRentMxn : properties.priceSaleMxn;
-  // relevancia: premium > destacada > normal, luego recientes.
+  // relevancia: premium > destacada > normal; dentro de cada nivel, las que
+  // están "en remate" van primero y luego las más recientes.
   const featuredRank = sql`CASE ${properties.featured} WHEN 'premium' THEN 0 WHEN 'destacada' THEN 1 ELSE 2 END`;
+  const remateRank = sql`CASE WHEN ${properties.isRemate} THEN 0 ELSE 1 END`;
   const orderBy: SQL[] =
     q.sort === 'precio_asc'
       ? [asc(priceCol)]
@@ -172,7 +174,7 @@ export async function listProperties(q: PropertyQuery): Promise<Paginated<unknow
         ? [desc(priceCol)]
         : q.sort === 'recientes'
           ? [desc(properties.publishedAt)]
-          : [featuredRank as SQL, desc(properties.publishedAt)];
+          : [featuredRank as SQL, remateRank as SQL, desc(properties.publishedAt)];
 
   const rows = await db
     .select(propertyColumns)
@@ -545,6 +547,8 @@ export async function updateProperty(id: string, input: UpdatePropertyInput) {
   const [current] = await db
     .select({
       id: properties.id,
+      slug: properties.slug,
+      status: properties.status,
       priceSale: properties.priceSale,
       currencySale: properties.currencySale,
       priceRent: properties.priceRent,
@@ -616,6 +620,11 @@ export async function updateProperty(id: string, input: UpdatePropertyInput) {
 
   await db.update(properties).set(set).where(eq(properties.id, id));
   if (input.amenities) await setAmenities(id, input.amenities);
+  // Si la propiedad ya está visible al público, refresca el sitio al instante:
+  // así un cambio de premium/remate/precio/datos se refleja sin esperar el ISR.
+  if ((PUBLIC_STATUSES as readonly string[]).includes(current.status)) {
+    void revalidatePublicSite(propertyRevalidatePaths(current.slug));
+  }
   return getPropertyByIdAdmin(id);
 }
 
