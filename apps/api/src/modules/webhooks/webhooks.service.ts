@@ -52,7 +52,38 @@ function samplePayload(event: WebhookEvent): Record<string, unknown> {
     case 'property.status_changed':
       return { id, from: 'disponible', to: 'apartado' };
     case 'lead.created':
-      return { id, name: 'Lead de prueba', propertyId: id };
+      return {
+        id,
+        name: 'Lead de prueba',
+        email: 'prospecto@ejemplo.com',
+        phone: '+52 55 1234 5678',
+        message: 'Me interesa esta propiedad, ¿podemos agendar una visita?',
+        type: 'contacto',
+        preferredAt: null,
+        source: 'sitio_web',
+        // UTMs de marketing: así viajan tal cual llegan del formulario público.
+        utm: {
+          utm_source: 'facebook',
+          utm_medium: 'cpc',
+          utm_campaign: 'remates-2026',
+          utm_content: 'anuncio-carrusel',
+          utm_term: 'departamento-polanco',
+        },
+        status: 'nuevo',
+        consentAt: '2026-01-01T12:00:00.000Z',
+        createdAt: '2026-01-01T12:00:00.000Z',
+        propertyId: id,
+        property: {
+          id,
+          slug: 'propiedad-de-ejemplo',
+          url: 'https://tu-sitio.com/propiedades/propiedad-de-ejemplo',
+          title: 'Casa de ejemplo en Polanco',
+          propertyType: 'casa',
+          status: 'disponible',
+          price: { sale: 8500000, saleCurrency: 'MXN', rent: null, rentCurrency: null },
+          cover: 'https://tu-sitio.com/media/ejemplo/portada.webp',
+        },
+      };
     case 'lead.status_changed':
       return { id, from: 'nuevo', to: 'cita_agendada' };
     default:
