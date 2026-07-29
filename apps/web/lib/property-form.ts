@@ -113,7 +113,8 @@ export function fromDetail(p: PropertyDetail): PropertyFormValues {
 }
 
 const num = (v: string): number | undefined => {
-  const t = v.trim();
+  // Tolera separadores de miles (comas/espacios) por si el input formateó el valor.
+  const t = v.replace(/[,\s]/g, '').trim();
   if (t === '') return undefined;
   const n = Number(t);
   return Number.isNaN(n) ? undefined : n;

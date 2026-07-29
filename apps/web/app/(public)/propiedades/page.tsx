@@ -44,8 +44,13 @@ export default async function ListingsPage({
   const params = {
     operation: one(searchParams.operation),
     type: one(searchParams.type),
+    minPrice: one(searchParams.minPrice),
     maxPrice: one(searchParams.maxPrice),
     bedrooms: one(searchParams.bedrooms),
+    bathrooms: one(searchParams.bathrooms),
+    parking: one(searchParams.parking),
+    minArea: one(searchParams.minArea),
+    maxArea: one(searchParams.maxArea),
     q: one(searchParams.q),
     sort: one(searchParams.sort) || 'relevancia',
     view: one(searchParams.view) || 'grid',
@@ -53,14 +58,23 @@ export default async function ListingsPage({
   };
 
   const page = Math.max(1, Number(params.page) || 1);
+  const numParam = (v: string) => {
+    const n = Number(v);
+    return v && Number.isFinite(n) && n > 0 ? n : undefined;
+  };
   const filters: PublicPropertyFilters = {
     page,
     limit: PER_PAGE,
     sort: params.sort as PublicPropertyFilters['sort'],
     ...(params.operation ? { operation: params.operation as 'venta' | 'renta' } : {}),
     ...(params.type ? { type: params.type as PropertyType } : {}),
-    ...(params.maxPrice ? { maxPrice: Number(params.maxPrice) } : {}),
-    ...(params.bedrooms ? { bedrooms: Number(params.bedrooms) } : {}),
+    ...(numParam(params.minPrice) ? { minPrice: numParam(params.minPrice) } : {}),
+    ...(numParam(params.maxPrice) ? { maxPrice: numParam(params.maxPrice) } : {}),
+    ...(numParam(params.bedrooms) ? { bedrooms: numParam(params.bedrooms) } : {}),
+    ...(numParam(params.bathrooms) ? { bathrooms: numParam(params.bathrooms) } : {}),
+    ...(numParam(params.parking) ? { parking: numParam(params.parking) } : {}),
+    ...(numParam(params.minArea) ? { minArea: numParam(params.minArea) } : {}),
+    ...(numParam(params.maxArea) ? { maxArea: numParam(params.maxArea) } : {}),
     ...(params.q ? { q: params.q } : {}),
   };
 

@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { LocationAutocomplete } from './location-autocomplete';
-import { ISearch } from './icons';
+import { ISearch, IChevD, IBed, ITag } from './icons';
 import type { Operation, Suggestion } from '@/lib/public';
 
 const PRICE_OPTS: Record<Operation, [string, string][]> = {
@@ -21,10 +21,56 @@ const PRICE_OPTS: Record<Operation, [string, string][]> = {
   ],
 };
 
-const selectCls =
-  'w-full appearance-none rounded-[10px] border border-line bg-white px-3.5 py-3 text-[13px] text-navy outline-none';
+// Tipos alineados con el listado (mismos 8 valores) para congruencia de filtros.
+const TYPE_OPTS: [string, string][] = [
+  ['departamento', 'Departamentos'],
+  ['casa', 'Casas'],
+  ['oficina', 'Oficinas'],
+  ['local_comercial', 'Locales comerciales'],
+  ['bodega_industrial', 'Bodegas'],
+  ['edificio', 'Edificios'],
+  ['terreno', 'Terrenos'],
+];
 
-// Tarjeta de búsqueda del hero (Home3): operación, tipo, precio, ubicación
+// Select con ícono a la izquierda y chevron a la derecha (más vistoso y claro).
+function Field({
+  label,
+  icon,
+  children,
+}: {
+  label: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted">
+        {label}
+      </span>
+      <div className="relative">
+        {icon && (
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-brand">
+            {icon}
+          </span>
+        )}
+        {children}
+      </div>
+    </label>
+  );
+}
+
+const selectCls =
+  'w-full appearance-none rounded-xl border border-line bg-white py-3 pl-[38px] pr-9 text-sm font-medium text-navy outline-none transition-colors hover:border-navy/30 focus:border-brand focus:ring-2 focus:ring-brand/15';
+
+function Chevron() {
+  return (
+    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted">
+      <IChevD s={16} />
+    </span>
+  );
+}
+
+// Tarjeta de búsqueda del hero: operación (segmentado), tipo, precio, ubicación
 // (autocompletado) y recámaras → navega a /propiedades con los filtros.
 export function HeroSearch({ suggestions }: { suggestions: Suggestion[] }) {
   const router = useRouter();
@@ -46,23 +92,47 @@ export function HeroSearch({ suggestions }: { suggestions: Suggestion[] }) {
   };
 
   return (
-    <div className="rounded-[18px] bg-white/98 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.2)] backdrop-blur sm:p-6">
-      <div className="mb-4 font-display text-xl font-bold text-navy">Encuentra el mejor lugar</div>
-
-      <div className="grid grid-cols-1 items-end gap-3.5 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.4fr_1fr]">
-        <div>
-          <div className="mb-1.5 text-[11px] font-semibold text-muted">Buscando</div>
-          <select value={type} onChange={(e) => setType(e.target.value)} className={selectCls}>
-            <option value="">Tipo de propiedad</option>
-            <option value="departamento">Departamentos</option>
-            <option value="oficina">Oficinas</option>
-            <option value="local_comercial">Locales comerciales</option>
-            <option value="bodega_industrial">Bodegas</option>
-            <option value="casa">Casas</option>
-          </select>
+    <div className="rounded-2xl bg-white/98 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.2)] backdrop-blur sm:p-6">
+      {/* Encabezado + toggle de operación (segmentado, claro) */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="font-display text-xl font-bold text-navy">
+          Encuentra tu próximo espacio
         </div>
-        <div>
-          <div className="mb-1.5 text-[11px] font-semibold text-muted">Precio</div>
+        <div className="inline-flex rounded-full bg-[#F1F1EF] p-1">
+          {(['venta', 'renta'] as Operation[]).map((v) => (
+            <button
+              key={v}
+              type="button"
+              aria-pressed={op === v}
+              onClick={() => {
+                setOp(v);
+                setMaxPrice('');
+              }}
+              className={[
+                'rounded-full px-5 py-2 text-sm font-semibold transition-colors',
+                op === v ? 'bg-navy text-white shadow-sm' : 'text-ink hover:text-navy',
+              ].join(' ')}
+            >
+              {v === 'venta' ? 'Comprar' : 'Rentar'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 items-end gap-3.5 sm:grid-cols-2 lg:grid-cols-[1.1fr_1fr_1.4fr_0.9fr]">
+        <Field label="Tipo de propiedad" icon={<ITag s={16} />}>
+          <select value={type} onChange={(e) => setType(e.target.value)} className={selectCls}>
+            <option value="">Cualquier tipo</option>
+            {TYPE_OPTS.map(([v, l]) => (
+              <option key={v} value={v}>
+                {l}
+              </option>
+            ))}
+          </select>
+          <Chevron />
+        </Field>
+
+        <Field label={op === 'renta' ? 'Renta máxima' : 'Presupuesto'} icon={<span className="text-sm font-bold">$</span>}>
           <select value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className={selectCls}>
             <option value="">Cualquier precio</option>
             {PRICE_OPTS[op].map(([v, l]) => (
@@ -71,56 +141,38 @@ export function HeroSearch({ suggestions }: { suggestions: Suggestion[] }) {
               </option>
             ))}
           </select>
-        </div>
-        <div>
-          <div className="mb-1.5 text-[11px] font-semibold text-muted">Ubicación</div>
+          <Chevron />
+        </Field>
+
+        <Field label="¿Dónde buscas?">
           <LocationAutocomplete
             value={q}
             onChange={setQ}
             onPick={(v) => search(v)}
             suggestions={suggestions}
-            className="box-border w-full rounded-[10px] border border-line bg-white py-3 pl-[38px] pr-3.5 text-[13px] text-navy outline-none"
+            placeholder="Colonia, alcaldía o zona…"
+            className="box-border w-full rounded-xl border border-line bg-white py-3 pl-[38px] pr-3.5 text-sm font-medium text-navy outline-none transition-colors hover:border-navy/30 focus:border-brand focus:ring-2 focus:ring-brand/15"
           />
-        </div>
-        <div>
-          <div className="mb-1.5 text-[11px] font-semibold text-muted">Recámaras</div>
+        </Field>
+
+        <Field label="Recámaras" icon={<IBed s={16} />}>
           <select value={beds} onChange={(e) => setBeds(e.target.value)} className={selectCls}>
             <option value="">Cualquiera</option>
-            <option value="1">1+ rec.</option>
-            <option value="2">2+ rec.</option>
-            <option value="3">3+ rec.</option>
+            <option value="1">1 o más</option>
+            <option value="2">2 o más</option>
+            <option value="3">3 o más</option>
           </select>
-        </div>
+          <Chevron />
+        </Field>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-muted">Filtros:</span>
-          {(['venta', 'renta'] as Operation[]).map((v) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => {
-                setOp(v);
-                setMaxPrice('');
-              }}
-              className={[
-                'rounded-full px-4 py-[7px] text-xs font-medium transition-colors',
-                op === v ? 'bg-navy text-white' : 'bg-[#F7F7F6] text-ink',
-              ].join(' ')}
-            >
-              {v === 'venta' ? 'Venta' : 'Renta'}
-            </button>
-          ))}
-        </div>
-        <button
-          type="button"
-          onClick={() => search()}
-          className="flex items-center gap-2 rounded-full bg-navy px-7 py-2.5 text-sm font-semibold text-white"
-        >
-          Buscar propiedades <ISearch s={14} />
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => search()}
+        className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-brand px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
+      >
+        <ISearch s={16} /> Buscar propiedades
+      </button>
     </div>
   );
 }

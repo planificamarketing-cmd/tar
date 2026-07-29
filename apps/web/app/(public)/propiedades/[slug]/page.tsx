@@ -18,6 +18,7 @@ import {
 import type { PropertyDetail } from '@/lib/types';
 
 const SITE_URL = process.env.PUBLIC_SITE_URL ?? 'http://localhost:3000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
 
 export async function generateMetadata({
   params,
@@ -269,6 +270,14 @@ export default async function PropertyDetailPage({ params }: { params: { slug: s
           <div>
             <div className="lg:sticky lg:top-[100px]">
               <LeadForm propertyId={p.id} propertyTitle={p.title} operation={op} />
+              <a
+                href={`${API_URL}/properties/${p.slug}/flyer.pdf`}
+                target="_blank"
+                rel="noopener"
+                className="mt-4 flex items-center justify-center gap-2 rounded-[14px] border border-navy bg-navy px-5 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#1a2b45]"
+              >
+                <IRuler s={16} /> Descargar folleto (PDF)
+              </a>
               <div className="mt-4 flex items-center gap-3 rounded-[14px] border border-[#F1F1F0] bg-white px-5 py-4">
                 <div className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
                   <IVerif s={18} />

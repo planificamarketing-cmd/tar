@@ -10,20 +10,24 @@ export function FlyerButton({
   name,
   className,
   label = 'Flyer',
+  format = 'png',
 }: {
   id: string;
   name: string;
   className?: string;
   label?: string;
+  format?: 'png' | 'pdf';
 }) {
   const [busy, setBusy] = useState(false);
 
   async function go() {
     setBusy(true);
     try {
-      await downloadFlyer(id, name);
+      await downloadFlyer(id, name, format);
     } catch {
-      window.alert('No se pudo generar el flyer. Intenta de nuevo.');
+      window.alert(
+        `No se pudo generar el ${format === 'pdf' ? 'folleto PDF' : 'flyer'}. Intenta de nuevo.`,
+      );
     } finally {
       setBusy(false);
     }
@@ -35,7 +39,11 @@ export function FlyerButton({
       onClick={() => void go()}
       disabled={busy}
       className={className}
-      title="Descargar un flyer para compartir"
+      title={
+        format === 'pdf'
+          ? 'Descargar el folleto PDF completo de la propiedad'
+          : 'Descargar un flyer (imagen) para compartir'
+      }
     >
       {busy ? 'Generando…' : label}
     </button>

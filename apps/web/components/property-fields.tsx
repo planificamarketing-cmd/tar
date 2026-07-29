@@ -23,6 +23,44 @@ const labelCls = 'mb-1.5 block text-xs font-semibold uppercase tracking-wide tex
 const inputCls =
   'w-full rounded-xl border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition focus:border-brand';
 
+// Formato de miles al estilo México (1,234,567.89) solo para MOSTRAR. El valor que
+// se guarda en el formulario es SIEMPRE crudo (dígitos + punto decimal), de modo que
+// el payload/Zod lo reciben como número limpio.
+function formatMx(raw: string): string {
+  if (!raw) return '';
+  const [int, dec] = raw.split('.');
+  const intFmt = int === '' ? '' : Number(int).toLocaleString('es-MX');
+  return dec !== undefined ? `${intFmt}.${dec}` : intFmt;
+}
+function toRaw(display: string): string {
+  let s = display.replace(/[^\d.]/g, '');
+  const dot = s.indexOf('.');
+  if (dot !== -1) s = s.slice(0, dot + 1) + s.slice(dot + 1).replace(/\./g, '');
+  return s;
+}
+
+// Input numérico con separadores de miles (formato MX). Guarda el valor crudo.
+function NumberInput({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (raw: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <input
+      type="text"
+      inputMode="decimal"
+      value={formatMx(value)}
+      placeholder={placeholder}
+      onChange={(e) => onChange(toRaw(e.target.value))}
+      className={inputCls}
+    />
+  );
+}
+
 function Section({
   title,
   desc,
@@ -69,6 +107,18 @@ export function PropertyFields({ value, onChange }: Props) {
         placeholder={opts?.placeholder}
         onChange={(e) => onChange({ [key]: e.target.value })}
         className={inputCls}
+      />
+    </div>
+  );
+
+  // Campo numérico con separadores de miles (formato MX) para superficies grandes.
+  const Num = (key: keyof PropertyFormValues, label: string) => (
+    <div>
+      <label className={labelCls}>{label}</label>
+      <NumberInput
+        value={value[key] as string}
+        onChange={(raw) => onChange({ [key]: raw })}
+        placeholder="0"
       />
     </div>
   );
@@ -162,13 +212,13 @@ export function PropertyFields({ value, onChange }: Props) {
           {Text('bathrooms', 'Baños', { type: 'number' })}
           {Text('halfBathrooms', 'Medios baños', { type: 'number' })}
           {Text('parking', 'Estacionamientos', { type: 'number' })}
-          {Text('areaM2', 'Construcción (m²)', { type: 'number' })}
-          {Text('lotM2', 'Terreno (m²)', { type: 'number' })}
+          {Num('areaM2', 'Construcción (m²)')}
+          {Num('lotM2', 'Terreno (m²)')}
         </div>
         {isOffice && (
           <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
-            {Text('usableAreaM2', 'Superficie útil (m²)', { type: 'number' })}
-            {Text('rentableAreaM2', 'Superficie rentable (m²)', { type: 'number' })}
+            {Num('usableAreaM2', 'Superficie útil (m²)')}
+            {Num('rentableAreaM2', 'Superficie rentable (m²)')}
           </div>
         )}
       </Section>
@@ -180,10 +230,10 @@ export function PropertyFields({ value, onChange }: Props) {
           desc="Opcionales, con su metraje. Se muestran según el tipo de inmueble."
         >
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {showPatioTerraceBalcony && Text('patioM2', 'Patio (m²)', { type: 'number' })}
-            {showPatioTerraceBalcony && Text('terraceM2', 'Terraza (m²)', { type: 'number' })}
-            {showPatioTerraceBalcony && Text('balconyM2', 'Balcón (m²)', { type: 'number' })}
-            {showGarden && Text('gardenM2', 'Jardín (m²)', { type: 'number' })}
+            {showPatioTerraceBalcony && Num('patioM2', 'Patio (m²)')}
+            {showPatioTerraceBalcony && Num('terraceM2', 'Terraza (m²)')}
+            {showPatioTerraceBalcony && Num('balconyM2', 'Balcón (m²)')}
+            {showGarden && Num('gardenM2', 'Jardín (m²)')}
           </div>
         </Section>
       )}
@@ -322,13 +372,7 @@ function PriceField({
     <div>
       <label className={labelCls}>{label}</label>
       <div className="flex gap-2">
-        <input
-          type="number"
-          value={price}
-          onChange={(e) => onPrice(e.target.value)}
-          placeholder="0"
-          className={inputCls}
-        />
+        <NumberInput value={price} onChange={onPrice} placeholder="0" />
         <select
           value={currency}
           onChange={(e) => onCurrency(e.target.value as Currency)}

@@ -21,9 +21,11 @@ const EXPLORE: { type: string; label: string; desc: string }[] = [
 ];
 
 export default async function HomePage() {
+  // Revalida seguido (60 s) para que un cambio de destaque/remate o una publicación
+  // se refleje pronto en la portada, sin depender solo de la revalidación on-demand.
   const [featured, recent, locations] = await Promise.all([
-    fetchProperties({ sort: 'relevancia', limit: 6 }),
-    fetchProperties({ sort: 'recientes', limit: 6 }),
+    fetchProperties({ sort: 'relevancia', limit: 6 }, 60),
+    fetchProperties({ sort: 'recientes', limit: 6 }, 60),
     fetchLocations(),
   ]);
 

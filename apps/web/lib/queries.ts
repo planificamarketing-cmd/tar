@@ -243,9 +243,16 @@ export function testWebhookEvent(event: string) {
   }).then((r) => r.data);
 }
 
-// Descarga el flyer PNG de una propiedad (fetch autenticado → archivo local).
-export async function downloadFlyer(id: string, name: string): Promise<void> {
-  const blob = await apiBlob(`/properties/${id}/flyer`);
+// Descarga el flyer de una propiedad (fetch autenticado → archivo local). Dos
+// formatos: 'png' (imagen para redes) y 'pdf' (folleto completo, ficha imprimible).
+export async function downloadFlyer(
+  id: string,
+  name: string,
+  format: 'png' | 'pdf' = 'png',
+): Promise<void> {
+  const blob = await apiBlob(
+    format === 'pdf' ? `/properties/admin/${id}/flyer.pdf` : `/properties/${id}/flyer`,
+  );
   const slug = (name || id)
     .toLowerCase()
     .normalize('NFD')
@@ -256,7 +263,7 @@ export async function downloadFlyer(id: string, name: string): Promise<void> {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `flyer-${slug || 'propiedad'}.png`;
+  a.download = `${format === 'pdf' ? 'ficha' : 'flyer'}-${slug || 'propiedad'}.${format}`;
   document.body.appendChild(a);
   a.click();
   a.remove();

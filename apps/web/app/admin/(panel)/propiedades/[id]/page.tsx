@@ -111,12 +111,22 @@ export default function EditPropertyPage() {
             <RemateBadge isRemate={prop.isRemate} />
           </div>
         </div>
-        <FlyerButton
-          id={id}
-          name={prop.title}
-          label="Descargar flyer"
-          className="shrink-0 rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm font-medium text-ink shadow-sm transition hover:bg-canvas disabled:opacity-50"
-        />
+        <div className="flex shrink-0 items-center gap-2">
+          <FlyerButton
+            id={id}
+            name={prop.title}
+            label="Flyer (imagen)"
+            format="png"
+            className="rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm font-medium text-ink shadow-sm transition hover:bg-canvas disabled:opacity-50"
+          />
+          <FlyerButton
+            id={id}
+            name={prop.title}
+            label="Folleto PDF"
+            format="pdf"
+            className="rounded-xl bg-navy px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:opacity-50"
+          />
+        </div>
       </header>
 
       {!canWrite && (

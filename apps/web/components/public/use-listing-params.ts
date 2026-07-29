@@ -7,8 +7,13 @@ import { useCallback } from 'react';
 export type ListingParams = {
   operation: string; // '' | 'venta' | 'renta'
   type: string; // '' | PropertyType
+  minPrice: string;
   maxPrice: string;
   bedrooms: string;
+  bathrooms: string; // mín.
+  parking: string; // mín.
+  minArea: string; // m² construcción mín.
+  maxArea: string; // m² construcción máx.
   q: string;
   sort: string; // relevancia | precio_asc | precio_desc | recientes
   view: string; // grid | list
@@ -19,8 +24,13 @@ export function readParams(sp: URLSearchParams): ListingParams {
   return {
     operation: sp.get('operation') ?? '',
     type: sp.get('type') ?? '',
+    minPrice: sp.get('minPrice') ?? '',
     maxPrice: sp.get('maxPrice') ?? '',
     bedrooms: sp.get('bedrooms') ?? '',
+    bathrooms: sp.get('bathrooms') ?? '',
+    parking: sp.get('parking') ?? '',
+    minArea: sp.get('minArea') ?? '',
+    maxArea: sp.get('maxArea') ?? '',
     q: sp.get('q') ?? '',
     sort: sp.get('sort') ?? 'relevancia',
     view: sp.get('view') ?? 'grid',
