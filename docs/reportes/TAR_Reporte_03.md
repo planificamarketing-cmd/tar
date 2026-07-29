@@ -13,9 +13,10 @@ Sobre esa base se incorporaron las mejoras solicitadas en la última revisión: 
 PDF descargable** por propiedad con la imagen de marca de TAR, un **buscador más claro** con
 filtros avanzados, la priorización real de las propiedades marcadas como **premium** y **en
 remate**, la **captura de campañas de marketing (UTM)** lista para enviarse a sistemas
-externos, y varios ajustes de presentación (logotipo más presente, separadores de miles en
-el panel y corrección de los enlaces de Google Maps). Todo se ve y funciona bien en
-**celular, tableta y computadora**.
+externos, la **exportación completa de prospectos e inventario a Excel/CSV**, un **panel de
+administración cómodo desde el celular** y varios ajustes de presentación (logotipo más
+presente, separadores de miles en el panel y corrección de los enlaces de Google Maps). Todo
+se ve y funciona bien en **celular, tableta y computadora**.
 
 ## El sitio público
 
@@ -73,6 +74,28 @@ Por primera vez se recorre el **sitio que usarán los clientes finales**:
   uso definitivo del mapa en producción se recomienda confirmar el acceso de Google Maps del
   cliente.
 
+- **Exportación de datos a Excel/CSV, ahora completa.** La descarga de información pasó de un
+  simple resumen de indicadores a **dos exportaciones de datos reales**, listas para abrir en
+  Excel o importar a un CRM, y que **respetan los filtros activos** en pantalla:
+  - **Prospectos (leads):** una fila por prospecto con contacto, tipo, **etapa**, origen, la
+    **propiedad de interés y su enlace**, la **campaña de marketing (UTM) de origen**, el
+    asesor asignado, el consentimiento y el mensaje. Sirve para el seguimiento comercial y
+    para **medir qué campaña trae cada prospecto**.
+  - **Inventario:** una fila por propiedad con tipo, operación, precios y monedas, superficies,
+    recámaras/baños/estacionamientos, ubicación, estatus, destaque, remate, enlace y fechas.
+
+  Los archivos abren correctamente con acentos en Excel en español. Los botones están en
+  **Prospectos**, **Propiedades** y en el **Inicio del panel** (Prospectos / Inventario /
+  Resumen).
+
+- **Panel de administración cómodo desde el celular.** Todo el backoffice se revisó para
+  gestionarse bien desde un teléfono: los listados de **Propiedades, Prospectos y Usuarios**
+  pasan de una tabla que obligaba a desplazarse de lado a una **vista de tarjetas** pensada
+  para el pulgar (foto, datos clave y acciones grandes), y en computadora se conserva la tabla
+  completa. También se ajustaron el detalle de propiedad, la carga de fotos (marcar portada /
+  eliminar ahora funciona al tacto) y las ventanas emergentes. Se adjunta una **galería de
+  capturas** del panel en móvil.
+
 ## Nuestro trabajo como consultora
 
 En esta etapa GBS Digital tradujo la operación comercial en herramientas concretas de
@@ -88,6 +111,8 @@ El objetivo es que el portal no solo se vea bien, sino que **genere y ordene pro
 - El **buscador** con filtros básicos y avanzados, y la priorización de premium/remate.
 - El **botón de prueba de integración** que envía un prospecto de ejemplo con datos de
   campaña (UTM).
+- Las **exportaciones a CSV** de prospectos e inventario (con los filtros que se apliquen).
+- Una **galería de capturas** del panel de administración funcionando en celular.
 
 ## Decisiones
 
@@ -112,10 +137,10 @@ El objetivo es que el portal no solo se vea bien, sino que **genere y ordene pro
 ## Estado de avance
 
 - **Motor de la plataforma (backend):** completo y probado.
-- **Panel de administración:** completo y operable.
+- **Panel de administración:** completo y operable, ahora **usable desde el celular**.
 - **Sitio público:** navegable de extremo a extremo; pendiente de **datos reales del cliente**
   y de **publicar el inventario** con su ubicación.
-- **Folleto PDF y herramientas de captación (UTM):** entregados y verificados.
+- **Folleto PDF, herramientas de captación (UTM) y exportación a CSV:** entregados y verificados.
 - **Inventario real:** importado; pendiente de publicación con ubicación.
 - **Pruebas finales y salida a producción:** pendientes del servidor definitivo.
 
@@ -155,7 +180,16 @@ El objetivo es que el portal no solo se vea bien, sino que **genere y ordene pro
 - **Enlaces de Google Maps.** El resolvedor de enlaces cortos sigue la redirección y, si la
   página intermedia no expone la ubicación en la dirección final, la **extrae del contenido**
   de la página (URL de destino embebida o coordenadas del punto).
+- **Exportación CSV.** Dos endpoints en el servidor (`/leads/export.csv` y
+  `/properties/admin/export.csv`) que reutilizan los mismos filtros del listado; salida
+  RFC 4180 con marca UTF-8 (BOM) para que Excel en español lea los acentos. Sustituyen al
+  resumen de indicadores que se armaba en el navegador. La API pasó a **52 rutas** documentadas.
+- **Panel responsive.** Los listados renderizan **tarjetas por debajo de 1024 px** y la tabla
+  a partir de ese ancho; los controles de estatus y acciones se comparten entre ambas vistas.
+  Se corrigieron las acciones de la galería de fotos (visibles al tacto, no solo con el mouse)
+  y el desbordamiento de ventanas emergentes.
 - **Verificación.** Revisión de tipos sin errores; **112 pruebas automáticas** en verde;
   compilación del sitio en verde; y comprobación en vivo: folleto PDF válido (panel y web),
-  la propiedad premium+remate encabeza portada y listado, y los filtros avanzados devuelven
-  conteos congruentes.
+  la propiedad premium+remate encabeza portada y listado, los filtros avanzados devuelven
+  conteos congruentes, las exportaciones CSV entregan los datos completos, y el panel se
+  recorrió en un teléfono de 390 px (capturas adjuntas).
