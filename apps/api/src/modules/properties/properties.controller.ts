@@ -11,6 +11,7 @@ import {
 } from '@tar/shared';
 import * as svc from './properties.service';
 import { generateFlyer } from './flyer.service';
+import { generateFlyerPdf } from './flyer-pdf.service';
 
 export async function list(req: Request, res: Response): Promise<void> {
   const q = propertyQuerySchema.parse(req.query);
@@ -106,4 +107,28 @@ export async function flyer(req: Request, res: Response): Promise<void> {
   res.setHeader('Content-Disposition', `inline; filename="flyer-${id}.png"`);
   res.setHeader('Cache-Control', 'no-store');
   res.send(png);
+}
+
+// Folleto PDF (staff, por id): incluye borradores para previsualizar antes de publicar.
+export async function flyerPdf(req: Request, res: Response): Promise<void> {
+  const id = uuidSchema.parse(req.params.id);
+  const pdf = await generateFlyerPdf(id);
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `inline; filename="ficha-${id}.pdf"`);
+  res.setHeader('Cache-Control', 'no-store');
+  res.send(pdf);
+}
+
+// Folleto PDF público (por slug): solo propiedades publicadas (getPropertyBySlug
+// aplica el filtro de estatus públicos y lanza 404 en borradores).
+export async function flyerPdfPublic(req: Request, res: Response): Promise<void> {
+  const prop = await svc.getPropertyBySlug(String(req.params.slug));
+  const pdf = await generateFlyerPdf(prop.id);
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="ficha-${prop.slug ?? prop.id}.pdf"`,
+  );
+  res.setHeader('Cache-Control', 'public, max-age=300');
+  res.send(pdf);
 }

@@ -369,6 +369,37 @@ export function buildOpenApiDocument() {
     },
   });
   registry.registerPath({
+    method: 'get',
+    path: '/api/v1/properties/admin/{id}/flyer.pdf',
+    tags: ['Propiedades'],
+    summary: 'Folleto PDF (staff, por id; incluye borradores)',
+    security: sec,
+    request: { params: idParam },
+    responses: {
+      200: {
+        description: 'Folleto PDF completo de la propiedad',
+        content: { 'application/pdf': { schema: { type: 'string', format: 'binary' } } },
+      },
+      ...errResponses,
+    },
+  });
+  registry.registerPath({
+    method: 'get',
+    path: '/api/v1/properties/{slug}/flyer.pdf',
+    tags: ['Propiedades'],
+    summary: 'Folleto PDF público (por slug; solo propiedades publicadas)',
+    request: {
+      params: z.object({ slug: z.string().openapi({ example: 'departamento-en-polanco' }) }),
+    },
+    responses: {
+      200: {
+        description: 'Folleto PDF completo de la propiedad (público)',
+        content: { 'application/pdf': { schema: { type: 'string', format: 'binary' } } },
+      },
+      404: { description: 'No encontrada o no publicada', ...json(errorRef) },
+    },
+  });
+  registry.registerPath({
     method: 'post',
     path: '/api/v1/properties/{id}/publish',
     tags: ['Propiedades'],

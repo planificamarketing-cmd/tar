@@ -1776,6 +1776,105 @@
         }
       }
     },
+    "/api/v1/properties/admin/{id}/flyer.pdf": {
+      "get": {
+        "tags": [
+          "Propiedades"
+        ],
+        "summary": "Folleto PDF (staff, por id; incluye borradores)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Folleto PDF completo de la propiedad",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validación / petición inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{slug}/flyer.pdf": {
+      "get": {
+        "tags": [
+          "Propiedades"
+        ],
+        "summary": "Folleto PDF público (por slug; solo propiedades publicadas)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "departamento-en-polanco"
+            },
+            "required": true,
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Folleto PDF completo de la propiedad (público)",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No encontrada o no publicada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/properties/{id}/publish": {
       "post": {
         "tags": [
