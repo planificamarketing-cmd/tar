@@ -19,6 +19,8 @@
 
 - **Reporte 03**: `docs/reportes/TAR_Reporte_03.md` (entregable al cliente, tono no técnico). OpenAPI regenerado (50 rutas).
 
+**Adicional (mismo día): panel admin usable desde el celular.** El layout ya tenía drawer+hamburguesa; el problema eran las **tablas** (Propiedades/Leads/Usuarios: `min-w` + scroll horizontal + hasta 5 botones por fila). Ahora hay **vista de tarjetas en móvil/tablet (`<lg`)** y tabla solo en escritorio (`hidden lg:block`); controles de estatus/acciones extraídos a helpers reutilizables. También: header del detalle apila+wrap en móvil; buscador full-width; `image-uploader` con acciones Portada/Eliminar visibles al tacto (antes solo hover); modales API key/usuario con `max-h/overflow`; footer del webhook-modal con wrap; tabla de leads recientes del dashboard scrollable. Fix aparte: `bg-white/98` no lo genera Tailwind → tarjeta del buscador y menú móvil pasan a `bg-white/95`.
+
 ## Hecho (resumen previo; detalle en `git log`)
 - **FASE 0, 1, A (backend §5) y C (backoffice) CERRADAS.** Auth (argon2+JWT+refresh), propiedades (CRUD/publish/filtros/detalle), media (sharp→WebP), leads+webhooks (pg-boss+HMAC), importador EasyBroker, OpenAPI/Swagger en `/docs`. Backoffice completo. RBAC 4 roles + Grupos A/B (migraciones 0001–0005).
 - **FASE B — SITIO PÚBLICO** (sesiones previas): fundación, home, listado, ficha, contenido, SEO, sin mapa (decisión cliente), lead público como contacto. Pulido Grupo 2 (error boundary, revalidación on-demand, scripts head SSR, loading, OG, JSON-LD).
