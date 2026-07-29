@@ -23,6 +23,8 @@ leadsRouter.post('/', leadLimiter, c.create);
 const canRead = [requireAuth, requirePermission('leads:read')] as const;
 const canWrite = [requireAuth, requirePermission('leads:write')] as const;
 leadsRouter.get('/', ...canRead, c.list);
+// Export CSV antes de /:id para que el comodín no capture "export.csv".
+leadsRouter.get('/export.csv', ...canRead, c.exportCsv);
 leadsRouter.post('/bulk', ...canWrite, c.bulk);
 leadsRouter.get('/:id', ...canRead, c.detail);
 leadsRouter.patch('/:id', ...canWrite, c.update);

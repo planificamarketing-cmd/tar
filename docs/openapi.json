@@ -1406,6 +1406,52 @@
         }
       }
     },
+    "/api/v1/properties/admin/export.csv": {
+      "get": {
+        "tags": [
+          "Propiedades"
+        ],
+        "summary": "Exportar inventario a CSV (respeta filtros del listado admin)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Archivo CSV del inventario",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validación / petición inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/properties/admin/type-counts": {
       "get": {
         "tags": [
@@ -2833,6 +2879,62 @@
         "responses": {
           "204": {
             "description": "Registrado"
+          }
+        }
+      }
+    },
+    "/api/v1/leads/export.csv": {
+      "get": {
+        "tags": [
+          "Leads"
+        ],
+        "summary": "Exportar prospectos a CSV (contacto, UTM, propiedad, etapa)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Archivo CSV de prospectos",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validación / petición inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }

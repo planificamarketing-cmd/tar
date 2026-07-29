@@ -320,6 +320,20 @@ export function buildOpenApiDocument() {
   });
   registry.registerPath({
     method: 'get',
+    path: '/api/v1/properties/admin/export.csv',
+    tags: ['Propiedades'],
+    summary: 'Exportar inventario a CSV (respeta filtros del listado admin)',
+    security: sec,
+    responses: {
+      200: {
+        description: 'Archivo CSV del inventario',
+        content: { 'text/csv': { schema: { type: 'string', format: 'binary' } } },
+      },
+      ...errResponses,
+    },
+  });
+  registry.registerPath({
+    method: 'get',
     path: '/api/v1/properties/admin/type-counts',
     tags: ['Propiedades'],
     summary: 'Conteo de propiedades por tipo (mix de inventario del dashboard)',
@@ -627,6 +641,21 @@ export function buildOpenApiDocument() {
       }),
     },
     responses: { 200: ok('{ data, meta }') },
+  });
+  registry.registerPath({
+    method: 'get',
+    path: '/api/v1/leads/export.csv',
+    tags: ['Leads'],
+    summary: 'Exportar prospectos a CSV (contacto, UTM, propiedad, etapa)',
+    security: sec,
+    request: { query: z.object({ status: z.string().optional() }) },
+    responses: {
+      200: {
+        description: 'Archivo CSV de prospectos',
+        content: { 'text/csv': { schema: { type: 'string', format: 'binary' } } },
+      },
+      ...errResponses,
+    },
   });
   registry.registerPath({
     method: 'get',

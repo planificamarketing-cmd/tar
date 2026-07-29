@@ -270,6 +270,20 @@ export async function downloadFlyer(
   URL.revokeObjectURL(url);
 }
 
+// Descarga un CSV autenticado (exportaciones del panel). El servidor entrega el
+// archivo con sus columnas completas; aquí solo se fuerza la descarga local.
+export async function downloadCsv(path: string, filename: string): Promise<void> {
+  const blob = await apiBlob(path);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 export function useProperty(id: string) {
   return useQuery({
     queryKey: ['admin-property', id],

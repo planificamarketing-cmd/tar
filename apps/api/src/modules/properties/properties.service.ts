@@ -253,6 +253,32 @@ export async function listPropertiesAdmin(
   return { data, meta: { page: q.page, limit: q.limit, total } };
 }
 
+// Exportación CSV del inventario (backoffice): respeta los mismos filtros que el
+// listado admin (estatus, tipo, destaque, remate, búsqueda, archivadas) pero sin
+// paginar (tope de seguridad). Devuelve las filas ya con la ubicación anidada.
+export async function exportPropertiesRows(q: PropertyAdminQuery) {
+  const c: SQL[] = [
+    q.archived === 'true'
+      ? isNotNull(properties.deletedAt)
+      : isNull(properties.deletedAt),
+  ];
+  if (q.status) c.push(eq(properties.status, q.status));
+  if (q.type) c.push(eq(properties.propertyType, q.type));
+  if (q.featured) c.push(eq(properties.featured, q.featured));
+  if (q.remate === 'true') c.push(eq(properties.isRemate, true));
+  if (q.q)
+    c.push(sql`${properties.searchVector} @@ plainto_tsquery('spanish', ${q.q})`);
+
+  const rows = await db
+    .select(propertyColumns)
+    .from(properties)
+    .leftJoin(locations, eq(properties.locationId, locations.id))
+    .where(and(...c))
+    .orderBy(desc(properties.updatedAt))
+    .limit(20000);
+  return rows.map((r) => shape(r));
+}
+
 // Conteo de propiedades por estatus (no borradas) — KPIs del dashboard admin.
 export async function propertyStatusCounts(): Promise<Record<string, number>> {
   const rows = await db

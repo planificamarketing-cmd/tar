@@ -13,6 +13,7 @@ const canWrite = [requireAuth, requirePermission('properties:write')] as const;
 propertiesRouter.get('/admin', ...canRead, c.listAdmin);
 propertiesRouter.get('/admin/status-counts', ...canRead, c.statusCounts);
 propertiesRouter.get('/admin/type-counts', ...canRead, c.typeCounts);
+propertiesRouter.get('/admin/export.csv', ...canRead, c.exportCsv);
 propertiesRouter.get('/admin/:id', ...canRead, c.detailAdmin);
 // Folleto PDF staff (por id, incluye borradores). Bajo /admin/ → no colisiona con
 // la ruta pública /:slug/flyer.pdf.

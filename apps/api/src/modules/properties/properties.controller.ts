@@ -12,6 +12,8 @@ import {
 import * as svc from './properties.service';
 import { generateFlyer } from './flyer.service';
 import { generateFlyerPdf } from './flyer-pdf.service';
+import { toCsv, csvDate } from '../../lib/csv';
+import { env } from '../../env';
 
 export async function list(req: Request, res: Response): Promise<void> {
   const q = propertyQuerySchema.parse(req.query);
@@ -22,6 +24,105 @@ export async function list(req: Request, res: Response): Promise<void> {
 export async function listAdmin(req: Request, res: Response): Promise<void> {
   const q = propertyAdminQuerySchema.parse(req.query);
   res.json(await svc.listPropertiesAdmin(q));
+}
+
+const TYPE_ES: Record<string, string> = {
+  casa: 'Casa',
+  departamento: 'Departamento',
+  oficina: 'Oficina',
+  local_comercial: 'Local comercial',
+  bodega_industrial: 'Bodega industrial',
+  terreno_industrial: 'Terreno industrial',
+  edificio: 'Edificio',
+  terreno: 'Terreno',
+};
+const STATUS_ES: Record<string, string> = {
+  borrador: 'Borrador',
+  disponible: 'Disponible',
+  apartado: 'Apartado',
+  rentado: 'Rentado',
+  vendido: 'Vendido',
+  pausado: 'Pausado',
+};
+const FEATURED_ES: Record<string, string> = {
+  normal: 'Normal',
+  destacada: 'Destacada',
+  premium: 'Premium',
+};
+
+// GET /properties/admin/export.csv — exporta el inventario (respeta los filtros del
+// listado admin) con todas las columnas útiles para análisis y respaldo.
+export async function exportCsv(req: Request, res: Response): Promise<void> {
+  const q = propertyAdminQuerySchema.parse(req.query);
+  const rows = (await svc.exportPropertiesRows(q)) as Array<Record<string, unknown>>;
+  const n = (v: unknown) => (v == null || v === '' ? '' : Number(v));
+  const header = [
+    'Título',
+    'Tipo',
+    'Operación',
+    'Precio venta',
+    'Moneda venta',
+    'Precio renta',
+    'Moneda renta',
+    'm² construcción',
+    'm² terreno',
+    'Recámaras',
+    'Baños',
+    'Medios baños',
+    'Estacionamientos',
+    'Estado',
+    'Municipio',
+    'Colonia',
+    'Dirección',
+    'C.P.',
+    'Estatus',
+    'Destaque',
+    'En remate',
+    'URL',
+    'Creada',
+    'Publicada',
+  ];
+  const body = rows.map((p) => {
+    const loc = (p.location ?? {}) as Record<string, string | null>;
+    const hasSale = p.priceSale != null;
+    const hasRent = p.priceRent != null;
+    const operacion =
+      hasSale && hasRent ? 'Venta y renta' : hasSale ? 'Venta' : hasRent ? 'Renta' : '—';
+    return [
+      p.title as string,
+      TYPE_ES[p.propertyType as string] ?? (p.propertyType as string),
+      operacion,
+      n(p.priceSale),
+      (p.currencySale as string) ?? '',
+      n(p.priceRent),
+      (p.currencyRent as string) ?? '',
+      n(p.areaM2),
+      n(p.lotM2),
+      (p.bedrooms as number) ?? '',
+      (p.bathrooms as number) ?? '',
+      (p.halfBathrooms as number) ?? '',
+      (p.parking as number) ?? '',
+      loc.estado ?? '',
+      loc.municipio ?? '',
+      loc.colonia ?? '',
+      (p.address as string) ?? '',
+      (p.postalCode as string) ?? '',
+      STATUS_ES[p.status as string] ?? (p.status as string),
+      FEATURED_ES[p.featured as string] ?? (p.featured as string),
+      p.isRemate ? 'Sí' : 'No',
+      p.slug ? `${env.PUBLIC_SITE_URL}/propiedades/${p.slug}` : '',
+      csvDate(p.createdAt as string),
+      csvDate(p.publishedAt as string),
+    ];
+  });
+  const stamp = new Date().toISOString().slice(0, 10);
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="inventario-tar-${stamp}.csv"`,
+  );
+  res.setHeader('Cache-Control', 'no-store');
+  res.send(toCsv([header, ...body]));
 }
 
 // Conteo por estatus para KPIs del dashboard.

@@ -7,9 +7,23 @@ import { sendNewLeadNotification } from '../../lib/mailer';
 import { getPropertyByIdAdmin } from '../properties/properties.service';
 import { env } from '../../env';
 
-const { leads, leadEvents } = schema;
+const { leads, leadEvents, properties, users } = schema;
 
 const num = (v: unknown) => (v == null ? null : Number(v));
+
+// Etiquetas legibles para la exportación (mismo texto que el panel).
+const LEAD_STATUS_ES: Record<string, string> = {
+  nuevo: 'Nuevo',
+  cita_agendada: 'Cita agendada',
+  cita_concretada: 'Cita concretada',
+  apartado: 'Apartado',
+  firma: 'Firma de contrato',
+  descartado: 'Descartado',
+};
+const LEAD_TYPE_ES: Record<string, string> = {
+  contacto: 'Contacto',
+  cita: 'Solicitud de cita',
+};
 
 // Snapshot compacto de la propiedad para el webhook `lead.created`: incluye los
 // datos útiles (precio, m² —incl. útil/rentable de oficina y áreas exteriores—,
@@ -134,6 +148,58 @@ export async function listLeads(q: LeadQuery) {
     data: rows,
     meta: { page: q.page, limit: q.limit, total: countRows[0]?.count ?? 0 },
   };
+}
+
+// Exportación CSV de prospectos: TODAS las columnas útiles (contacto, campaña/UTM,
+// propiedad de interés, etapa, consentimiento), respetando el filtro por etapa. Sin
+// paginar (tope de seguridad) y ordenado por fecha. Devuelve las filas ya aplanadas.
+export async function exportLeadsRows(q: {
+  status?: string;
+  propertyId?: string;
+  assignedTo?: string;
+}) {
+  const c = [isNull(leads.deletedAt)];
+  if (q.status) c.push(eq(leads.status, q.status as never));
+  if (q.propertyId) c.push(eq(leads.propertyId, q.propertyId));
+  if (q.assignedTo) c.push(eq(leads.assignedTo, q.assignedTo));
+
+  const rows = await db
+    .select({
+      lead: leads,
+      propertyTitle: properties.title,
+      propertySlug: properties.slug,
+      assignedName: users.name,
+    })
+    .from(leads)
+    .leftJoin(properties, eq(leads.propertyId, properties.id))
+    .leftJoin(users, eq(leads.assignedTo, users.id))
+    .where(and(...c))
+    .orderBy(desc(leads.createdAt))
+    .limit(20000);
+
+  return rows.map(({ lead, propertyTitle, propertySlug, assignedName }) => {
+    const utm = (lead.utm ?? {}) as Record<string, string>;
+    return {
+      createdAt: lead.createdAt,
+      name: lead.name,
+      email: lead.email,
+      phone: lead.phone,
+      type: LEAD_TYPE_ES[lead.type] ?? lead.type,
+      status: LEAD_STATUS_ES[lead.status] ?? lead.status,
+      source: lead.source,
+      property: propertyTitle,
+      propertyUrl: propertySlug ? `${env.PUBLIC_SITE_URL}/propiedades/${propertySlug}` : '',
+      preferredAt: lead.preferredAt,
+      utmSource: utm.utm_source ?? '',
+      utmMedium: utm.utm_medium ?? '',
+      utmCampaign: utm.utm_campaign ?? '',
+      utmContent: utm.utm_content ?? '',
+      utmTerm: utm.utm_term ?? '',
+      assignedName,
+      consentAt: lead.consentAt,
+      message: lead.message,
+    };
+  });
 }
 
 export async function getLead(id: string) {

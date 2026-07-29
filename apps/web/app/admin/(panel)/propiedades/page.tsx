@@ -29,6 +29,7 @@ import {
   RemateBadge,
 } from '@/components/property-status-badge';
 import { FlyerButton } from '@/components/flyer-button';
+import { ExportCsvButton } from '@/components/export-csv-button';
 import { NPlus, NSearch } from '@/components/icons';
 import {
   PROPERTY_STATUS_META,
@@ -300,7 +301,19 @@ export default function PropertiesPage() {
             {archived ? ' archivadas' : ' en el inventario'}.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <ExportCsvButton
+            path={`/properties/admin/export.csv${(() => {
+              const sp = new URLSearchParams();
+              if (archived) sp.set('archived', 'true');
+              else if (tabSel !== 'all') sp.set('status', tabSel);
+              if (search) sp.set('q', search);
+              if (remateOnly) sp.set('remate', 'true');
+              const s = sp.toString();
+              return s ? `?${s}` : '';
+            })()}`}
+            filename={`inventario-tar${archived ? '-archivadas' : ''}.csv`}
+          />
           {canWebhooks && (
             <button
               onClick={() => void onProbeWebhooks()}

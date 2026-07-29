@@ -6,6 +6,7 @@ import { LEAD_STATUSES, type LeadStatus } from '@tar/shared';
 import { useBulkLeads, useLeads } from '@/lib/queries';
 import { useAuth } from '@/lib/auth';
 import { LeadStatusBadge } from '@/components/lead-status-badge';
+import { ExportCsvButton } from '@/components/export-csv-button';
 import {
   LEAD_STATUS_META,
   LEAD_TYPE_LABEL,
@@ -72,11 +73,18 @@ export default function LeadsPage() {
 
   return (
     <div>
-      <header className="mb-6">
-        <h1 className="font-display text-2xl text-navy sm:text-3xl">Leads</h1>
-        <p className="mt-1 text-sm text-muted">
-          {total} {total === 1 ? 'lead' : 'leads'} en el pipeline.
-        </p>
+      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="font-display text-2xl text-navy sm:text-3xl">Leads</h1>
+          <p className="mt-1 text-sm text-muted">
+            {total} {total === 1 ? 'lead' : 'leads'} en el pipeline.
+          </p>
+        </div>
+        <ExportCsvButton
+          path={`/leads/export.csv${status === 'all' ? '' : `?status=${status}`}`}
+          filename={`leads-tar${status === 'all' ? '' : `-${status}`}.csv`}
+          className="inline-flex items-center gap-2 self-start rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm font-medium text-ink shadow-sm transition hover:bg-canvas disabled:opacity-50 sm:self-auto"
+        />
       </header>
 
       {/* Filtros por status */}

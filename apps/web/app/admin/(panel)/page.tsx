@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { useDashboard, type DashboardData } from '@/lib/queries';
 import { LeadStatusBadge } from '@/components/lead-status-badge';
+import { ExportCsvButton } from '@/components/export-csv-button';
 import { LEAD_TYPE_LABEL, formatDate, initials } from '@/lib/format';
 import {
   NBuilding,
@@ -156,7 +157,7 @@ function StatusChart({ data, total }: { data: DashboardData['statusMix']; total:
 }
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, can } = useAuth();
   const { data, isLoading, isError } = useDashboard();
 
   function exportCsv() {
@@ -193,13 +194,32 @@ export default function DashboardPage() {
           </h1>
           <p className="mt-1.5 text-sm text-muted">Resumen general de actividad.</p>
         </div>
-        <button
-          onClick={exportCsv}
-          disabled={!data}
-          className="flex items-center gap-2 self-start rounded-full border border-line bg-white px-4 py-2.5 text-[13px] font-medium text-ink transition hover:bg-canvas disabled:opacity-50 sm:self-auto"
-        >
-          <NUpload s={14} /> Exportar CSV
-        </button>
+        <div className="flex flex-wrap gap-2 self-start sm:self-auto">
+          {can('leads:read') && (
+            <ExportCsvButton
+              path="/leads/export.csv"
+              filename="leads-tar.csv"
+              label="Leads"
+              className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2.5 text-[13px] font-medium text-ink transition hover:bg-canvas disabled:opacity-50"
+            />
+          )}
+          {can('properties:read') && (
+            <ExportCsvButton
+              path="/properties/admin/export.csv"
+              filename="inventario-tar.csv"
+              label="Inventario"
+              className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2.5 text-[13px] font-medium text-ink transition hover:bg-canvas disabled:opacity-50"
+            />
+          )}
+          <button
+            onClick={exportCsv}
+            disabled={!data}
+            className="flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2.5 text-[13px] font-medium text-ink transition hover:bg-canvas disabled:opacity-50"
+            title="Descarga un resumen de indicadores (KPIs y mix de inventario)"
+          >
+            <NUpload s={14} /> Resumen
+          </button>
+        </div>
       </div>
 
       {isError && (
