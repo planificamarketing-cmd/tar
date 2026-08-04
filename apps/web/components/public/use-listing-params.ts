@@ -16,7 +16,7 @@ export type ListingParams = {
   maxArea: string; // m² construcción máx.
   q: string;
   sort: string; // relevancia | precio_asc | precio_desc | recientes
-  view: string; // grid | list
+  view: string; // grid | list | map
   page: string;
 };
 

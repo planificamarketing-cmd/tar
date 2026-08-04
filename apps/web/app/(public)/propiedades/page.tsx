@@ -5,8 +5,10 @@ import { PropertyRow } from '@/components/public/property-row';
 import { ListingSidebar } from '@/components/public/listing-sidebar';
 import { ListingControls } from '@/components/public/listing-controls';
 import { MobileFilters } from '@/components/public/mobile-filters';
+import { SearchMapPanel } from '@/components/public/search-map-loader';
 import { fetchProperties, fetchLocations, buildSuggestions } from '@/lib/public';
 import type { PublicPropertyFilters } from '@/lib/public';
+import type { MapSearchFilters } from '@/lib/maps';
 import type { PropertyType } from '@tar/shared';
 
 export const metadata: Metadata = {
@@ -62,10 +64,9 @@ export default async function ListingsPage({
     const n = Number(v);
     return v && Number.isFinite(n) && n > 0 ? n : undefined;
   };
-  const filters: PublicPropertyFilters = {
-    page,
-    limit: PER_PAGE,
-    sort: params.sort as PublicPropertyFilters['sort'],
+  // Filtros compartidos por listado y mapa. El mapa añade el bbox visible y no
+  // usa page/limit/sort (§6.2), así que estos se agregan solo para el listado.
+  const sharedFilters: MapSearchFilters = {
     ...(params.operation ? { operation: params.operation as 'venta' | 'renta' } : {}),
     ...(params.type ? { type: params.type as PropertyType } : {}),
     ...(numParam(params.minPrice) ? { minPrice: numParam(params.minPrice) } : {}),
@@ -76,6 +77,13 @@ export default async function ListingsPage({
     ...(numParam(params.minArea) ? { minArea: numParam(params.minArea) } : {}),
     ...(numParam(params.maxArea) ? { maxArea: numParam(params.maxArea) } : {}),
     ...(params.q ? { q: params.q } : {}),
+  };
+
+  const filters: PublicPropertyFilters = {
+    page,
+    limit: PER_PAGE,
+    sort: params.sort as PublicPropertyFilters['sort'],
+    ...sharedFilters,
   };
 
   const [result, locations] = await Promise.all([
@@ -131,7 +139,12 @@ export default async function ListingsPage({
 
         {/* Resultados */}
         <div className="min-w-0 flex-1">
-          {data.length === 0 ? (
+          {params.view === 'map' ? (
+            <SearchMapPanel
+              filters={sharedFilters}
+              className="h-[calc(100vh-230px)] min-h-[440px]"
+            />
+          ) : data.length === 0 ? (
             <div className="py-20 text-center">
               <div className="mb-2 font-display text-2xl text-navy">Sin resultados</div>
               <div className="text-sm text-muted">Prueba ajustando los filtros.</div>
@@ -150,8 +163,8 @@ export default async function ListingsPage({
             </div>
           )}
 
-          {/* Paginación */}
-          {totalPages > 1 && (
+          {/* Paginación (el mapa no pagina: dibuja todo el bbox visible) */}
+          {params.view !== 'map' && totalPages > 1 && (
             <div className="mt-9 flex flex-wrap justify-center gap-1.5">
               {paginationRange(page, totalPages).map((n, i) =>
                 n === '…' ? (

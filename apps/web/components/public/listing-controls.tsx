@@ -1,7 +1,7 @@
 'use client';
 
 import { useSetParams, type ListingParams } from './use-listing-params';
-import { IGrid, IList } from './icons';
+import { IGrid, IList, IMap } from './icons';
 
 const SORTS: [string, string][] = [
   ['relevancia', 'Relevancia'],
@@ -10,28 +10,39 @@ const SORTS: [string, string][] = [
   ['precio_desc', 'Precio ↓'],
 ];
 
-// Orden + alternar vista grid/lista del listado (escriben en la URL).
+const VIEWS = [
+  ['grid', IGrid, 'Vista de cuadrícula'],
+  ['list', IList, 'Vista de lista'],
+  ['map', IMap, 'Vista de mapa'],
+] as const;
+
+// Orden + alternar vista cuadrícula/lista/mapa del listado (escriben en la URL).
 export function ListingControls({ params }: { params: ListingParams }) {
   const setParams = useSetParams();
   return (
     <div className="flex items-center gap-2">
-      <select
-        value={params.sort}
-        onChange={(e) => setParams({ sort: e.target.value }, { keepPage: true })}
-        className="rounded-full border border-line bg-white px-3.5 py-2 text-[13px] font-medium text-ink outline-none"
-      >
-        {SORTS.map(([v, l]) => (
-          <option key={v} value={v}>
-            {l}
-          </option>
-        ))}
-      </select>
+      {/* El orden no aplica al mapa (muestra todos los pines del área visible). */}
+      {params.view !== 'map' && (
+        <select
+          value={params.sort}
+          onChange={(e) => setParams({ sort: e.target.value }, { keepPage: true })}
+          className="rounded-full border border-line bg-white px-3.5 py-2 text-[13px] font-medium text-ink outline-none"
+        >
+          {SORTS.map(([v, l]) => (
+            <option key={v} value={v}>
+              {l}
+            </option>
+          ))}
+        </select>
+      )}
       <div className="flex items-center gap-0.5 rounded-full border border-line p-[3px]">
-        {([['grid', IGrid], ['list', IList]] as const).map(([v, Ic]) => (
+        {VIEWS.map(([v, Ic, label]) => (
           <button
             key={v}
             type="button"
-            aria-label={v === 'grid' ? 'Vista de cuadrícula' : 'Vista de lista'}
+            aria-label={label}
+            title={label}
+            aria-pressed={params.view === v}
             onClick={() => setParams({ view: v }, { keepPage: true })}
             className={[
               'rounded-full px-3 py-1.5',
