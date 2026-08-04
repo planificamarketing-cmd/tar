@@ -1,0 +1,106 @@
+# STAGING (PRD §11) — mismo VPS, stack aparte, con su propia base de datos.
+# Sirve para medir las métricas §9 con Lighthouse en condiciones reales antes
+# del go-live, sin tocar producción.
+#
+# NO es un override de producción: es un stack independiente que se engancha a
+# la MISMA red para que el Caddy de producción pueda enrutar `staging.<dominio>`.
+# Por eso aquí no hay servicio `caddy` ni puertos publicados.
+#
+# Uso (producción debe estar levantada primero, porque crea la red):
+#   docker compose -f infra/docker-compose.staging.yml --env-file .env.staging up -d --build
+#
+# Requiere un `.env.staging` propio: misma forma que el `.env` de producción
+# pero con DATABASE_URL apuntando a `db-staging` y las URLs con `staging.`.
+
+name: tar-staging
+
+services:
+  db-staging:
+    image: postgis/postgis:16-3.4
+    container_name: tar-db-staging
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?falta POSTGRES_USER en .env.staging}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?falta POSTGRES_PASSWORD en .env.staging}
+      POSTGRES_DB: ${POSTGRES_DB:-tar_portal_staging}
+      TZ: ${TZ:-America/Mexico_City}
+    volumes:
+      - pgdata-staging:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB:-tar_portal_staging}',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    networks: [tar-net]
+
+  migrate-staging:
+    image: tar-api:staging
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    container_name: tar-migrate-staging
+    restart: 'no'
+    command: ['node', 'dist/migrate.cjs']
+    env_file: [../.env.staging]
+    environment:
+      NODE_ENV: production
+    depends_on:
+      db-staging:
+        condition: service_healthy
+    networks: [tar-net]
+
+  api-staging:
+    image: tar-api:staging
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    container_name: tar-api-staging
+    restart: unless-stopped
+    env_file: [../.env.staging]
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+    volumes:
+      - ${MEDIA_HOST_DIR_STAGING:-/srv/tar/media-staging}:/srv/tar/media
+    depends_on:
+      db-staging:
+        condition: service_healthy
+      migrate-staging:
+        condition: service_completed_successfully
+    networks: [tar-net]
+
+  web-staging:
+    image: tar-web:staging
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?falta NEXT_PUBLIC_API_URL en .env.staging}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:?falta NEXT_PUBLIC_SITE_URL en .env.staging}
+        NEXT_PUBLIC_MEDIA_HOSTNAME: ${NEXT_PUBLIC_MEDIA_HOSTNAME:-}
+        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:-}
+        NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID: ${NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID:-}
+    container_name: tar-web-staging
+    restart: unless-stopped
+    env_file: [../.env.staging]
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    depends_on:
+      api-staging:
+        condition: service_started
+    networks: [tar-net]
+
+volumes:
+  pgdata-staging:
+
+networks:
+  tar-net:
+    # La crea el stack de producción (`name: tar` → red `tar_tar-net`).
+    external: true
+    name: tar_tar-net

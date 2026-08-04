@@ -1,0 +1,136 @@
+# Producción (PRD §11). Se usa desde la RAÍZ del repo:
+#   docker compose -f infra/docker-compose.prod.yml up -d
+# o, mejor, con `./infra/deploy.sh`, que además compila y migra.
+#
+# Regla de seguridad: NINGÚN servicio publica puertos al host salvo `caddy`
+# (80/443). PostgreSQL y la API solo son alcanzables por la red interna de
+# Docker. No añadir `ports:` a `db`, `api` ni `web`.
+#
+# Las variables salen del `.env` de la RAÍZ del repo (no se commitea).
+
+name: tar
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: tar-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?falta POSTGRES_USER en .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?falta POSTGRES_PASSWORD en .env}
+      POSTGRES_DB: ${POSTGRES_DB:-tar_portal}
+      # Zona horaria del negocio: las fechas de leads/publicación se leen en local.
+      TZ: ${TZ:-America/Mexico_City}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB:-tar_portal}']
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    networks: [tar-net]
+
+  # Migraciones: corre UNA vez y termina. La API espera a que salga con éxito,
+  # así nunca arranca contra un esquema viejo (§11).
+  migrate:
+    image: tar-api:latest
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    container_name: tar-migrate
+    restart: 'no'
+    command: ['node', 'dist/migrate.cjs']
+    env_file: [../.env]
+    environment:
+      NODE_ENV: production
+      TZ: ${TZ:-America/Mexico_City}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [tar-net]
+
+  api:
+    image: tar-api:latest
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    container_name: tar-api
+    restart: unless-stopped
+    env_file: [../.env]
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      TZ: ${TZ:-America/Mexico_City}
+    volumes:
+      # Almacenamiento de imágenes en el disco del VPS (§4 storage local).
+      # MEDIA_DIR del .env debe ser la ruta DENTRO del contenedor: /srv/tar/media.
+      - ${MEDIA_HOST_DIR:-/srv/tar/media}:/srv/tar/media
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    networks: [tar-net]
+
+  web:
+    image: tar-web:latest
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+      # Las NEXT_PUBLIC_* se incrustan en el build (no al arrancar): si cambian,
+      # hay que reconstruir la imagen. `deploy.sh` lo hace siempre.
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?falta NEXT_PUBLIC_API_URL en .env}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:?falta NEXT_PUBLIC_SITE_URL en .env}
+        NEXT_PUBLIC_MEDIA_HOSTNAME: ${NEXT_PUBLIC_MEDIA_HOSTNAME:-}
+        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:-}
+        NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID: ${NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID:-}
+    container_name: tar-web
+    restart: unless-stopped
+    env_file: [../.env]
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      TZ: ${TZ:-America/Mexico_City}
+    depends_on:
+      api:
+        condition: service_started
+    networks: [tar-net]
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: tar-caddy
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp' # HTTP/3
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:?falta SITE_DOMAIN en .env (p. ej. tarinternacional.com)}
+      ACME_EMAIL: ${ACME_EMAIL:?falta ACME_EMAIL en .env (para los avisos de Let's Encrypt)}
+      TZ: ${TZ:-America/Mexico_City}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Sitios opcionales (staging). Vacío en una instalación normal.
+      - ./caddy-sites:/etc/caddy/sites:ro
+      # Media servida como estático por Caddy (más rápido que pasarla por Node).
+      - ${MEDIA_HOST_DIR:-/srv/tar/media}:/srv/tar/media:ro
+      - caddy-data:/data # certificados TLS — NO borrar (rate limits de Let's Encrypt)
+      - caddy-config:/config
+      - caddy-logs:/var/log/caddy
+    depends_on:
+      - api
+      - web
+    networks: [tar-net]
+
+volumes:
+  pgdata:
+  caddy-data:
+  caddy-config:
+  caddy-logs:
+
+networks:
+  tar-net:
+    driver: bridge

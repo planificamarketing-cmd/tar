@@ -1,0 +1,83 @@
+# Caddy de PRODUCCIÓN (PRD §11). Un solo origen: el sitio, la API y la media
+# viven bajo el MISMO dominio, así no hay CORS ni fricción con las cookies
+# httpOnly del panel. El reparto lo hace este archivo:
+#
+#   /api/*, /docs, /health   → contenedor `api`  (Express, :4000)
+#   /media/*                 → disco del VPS     (Caddy sirve el archivo directo)
+#   todo lo demás            → contenedor `web`  (Next.js, :3000)
+#
+# `SITE_DOMAIN` y `ACME_EMAIL` llegan del `.env` vía docker-compose.
+# TLS: automático con Let's Encrypt. Los certificados viven en el volumen
+# `caddy-data`; NO borrarlo (Let's Encrypt limita las re-emisiones).
+{
+	email {$ACME_EMAIL}
+	# Descomenta para probar contra el entorno de pruebas de Let's Encrypt sin
+	# gastar el cupo de certificados reales:
+	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+# www → dominio principal (una sola URL canónica, importante para SEO).
+www.{$SITE_DOMAIN} {
+	redir https://{$SITE_DOMAIN}{uri} permanent
+}
+
+{$SITE_DOMAIN} {
+	# Compresión (§9). Caddy 2 trae zstd y gzip integrados; el brotli de
+	# compresión requiere compilar Caddy con un plugin externo. zstd cubre a los
+	# navegadores modernos y gzip es el respaldo universal.
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "SAMEORIGIN"
+		Permissions-Policy "geolocation=(), microphone=(), camera=(), interest-cohort=()"
+		-Server
+	}
+
+	# ── Media (imágenes ya procesadas a WebP) ────────────────────────────────
+	# Se sirve desde disco, no desde Node. Los nombres de archivo son únicos por
+	# subida, así que la caché puede ser inmutable y de un año.
+	handle_path /media/* {
+		root * /srv/tar/media
+		header Cache-Control "public, max-age=31536000, immutable"
+		header Cross-Origin-Resource-Policy "cross-origin"
+		file_server
+	}
+
+	# ── API, documentación interactiva y health ──────────────────────────────
+	@api path /api/* /docs /docs/* /health /health/*
+	handle @api {
+		reverse_proxy api:4000 {
+			header_up X-Forwarded-Proto {scheme}
+		}
+	}
+
+	# ── Assets versionados de Next (el hash está en el nombre) ───────────────
+	@next_static path /_next/static/*
+	handle @next_static {
+		header Cache-Control "public, max-age=31536000, immutable"
+		reverse_proxy web:3000
+	}
+
+	# ── Sitio público y panel ────────────────────────────────────────────────
+	handle {
+		reverse_proxy web:3000 {
+			header_up X-Forwarded-Proto {scheme}
+		}
+	}
+
+	log {
+		output file /var/log/caddy/access.log {
+			roll_size 10MiB
+			roll_keep 5
+			roll_keep_for 720h
+		}
+	}
+}
+
+# Sitios adicionales opcionales (p. ej. staging). Caddy no falla si la carpeta
+# está vacía. Para activar staging: copiar `caddy-sites/staging.caddy.example`
+# a `caddy-sites/staging.caddy` y recargar Caddy. Ver docs/README-DEPLOY.md.
+import /etc/caddy/sites/*.caddy

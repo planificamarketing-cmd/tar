@@ -1,0 +1,33 @@
+# Contexto de build de las imágenes (api y web). Todo lo que no entre aquí
+# reduce el contexto que se envía al daemon y evita filtrar secretos o datos.
+
+# Secretos y datos con PII — NUNCA deben entrar a una imagen
+.env
+.env.*
+!.env.example
+data/
+
+# Dependencias y artefactos (se instalan/compilan dentro de la imagen)
+node_modules
+**/node_modules
+.next
+**/.next
+dist
+**/dist
+.turbo
+**/.turbo
+coverage
+**/coverage
+
+# Historia y herramientas de desarrollo
+.git
+.github
+.claude
+.vscode
+
+# Documentación y material que no afecta al runtime
+docs/
+design-reference/
+uploads/
+*.md
+!README.md

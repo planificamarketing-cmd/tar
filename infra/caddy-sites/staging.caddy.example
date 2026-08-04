@@ -1,0 +1,45 @@
+# Ambiente de STAGING (PRD §11) — plantilla.
+#
+# Para activarlo:
+#   1. Apuntar el DNS de `staging.<dominio>` al VPS.
+#   2. Generar el hash de la contraseña:
+#        docker exec tar-caddy caddy hash-password --plaintext 'LA-CONTRASEÑA'
+#   3. cp infra/caddy-sites/staging.caddy.example infra/caddy-sites/staging.caddy
+#      y reemplazar HASH_AQUI y el dominio.
+#   4. Levantar el stack de staging:
+#        docker compose -f infra/docker-compose.staging.yml up -d --build
+#   5. Recargar Caddy:  docker exec tar-caddy caddy reload --config /etc/caddy/Caddyfile
+#
+# `.caddy.example` NO lo carga Caddy (solo importa `*.caddy`), así que este
+# archivo puede vivir en el repo sin activar nada.
+
+staging.tarinternacional.com {
+	encode zstd gzip
+
+	# Acceso restringido: staging nunca debe ser público ni indexable.
+	basic_auth {
+		tar HASH_AQUI
+	}
+
+	header {
+		# Refuerzo por si el robots.txt de la app no bastara.
+		X-Robots-Tag "noindex, nofollow, noarchive"
+		-Server
+	}
+
+	respond /robots.txt "User-agent: *\nDisallow: /\n" 200
+
+	handle_path /media/* {
+		root * /srv/tar/media-staging
+		file_server
+	}
+
+	@api path /api/* /docs /docs/* /health /health/*
+	handle @api {
+		reverse_proxy api-staging:4000
+	}
+
+	handle {
+		reverse_proxy web-staging:3000
+	}
+}
