@@ -229,6 +229,21 @@ export function locationLabel(
   return [loc.colonia, loc.municipio].filter(Boolean).join(', ') || loc.estado || 'México';
 }
 
+// Dirección completa para mostrar (ficha, mapa). Une la calle con
+// "Colonia, Municipio" SIN repetirlas: en el inventario importado el campo
+// `address` ya suele traer la colonia, y concatenar a ciegas producía cosas como
+// "Roma Norte, Cuauhtémoc, Roma Norte, Cuauhtémoc".
+export function displayAddress(
+  address: string | null | undefined,
+  location: { colonia: string | null; municipio: string | null; estado: string | null } | null,
+): string {
+  const loc = locationLabel(location);
+  const addr = (address ?? '').trim();
+  if (!addr) return loc;
+  if (!loc || loc === 'México') return addr;
+  return normText(addr).includes(normText(loc)) ? addr : `${addr}, ${loc}`;
+}
+
 // Etiqueta de tipo en SINGULAR (para el pie de la tarjeta / ficha), como el
 // prototipo (TYPE_LABELS). El catálogo plural vive en lib/format (filtros).
 export const TYPE_LABEL_SINGULAR: Record<PropertyType, string> = {

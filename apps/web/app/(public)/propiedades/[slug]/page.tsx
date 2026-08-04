@@ -14,6 +14,7 @@ import {
   primaryOperation,
   formatPricePublic,
   locationLabel,
+  displayAddress,
   TYPE_LABEL_SINGULAR,
 } from '@/lib/public';
 import type { PropertyDetail } from '@/lib/types';
@@ -257,11 +258,7 @@ export default async function PropertyDetailPage({ params }: { params: { slug: s
                   lat={p.lat}
                   lng={p.lng}
                   title={p.title}
-                  address={
-                    p.address
-                      ? `${p.address}, ${locationLabel(p.location)}`
-                      : locationLabel(p.location)
-                  }
+                  address={displayAddress(p.address, p.location)}
                 />
               </div>
             )}
