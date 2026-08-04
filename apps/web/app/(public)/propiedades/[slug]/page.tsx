@@ -5,6 +5,7 @@ import { PropertyGallery, PropertyVideos } from '@/components/public/property-ga
 import { PropertyCard } from '@/components/public/property-card';
 import { LeadForm } from '@/components/public/lead-form';
 import { TrackView } from '@/components/public/track-view';
+import { PropertyMapPanel } from '@/components/public/property-map-loader';
 import { IPin, IBed, IBath, ICar, IRuler, ICheck, IVerif } from '@/components/public/icons';
 import {
   fetchProperty,
@@ -243,6 +244,25 @@ export default async function PropertyDetailPage({ params }: { params: { slug: s
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Ubicación en el mapa (§7.1) — solo si la propiedad tiene geo */}
+            {p.lat != null && p.lng != null && (
+              <div className="rounded-[18px] border border-[#F1F1F0] bg-white p-5 lg:p-8">
+                <h3 className="mb-4 font-display text-[22px] font-bold text-navy">
+                  Ubicación
+                </h3>
+                <PropertyMapPanel
+                  lat={p.lat}
+                  lng={p.lng}
+                  title={p.title}
+                  address={
+                    p.address
+                      ? `${p.address}, ${locationLabel(p.location)}`
+                      : locationLabel(p.location)
+                  }
+                />
               </div>
             )}
 

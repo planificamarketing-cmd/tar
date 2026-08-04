@@ -6,6 +6,8 @@ import type { PropertyFormValues } from '@/lib/property-form';
 import { Combobox } from './combobox';
 import { resolveMapsLocation, useLocations } from '@/lib/queries';
 import { normalizeText } from '@/lib/text';
+import { mapsEnabled } from '@/lib/maps';
+import { LocationMapPanel } from './location-map-loader';
 
 type Props = {
   value: PropertyFormValues;
@@ -27,12 +29,13 @@ const labelCls = 'mb-1.5 block text-xs font-semibold uppercase tracking-wide tex
 const inputCls =
   'w-full rounded-xl border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition focus:border-brand';
 
-// LocationPicker — versión sin la API de Google (key pendiente del cliente).
-// Captura estado/municipio/colonia + dirección y fija el punto por coordenadas.
-// Al pegar un enlace de Google Maps se autocompletan estado/municipio/colonia/
-// dirección/CP + coordenadas con lo que el enlace permita (los enlaces cortos se
-// expanden en el servidor). Al integrar la API key, se sustituye por un mapa con
-// pin arrastrable sin tocar el formulario.
+// LocationPicker — captura estado/municipio/colonia + dirección y fija `geo`.
+// Tres formas de poner el punto, de la más cómoda a la de respaldo:
+//   1. Mapa interactivo (clic o pin arrastrable) — requiere la API key de Google.
+//   2. Pegar un enlace de Google Maps: autocompleta estado/municipio/colonia/
+//      dirección/CP + coordenadas (los enlaces cortos se expanden en el servidor).
+//   3. Escribir latitud/longitud a mano.
+// Sin API key el mapa no se muestra y (2) y (3) siguen operando igual.
 export function LocationPicker({ value, onChange }: Props) {
   const [paste, setPaste] = useState('');
   const [pasteMsg, setPasteMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(
@@ -42,6 +45,15 @@ export function LocationPicker({ value, onChange }: Props) {
   const { data: locs = [] } = useLocations();
 
   const hasGeo = value.lat.trim() !== '' && value.lng.trim() !== '';
+
+  // El formulario guarda lat/lng como texto (permite vaciarlos); el mapa necesita
+  // números. Un valor a medio escribir ("-99.") se trata como "sin punto".
+  const toNum = (s: string): number | null => {
+    const n = Number(s.trim());
+    return s.trim() !== '' && Number.isFinite(n) ? n : null;
+  };
+  const latNum = toNum(value.lat);
+  const lngNum = toNum(value.lng);
 
   // Opciones en cascada: estado → municipios de ese estado → colonias de esa combinación.
   const estadoOpts = useMemo(() => uniqueByNorm(locs.map((l) => l.estado)), [locs]);
@@ -189,6 +201,22 @@ export function LocationPicker({ value, onChange }: Props) {
             {hasGeo ? 'Ubicado' : 'Sin ubicar — requerido para publicar'}
           </span>
         </div>
+
+        {mapsEnabled && (
+          <div className="mt-3">
+            <LocationMapPanel
+              lat={latNum}
+              lng={lngNum}
+              onPick={(lat, lng) =>
+                onChange({ lat: lat.toFixed(6), lng: lng.toFixed(6) })
+              }
+            />
+            <p className="mt-1.5 text-xs text-muted">
+              Haz clic en el mapa o arrastra el pin para ajustar el punto exacto. Las
+              coordenadas de abajo se actualizan solas.
+            </p>
+          </div>
+        )}
 
         <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
