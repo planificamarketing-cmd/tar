@@ -142,7 +142,7 @@ _12 tests (7 leads + 5 webhooks, incl. firma HMAC). Entrega real verificada en `
 **Objetivo:** alcanzar las métricas comprometidas (§9) y blindar calidad (§10).
 
 - [ ] **Aprovisionar el servidor Ubuntu 24.04** del cliente siguiendo `SETUP_SERVIDOR_UBUNTU.md` (hardening SSH, UFW, fail2ban, swap, Docker, timezone, unattended-upgrades). Cerrar su checklist §10.
-- [ ] Levantar ambiente **staging** (`staging.`, BD separada, no indexable, auth básica) con seed realista para auditorías.
+- [~] Ambiente **staging** (`staging.`, BD separada, no indexable, auth básica): **infraestructura lista** (`infra/docker-compose.staging.yml` + `infra/caddy-sites/staging.caddy.example`, documentado en `docs/README-DEPLOY.md` §6). Falta levantarlo con seed realista — requiere el servidor.
 - [ ] E2E Playwright: login admin, publicar propiedad, búsqueda con filtros, envío de lead.
 - [ ] Auditoría Lighthouse CI sobre `/propiedades` móvil **en staging (servidor real)**; iterar hasta: Performance ≥90, LCP <2.5s, INP <100ms, CLS <0.10, TTFB <600ms, galería <1s.
 - [ ] Optimización: caché HTTP (Cache-Control + ETag) en GET públicos, revisar índices BD, brotli/gzip, eliminar JS muerto, presupuesto de imágenes.
@@ -158,10 +158,10 @@ _12 tests (7 leads + 5 webhooks, incl. firma HMAC). Entrega real verificada en `
 
 **Objetivo:** salir a producción y transferir propiedad total (§11, §14, §15).
 
-- [ ] Desplegar producción con `infra/deploy.sh` (Docker Compose + Caddy, TLS automático, brotli) sobre el servidor ya aprovisionado en FASE QA.
-- [ ] Activar respaldos en 3 capas: cron local (`pg_dump` + tar de media, retención 30 días) + **sincronización diaria a Cloudflare R2 vía rclone** (bucket del cliente con regla de ciclo de vida) + snapshots de Hostinger; respaldo semanal de código; **probar restore <2h desde R2** en contenedor limpio.
+- [~] Desplegar producción con `infra/deploy.sh` (Docker Compose + Caddy, TLS automático). **Todo el mecanismo está construido y probado de punta a punta en local**: `apps/api/Dockerfile`, `apps/web/Dockerfile`, `infra/docker-compose.prod.yml`, `infra/Caddyfile`, `infra/deploy.sh` y el alta del primer administrador (`dist/create-admin.cjs`). Falta ejecutarlo **sobre el servidor del cliente**. _(Desviación: Caddy 2 no trae brotli de compresión; se usa **zstd + gzip**, documentado en `docs/README-DEPLOY.md` §8.)_
+- [~] Respaldos en 3 capas: **scripts construidos y probados** (`infra/backup/backup.sh` con verificación de integridad + rotación 30 días + `rclone sync` a R2; `infra/backup/restore.sh` con `--dry-run` y recreación de la BD). **Restore verificado en local**. Falta activar el cron, configurar R2/snapshots del proveedor y **repetir la prueba de restore <2h desde R2** en el servidor real.
 - [ ] Configurar UptimeRobot.
-- [ ] Generar entregables (§15): `docs/openapi.json`, `docs/ERD.pdf` + `schema.sql`, manual de administración (PDF), `docs/README-DEPLOY.md`, `SETUP_SERVIDOR_UBUNTU.md` con checklist cerrado.
+- [~] Entregables (§15): ✅ `docs/openapi.json`, ✅ `docs/schema.sql`, ✅ `docs/ERD.md`, ✅ `docs/MANUAL-ADMIN.md`, ✅ **`docs/README-DEPLOY.md`**. Falta: ERD y manual en **PDF**, y cerrar el checklist de `SETUP_SERVIDOR_UBUNTU.md` (requiere el servidor).
 - [ ] **Corrida definitiva del importador** con CSV fresco del cliente (el inventario habrá cambiado); revisar en admin las propiedades en `borrador` por geocoding fallido y fijar pines. ⚠️ **Ejecutar ANTES de que TAR cancele EasyBroker**: al cancelar, las URLs de `assets.easybroker.com` mueren y las imágenes serían irrecuperables. Verificar el reporte del importador (imágenes descargadas vs. esperadas) antes de autorizar la cancelación.
 - [ ] Capacitación del equipo del cliente sobre el backoffice.
 - [ ] Entrega formal de credenciales/accesos (dominio, servidor, APIs, repo, panel).

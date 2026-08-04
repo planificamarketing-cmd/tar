@@ -37,9 +37,12 @@ ponerla en marcha, qué se puede y qué no, y el significado de cada cosa.
   (acceso, propiedades, leads, usuarios, integraciones/webhooks, scripts), para
   personas no técnicas.
 
-### Despliegue (se completa en Fase Lanzamiento)
-- **SETUP_SERVIDOR_UBUNTU.md** (raíz) — aprovisionamiento del servidor.
-- **README-DEPLOY.md** _(pendiente, Fase Lanzamiento)_.
+### Despliegue
+- **SETUP_SERVIDOR_UBUNTU.md** (raíz) — aprovisionamiento del servidor (firewall,
+  SSH, Docker, zona horaria). Es el paso previo.
+- **[README-DEPLOY.md](README-DEPLOY.md)** — instalación, actualizaciones,
+  respaldos, restauración, ambiente de pruebas, solución de problemas y lista de
+  verificación para el arranque.
 
 ## Estado del proyecto (corte 2026-06-11)
 | Fase | Estado |
