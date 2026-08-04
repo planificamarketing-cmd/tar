@@ -36,7 +36,9 @@ Plantillas: [`_plantilla-semanal.md`](_plantilla-semanal.md) ·
 | 6 | Cierre Fase A + verificación · inicio Fase C | [semana-06](semana-06.md) | ✅ |
 | 7 | Fase C Backoffice (fundación, dashboard/leads, propiedades) | [semana-07](semana-07.md) | ✅ |
 | 8 | Fase C Backoffice (usuarios, integraciones, scripts) · **cierre** | [semana-08](semana-08.md) | ✅ |
-| 8–13 | Fase B Frontend público | _(tras firma diseño)_ | ⛔ |
+| 9 | Fase B Frontend público (inicio, catálogo, ficha, empresa, SEO) | [semana-09](semana-09.md) | ✅ |
+| 10 | Fase B — mapa interactivo (buscador, ficha y panel) | [semana-10](semana-10.md) | ✅ |
+| 11–13 | Fase B — pulido y ajustes del cliente | _(en curso)_ | ⏳ |
 | 14–15 | Fase QA | — | ⏳ |
 | 16 | Lanzamiento | — | ⏳ |
 

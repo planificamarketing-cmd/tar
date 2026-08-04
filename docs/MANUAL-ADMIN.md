@@ -96,17 +96,20 @@ En **Propiedades** ves **todas** las propiedades, en cualquier estado (incluidos
 ### 4.4 La ubicación en el mapa
 La propiedad necesita un **punto en el mapa** para poder publicarse. En la sección
 **Ubicación** capturas estado, municipio/alcaldía, colonia y dirección, y fijas el
-punto de una de estas formas:
+punto de una de estas formas (de la más cómoda a la de respaldo):
 
-- Escribiendo **latitud y longitud**, o
-- **Pegando un enlace de Google Maps** (el sistema extrae las coordenadas) y pulsando
-  **Fijar**.
+- **En el mapa:** haz clic donde está el inmueble o **arrastra el pin** para ajustarlo.
+  Las coordenadas de abajo se actualizan solas.
+- **Pegando un enlace de Google Maps** (el sistema extrae las coordenadas y, si el
+  enlace lo trae, también estado, municipio, colonia, dirección y CP) y pulsando
+  **Autocompletar**.
+- Escribiendo **latitud y longitud** a mano.
 
 Un distintivo indica si ya está **Ubicado** o **Sin ubicar**.
 
-> 🔧 *Próxima mejora:* cuando esté disponible la llave de Google Maps del cliente, esta
-> sección mostrará un **mapa con un pin arrastrable**. Mientras tanto, las coordenadas
-> manuales o el enlace de Maps cumplen la misma función.
+> ℹ️ El mapa aparece cuando está configurada la **llave de Google Maps** de TAR. Si aún
+> no lo está, las otras dos formas siguen funcionando igual y la propiedad se puede
+> publicar sin problema.
 
 ### 4.5 Imágenes
 En la ficha de la propiedad, sección **Imágenes**:
@@ -397,10 +400,10 @@ entregas fallidas quedan en la **bitácora** para reintentarlas.
 ---
 
 ## 10. Qué falta (para tener todo el panorama)
-- **Sitio público** (búsqueda, fichas, formulario de leads, mapa, inyección de los
-  scripts): **Fase B**, en pausa hasta la **firma del diseño**.
-- **Mapa con pin arrastrable** en la ubicación de propiedades: al integrar la **llave
-  de Google Maps** del cliente (mientras tanto, coordenadas o enlace de Maps).
+- **Firma del diseño** por parte de TAR: cierra la ventana de cambios de interfaz.
+- **Llave de Google Maps** de TAR: activa el mapa en el panel y en el sitio público
+  (la vista de mapa del buscador y el mapa de cada ficha). Sin ella todo lo demás
+  funciona; solo se muestra un aviso en lugar del mapa.
 - **Salida a producción** (dominio, respaldos, capacitación): Fase de Lanzamiento.
 
 > Glosario de términos: **[GLOSARIO.md](GLOSARIO.md)**. Documentación técnica de la

@@ -65,8 +65,12 @@ Usuario de prueba del panel: **`admin@tarinternacional.com` / `admin123`**.
 
 ### 🔑 Depende de insumos del cliente
 - **Firma del prototipo v3** → desbloquea la Fase B.
-- **API key de Google Maps** → mapa real en el público y **geocoding** del importador
-  (sin ella, las propiedades importadas quedan en *borrador* para ubicar a mano).
+- **API key de Google Maps** (`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`, más el
+  `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID` de la misma cuenta) → activa la **vista de mapa**
+  del buscador, el **mapa de cada ficha** y el **pin arrastrable** del panel. Sin ella
+  el sitio funciona completo y esos tres puntos muestran un aviso, sin error.
+  La misma cuenta cubre el **geocoding** del importador (`GOOGLE_GEOCODING_API_KEY`);
+  sin él las propiedades importadas quedan en *borrador* para ubicar a mano.
 - **Cuenta SendGrid** → envío real de emails de leads (sin ella, no falla; solo no envía).
 - **Dominio definitivo**, **servidor Ubuntu** y **Cloudflare R2** (respaldos) → para el
   **Lanzamiento**.
