@@ -60,18 +60,16 @@ Usuario de prueba del panel: **`admin@tarinternacional.com` / `admin123`**.
 - Mostrar el **prototipo** de diseño navegable.
 
 ### ⏳ Aún no (en construcción)
-- **Sitio público (frontend)** — **bloqueado hasta que el cliente firme el diseño**
-  (Fase B).
+- **Auditoría de rendimiento (Lighthouse §9)** y **pruebas de extremo a extremo**:
+  requieren el servidor del cliente (Fase QA).
 
 ### 🔑 Depende de insumos del cliente
 - **Firma del prototipo v3** → desbloquea la Fase B.
-- **API key de Google Maps** — **opcional, hoy NO contratada por decisión del cliente.**
-  El mapa está construido y desactivado: sin la llave el sitio funciona completo y el
-  botón de mapa ni siquiera aparece (nada se ve a medias). Para encenderlo basta con
-  poner `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` y `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID` (de la
-  misma cuenta de Google Cloud) y **volver a desplegar** — sin desarrollo adicional.
-  La misma cuenta cubriría el **geocoding** del importador (`GOOGLE_GEOCODING_API_KEY`);
-  sin él las propiedades importadas quedan en *borrador* para ubicar a mano.
+- **Mapa: ya NO depende del cliente.** Funciona con Leaflet + OpenStreetMap, sin
+  llave ni cuenta de facturación (desviación del PRD §7.0 acordada el 2026-08-03).
+- **API key de geocoding de Google** (`GOOGLE_GEOCODING_API_KEY`) → *opcional*, solo
+  para ubicar automáticamente las propiedades al importarlas. Sin ella quedan en
+  *borrador* y se ubican a mano desde el panel (con el mapa, arrastrando el pin).
 - **Cuenta SendGrid** → envío real de emails de leads (sin ella, no falla; solo no envía).
 - **Dominio definitivo**, **servidor Ubuntu** y **Cloudflare R2** (respaldos) → para el
   **Lanzamiento**.
@@ -116,5 +114,6 @@ Notas:
 ## 8. Notas de producción (resumen; detalle en Lanzamiento)
 - En el VPS **no** se exponen los puertos de Postgres ni de la API: solo **Caddy**
   (80/443) es público (TLS automático). La media la sirve Caddy desde el disco.
-- Migración al VPS = clonar repo + `.env` de prod + desplegar. La guía completa de
-  despliegue (`README-DEPLOY.md`) se entrega en la Fase Lanzamiento.
+- Migración al VPS = clonar repo + `.env` de prod + `./infra/deploy.sh`. La guía
+  completa está en **[README-DEPLOY.md](README-DEPLOY.md)** (instalación, respaldos,
+  restauración y solución de problemas).

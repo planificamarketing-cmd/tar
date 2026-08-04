@@ -2,9 +2,9 @@
 
 > **Partida guardada del proyecto.** Este archivo (+ `git log`) es lo ÚNICO que se lee al iniciar sesión. NO releer el PRD, el plan ni el código completos: consultar solo la sección puntual que toque la tarea en curso. Se regenera (se sobrescribe) al final de cada sesión.
 
-**Última actualización:** 2026-08-03 · sesión: **MAPA INTERACTIVO + INFRAESTRUCTURA DE PRODUCCIÓN**. Dos bloques grandes: (1) se reactivó el mapa que estaba descartado y se construyó completo; (2) se construyó desde cero toda la infra de despliegue, que **no existía** — el proyecto no se podía desplegar. **112 tests API en verde**, `lint` + `typecheck` en verde, **stack de producción probado de punta a punta en local** (incluida la restauración de respaldos).
+**Última actualización:** 2026-08-04 · sesión: **MAPA (Google → Leaflet) + INFRAESTRUCTURA DE PRODUCCIÓN**. Tres bloques: (1) se reactivó el mapa que estaba descartado y se construyó completo; (2) se construyó desde cero toda la infra de despliegue, que **no existía**; (3) al descartar el cliente la cuenta de Google, se **migró el mapa a Leaflet + OpenStreetMap** (sin llave). **112 tests API en verde**, `lint` + `typecheck` + `build` en verde, **stack de producción probado de punta a punta** y **mapa verificado con capturas en navegador real**.
 
-**Fase actual:** cierre de **FASE B** + adelanto de **FASE QA/LANZAMIENTO**. Avance global ~96%. Lo que falta depende del cliente (servidor, datos reales, inventario publicado) o es QA medible solo en el servidor. **El mapa queda construido y desactivado**: el cliente decidió no contratar la key de Google Maps por ahora.
+**Fase actual:** cierre de **FASE B** + adelanto de **FASE QA/LANZAMIENTO**. Avance global ~96%. Lo que falta depende del cliente (servidor, datos reales, inventario publicado) o es QA medible solo en el servidor. **El mapa funciona sin depender de nadie**: Leaflet + OpenStreetMap, sin llave ni cuenta.
 
 ---
 
@@ -13,19 +13,19 @@ Backend ya existía (`GET /properties/map`, PostGIS `ST_Within` + bbox); todo lo
 
 1. **`SearchMap`** — tercera vista del listado (`/propiedades?view=map`, botón junto a cuadrícula/lista).
    - **supercluster** en cliente (`radius 64`, `maxZoom 16`, `minPoints 3`).
-   - Marcadores **price-pill** (`map-marker.tsx`): navy, **dorado + ★** premium/destacada, **rojo de marca** al seleccionar; burbuja con conteo para clusters (clic → `getClusterExpansionZoom` + `panTo`).
+   - Marcadores **price-pill** (`map-marker.ts`): navy, **dorado + ★** premium/destacada, **rojo de marca** al seleccionar; burbuja con conteo para clusters (clic → `getClusterExpansionZoom` + `setView`).
    - **Clic en pin → vista previa** (`map-preview-card.tsx`): miniatura, ubicación, specs, precio, enlace a la ficha. Se pide bajo demanda a `/properties/:slug` y se memoriza.
-   - **Búsqueda por desplazamiento**: `idle` → bbox → refetch con `AbortController`. Casilla "Buscar al mover el mapa" (ON); apagada aparece "Buscar en esta zona".
+   - **Búsqueda por desplazamiento**: `moveend` (cubre arrastre y zoom) → bbox → refetch con `AbortController`. Casilla "Buscar al mover el mapa" (ON); apagada aparece "Buscar en esta zona".
    - Encuadre inicial: primera carga **sin bbox** → `fitBounds`; luego manda el bbox visible. Cambiar filtros vuelve a encuadrar (`filtersKey`).
-2. **Mapa en la ficha** (`property-map.tsx`): sección "Ubicación" con pin, dirección y **"Cómo llegar"**. Solo si hay `geo`.
+2. **Mapa en la ficha** (`property-map.tsx`): sección "Ubicación" con pin, dirección y **"Cómo llegar"** (enlace a Google Maps del visitante, no cuesta nada). Solo si hay `geo`. `scrollWheelZoom={false}` para no secuestrar el scroll de la página.
+   - Fix detectado en las capturas: la dirección salía **duplicada** ("Roma Norte, Cuauhtémoc, Roma Norte, Cuauhtémoc") cuando el campo `address` ya incluía la colonia — habitual en datos importados. Nuevo helper `displayAddress()` en `lib/public.ts`.
 3. **`LocationPicker` con mapa** (`location-map.tsx`): clic o **pin arrastrable**; `Recenter` reposiciona al pegar un enlace de Maps o teclear coordenadas (no al arrastrar). Pegado de enlaces y captura manual siguen como respaldo.
 4. **Rendimiento (§9)**: los tres mapas con `next/dynamic ssr:false` desde wrappers `*-loader.tsx` → chunks aparte; **First Load JS de `/propiedades` sin cambio (~110 kB)**.
-5. **Desactivado limpiamente sin API key** (decisión del cliente 2026-08-03: no se contrata por ahora). `mapsEnabled` (`lib/maps.ts`) false →
-   - el **botón de mapa no se renderiza** en `listing-controls.tsx`;
-   - `?view=map` **cae a la cuadrícula** en la página del listado (enlaces viejos/compartidos);
-   - la ficha muestra **dirección + botón "Ver en Google Maps"** (útil, sin costo);
-   - el `LocationPicker` oculta el mapa y deja el pegado de enlaces + coordenadas.
-   Los textos públicos **no mencionan llaves ni configuración**. Se enciende agregando la key y redesplegando, sin tocar código.
+5. **PROVEEDOR: Leaflet + CARTO/OpenStreetMap, NO Google Maps** (desviación del PRD §7.0, decidida con el cliente el 2026-08-03: no quiso abrir cuenta de facturación en Google). Sin llave, sin tarjeta, sin cuotas. Los mosaicos son **configurables por entorno** (`NEXT_PUBLIC_MAP_TILES_URL` / `..._ATTRIBUTION`) para poder cambiar de proveedor sin tocar código; por defecto CARTO "voyager". **La atribución es obligatoria por licencia de OSM: no quitarla.**
+   - Se eliminaron `@vis.gl/react-google-maps`, `@types/google.maps` y todo el *gating* por API key (`mapsEnabled` ya no existe).
+   - `map-marker.tsx` → `map-marker.ts`: los marcadores pasaron de componentes React a **funciones que devuelven HTML** (Leaflet usa `divIcon`, que recibe una cadena) — así se evita meter `react-dom/server` en el bundle. Las clases de Tailwind dentro de las plantillas SÍ las detecta el rastreador.
+   - Anclaje de marcadores: icono de **0×0** + contenido en absoluto con `translate(-50%,-100%)`, para que la punta caiga en la coordenada sin importar el ancho de la etiqueta.
+   - El control de zoom va **abajo a la derecha** (`zoomControl={false}` + `<ZoomControl position="bottomright" />`): arriba a la izquierda tapaba el contador.
 
 **Verificado:** `/properties/map` → 12 puntos, **9** con bbox CDMX, **0** en Yucatán, **7** con `operation=renta`, **6** combinando → bbox y filtros componen. Rutas `?view=map` → 200.
 
@@ -63,7 +63,7 @@ No existía **nada**: ni `deploy.sh`, ni `Caddyfile`, ni compose de producción,
 ## Siguiente — pendientes
 **Depende del cliente (bloquea "cerrar"):**
 - 🖥️ **Servidor Ubuntu + dominio** → para ejecutar el despliegue que ya está construido y probado.
-- 🗺️ **Mapa: NO se contrata la key por ahora** (decisión 2026-08-03). No es un pendiente ni un bloqueo: queda construido y desactivado. Si algún día se activa → poner `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` + `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID`, restringir por referrer al dominio y redesplegar. **No volver a tocar código del mapa.**
+- 🗺️ **Mapa: ya no depende del cliente.** Funciona con Leaflet + OpenStreetMap. Lo único pendiente es **dejar por escrito la desviación** respecto al PRD §7.0 (que contemplaba Google Maps). No bloquea nada.
 - Datos reales de contacto + Aviso de Privacidad oficial.
 - **Publicar el inventario real con ubicación** (105 props en borrador sin geo → mapa y sitio casi vacíos).
 - SendGrid, `NEXT_PUBLIC_MEDIA_HOSTNAME`, `REVALIDATE_SECRET`, Cloudflare R2.

@@ -22,7 +22,7 @@ Ambas caras hablan con una **API REST** central respaldada por una base de datos
 | Email | **SendGrid** |
 | Frontend | **Next.js 14 (App Router) + React 18 + Tailwind v3** |
 | Datos en cliente | TanStack Query v5 |
-| Mapa (producción) | Google Maps + supercluster |
+| Mapa (producción) | Leaflet + mosaicos CARTO/OpenStreetMap + supercluster (sin llave; desviación del PRD §7.0 acordada con el cliente) |
 | Pruebas | **Vitest + Supertest** (+ Playwright/Lighthouse en QA) |
 | Docs API | OpenAPI 3.0 (zod-to-openapi) + Swagger UI en `/docs` |
 

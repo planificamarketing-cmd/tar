@@ -87,7 +87,7 @@ Recomendadas:
 | Variable | Para qué |
 |---|---|
 | `NEXT_PUBLIC_MEDIA_HOSTNAME` | `tarinternacional.com` — permite optimizar las fotos |
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` + `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID` | Activan el mapa. Sin ellas el sitio funciona y el mapa muestra un aviso |
+| `NEXT_PUBLIC_MAP_TILES_URL` + `NEXT_PUBLIC_MAP_TILES_ATTRIBUTION` | Solo para cambiar de proveedor de mosaicos del mapa. Vacías = CARTO/OpenStreetMap por defecto, que **no requiere llave ni cuenta** |
 | `SENDGRID_API_KEY` + `LEADS_NOTIFY_TO` | Envío de correos al recibir un prospecto |
 | `REVALIDATE_SECRET` | Que los cambios del panel se vean al instante. **Mismo valor** que usa el sitio |
 | `GOOGLE_GEOCODING_API_KEY` | Ubicar automáticamente las propiedades al importarlas |
@@ -162,7 +162,7 @@ cd /opt/tar
 ```
 
 Es el mismo comando. Reconstruye siempre las imágenes, porque el dominio y la
-llave de Google Maps quedan **incrustados** en el sitio al construirlo: cambiar
+proveedor de mosaicos del mapa quedan **incrustados** en el sitio al construirlo: cambiar
 esas variables exige reconstruir, no basta reiniciar.
 
 Variantes:
@@ -305,7 +305,7 @@ docker exec tar-caddy caddy reload --config /etc/caddy/Caddyfile
 | El sitio no carga y no hay candado | El DNS no apunta al servidor todavía | Verificar los registros A; `docker compose logs caddy` |
 | "Carpeta de media ausente" | Falta `/srv/tar/media` | Crearla con el paso 2.2 |
 | Las fotos no se ven | `MEDIA_BASE_URL` o `NEXT_PUBLIC_MEDIA_HOSTNAME` mal puestos | Corregir y **volver a desplegar** (se reconstruye el sitio) |
-| El mapa dice "no disponible" | Falta la llave de Google Maps | Agregar `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` y `..._MAP_ID`, y redesplegar |
+| El mapa sale en gris, sin calles | El servidor no alcanza el proveedor de mosaicos | Comprobar la salida a internet del servidor; si hace falta, cambiar `NEXT_PUBLIC_MAP_TILES_URL` a otro proveedor |
 | Los cambios del panel tardan en verse | Falta `REVALIDATE_SECRET` o no coincide | Poner el **mismo valor** en la API y en el sitio |
 | La API responde pero `"db": false` | La base no arrancó o la contraseña cambió | `docker compose logs db`; revisar `DATABASE_URL` |
 | No puedo entrar al panel de una instalación nueva | Todavía no hay usuarios | Crear el administrador con el paso 2.6 |
@@ -357,7 +357,7 @@ debe responder `200` con `"status":"ok"` y `"db":true`.
 - [ ] Cloudflare R2 configurado y con regla de ciclo de vida.
 - [ ] Snapshots del proveedor del VPS activados.
 - [ ] UptimeRobot vigilando `https://dominio/health`.
-- [ ] Llave de Google Maps restringida al dominio final.
+- [ ] Mapa comprobado en el dominio final (se cargan los mosaicos y se ven los marcadores).
 
 ---
 

@@ -8,7 +8,7 @@ Mapeado al roadmap de 16 semanas del documento comercial. Cada fase tiene **tare
 
 **Objetivo:** monorepo operativo, BD levantada, CI básico.
 
-> **Nota de infraestructura:** las Fases 0–B se desarrollan **100% en equipo local** (Docker Compose para la BD; api/web con `pnpm dev`). El servidor del cliente NO se necesita hasta la FASE QA (semanas 14–15); no tenerlo las primeras semanas no bloquea nada. Lo único que sí se necesita antes de la Fase B: API key de Google Maps y cuenta SendGrid (pueden ser keys de desarrollo temporales).
+> **Nota de infraestructura:** las Fases 0–B se desarrollan **100% en equipo local** (Docker Compose para la BD; api/web con `pnpm dev`). El servidor del cliente NO se necesita hasta la FASE QA (semanas 14–15); no tenerlo las primeras semanas no bloquea nada. Lo único que sí se necesita antes de la Fase B: cuenta SendGrid (puede ser una key de desarrollo temporal). _(El mapa ya no necesita llave: usa Leaflet + OpenStreetMap.)_
 
 - [x] Inicializar monorepo: `pnpm-workspace.yaml`, `turbo.json`, ESLint + Prettier + tsconfig base compartido, `.gitattributes` (LF), `.nvmrc` (Node 20).
 - [x] BD local **con Docker** (misma imagen `postgis/postgis:16-3.4` que producción), nunca instalación nativa — asegura paridad con el VPS.
@@ -124,7 +124,7 @@ _12 tests (7 leads + 5 webhooks, incl. firma HMAC). Entrega real verificada en `
 - [x] Layout público + inyección dinámica de `marketing_scripts` por placement. _(grupo `(public)` con layout header/footer; `MarketingScripts` recrea los nodos `<script>` para que se ejecuten; endpoint público `GET /scripts/public` agrupado por placement.)_
 - [x] Home (`/`) SSG+ISR: buscador destacado (venta/renta, ubicación, tipo) + **sección Premium/Destacadas arriba** + **sección Recientes**. _(hero con `HeroSearch`, stats, destacadas, "explora por categoría", catálogo reciente, FAQ.)_
 - [x] Listado (`/propiedades`) SSR: filtros (operación, tipo, **precio máximo por operación**, recámaras, búsqueda por ubicación con autocompletado) + **ordenamiento** + alternar **cuadrícula/lista** + paginación. Filtros en la URL (compartibles/indexables). _(Sin vista de mapa — sustituida por búsqueda de texto, decisión del cliente. El "slider" del prototipo eran selects; se replicó igual.)_
-- [x] `SearchMap` (§7.1, §7.3): vista **mapa/lista/cuadrícula** alternable en `/propiedades`, Google Maps Platform + **clustering en cliente con supercluster**, marcadores **price-pill** (navy, dorado si es premium, rojo si está seleccionado), **clic en pin → vista previa** con miniatura y **búsqueda por desplazamiento** (bbox, con interruptor "Buscar al mover el mapa"). Carga con `next/dynamic ssr:false` → chunk aparte, fuera del bundle inicial. _(Se reactivó tras estar descartado; el autocompletado de dirección se mantiene como vía alternativa.)_
+- [x] `SearchMap` (§7.1, §7.3): vista **mapa/lista/cuadrícula** alternable en `/propiedades`, **Leaflet + mosaicos CARTO/OpenStreetMap** (sin llave) + **clustering en cliente con supercluster**, marcadores **price-pill** (navy, dorado si es premium, rojo si está seleccionado), **clic en pin → vista previa** con miniatura y **búsqueda por desplazamiento** (bbox, con interruptor "Buscar al mover el mapa"). Carga con `next/dynamic ssr:false` → chunk aparte, fuera del bundle inicial. _(Se reactivó tras estar descartado. **Desviación del PRD §7.0**: el PRD contrataba Google Maps Platform, pero el cliente descartó abrir cuenta de facturación (2026-08-03) → se sustituyó por Leaflet, que además cumple mejor la regla de "solo open-source / sin vendor lock-in". El autocompletado de dirección se mantiene como vía alternativa.)_
 - [x] Mapa de **ubicación en la ficha** de propiedad + enlace "Cómo llegar"; y **mapa con pin arrastrable en el `LocationPicker`** del backoffice (clic o arrastre para fijar `geo`), conservando el pegado de enlaces de Maps y la captura manual de coordenadas como respaldo.
 - [x] Detalle (`/propiedades/[slug]`) SSG/ISR: `PropertyGallery` (lazy + WebP + **videos H/V**), amenidades, datos (m² útil/rentable de oficina, áreas exteriores, remate), `LeadForm`. _(Ruta canónica `/propiedades/:slug`, ya usada en webhooks. El lead público entra solo como **contacto** por decisión del cliente.)_
 - [x] SEO On-Page: metadatos dinámicos por propiedad, Open Graph, JSON-LD `RealEstateListing`, `sitemap.xml` y `robots.txt` dinámicos.
@@ -133,7 +133,7 @@ _12 tests (7 leads + 5 webhooks, incl. firma HMAC). Entrega real verificada en `
 - [x] `next/font` self-hosted (familia DM); `next/image` en todo el sitio.
 
 **Entregable:** sitio público completo, navegable, conectado a la API. ✅
-**DoD:** todas las rutas de §7.1 funcionan; una propiedad publicada aparece indexable con URL canónica; enviar un lead dispara webhook + email. ✅ **Verificado en vivo + `pnpm --filter web build`.** Nota: el mapa queda **construido y desactivado** por decisión del cliente (2026-08-03: no se contrata la API key de Google Maps por ahora). Sin key el botón de mapa no se muestra y `?view=map` cae a la cuadrícula → el sitio no expone nada a medias; se enciende agregando la key y redesplegando. Pendiente de FASE QA: métricas §9 (Lighthouse) en staging.
+**DoD:** todas las rutas de §7.1 funcionan; una propiedad publicada aparece indexable con URL canónica; enviar un lead dispara webhook + email. ✅ **Verificado en vivo + `pnpm --filter web build`.** El **mapa funciona sin llave ni cuenta** (Leaflet + OpenStreetMap); verificado con capturas: mosaicos cargando, marcadores, clustering, vista previa al clic y pin arrastrable en el panel. Pendiente de FASE QA: métricas §9 (Lighthouse) en staging.
 
 ---
 
@@ -184,4 +184,4 @@ _12 tests (7 leads + 5 webhooks, incl. firma HMAC). Entrega real verificada en `
 | QA | 14–15 | Servidor + métricas + tests | Servidor aprovisionado; Lighthouse §9 cumplido en staging |
 | Lanzamiento | 16 | Prod + entrega | §15 completo, PI transferida |
 
-> **Corresponsabilidad del cliente:** textos, imágenes de muestra, accesos a dominio y cuentas de servicios (Google Maps, SendGrid) deben entregarse antes de iniciar la Semana 3. Retrasos extienden el cronograma en la misma proporción sin costo adicional (§13).
+> **Corresponsabilidad del cliente:** textos, imágenes de muestra, accesos a dominio y cuentas de servicios (SendGrid) deben entregarse antes de iniciar la Semana 3. Retrasos extienden el cronograma en la misma proporción sin costo adicional (§13).

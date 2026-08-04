@@ -7,9 +7,10 @@ Incorporar el **mapa interactivo** al sitio y al panel. En la Semana 09 se habí
 acordado dejarlo fuera; el cliente pidió reactivarlo, así que se construye completo
 tal como lo describe la propuesta (§7.1 y §7.3 del PRD).
 
-> **Nota de cierre:** ya terminado, TAR decidió **no contratar por ahora la llave de
-> Google Maps**. El trabajo queda hecho y **desactivado limpiamente** (el visitante
-> no ve nada a medias); se enciende agregando la llave, sin desarrollo adicional.
+> **Nota de cierre:** TAR decidió **no abrir cuenta de facturación en Google**. En vez
+> de dejar el mapa apagado, se cambió el proveedor: ahora funciona con **OpenStreetMap**,
+> el mapa libre mantenido por una comunidad mundial. **Sin llave, sin tarjeta y sin
+> cuotas**, y con el mismo aspecto y las mismas funciones.
 
 ## Entregables / lo realizado
 - **Vista de mapa en el buscador (`/propiedades`).** Junto a *cuadrícula* y *lista*
@@ -37,8 +38,12 @@ tal como lo describe la propuesta (§7.1 y §7.3 del PRD).
   propiedades en total, **9** al acotar el área a la Ciudad de México, **0** en un área
   de Yucatán, y **6** al combinar esa zona con el filtro *renta* (que por sí solo da 7).
   Es decir: el área del mapa y los filtros se aplican juntos, como debe ser.
-- **Páginas verificadas en vivo:** `/propiedades`, `/propiedades?view=map` y la misma
-  vista con filtros responden correctamente; el botón de mapa aparece en los controles.
+- **Comprobado visualmente en un navegador real**, no solo por código: se abrieron las
+  tres pantallas y se confirmó que el mapa **se dibuja de verdad** (todas las imágenes
+  del mapa cargan, sin un solo fallo ni error), que aparecen las etiquetas de precio y
+  las burbujas de agrupación, y que **al pulsar una etiqueta se abre su vista previa**
+  con foto, ubicación y precio. En el panel se **arrastró el pin** y se verificó que las
+  coordenadas se actualizan solas. Probado también en **pantalla de teléfono**.
 - **Sin castigo de velocidad:** el mapa se carga **solo cuando se abre esa vista**
   (archivo aparte). El peso inicial del buscador se mantiene en ~110 kB, igual que antes
   de agregarlo — requisito de rendimiento §9.
@@ -46,24 +51,27 @@ tal como lo describe la propuesta (§7.1 y §7.3 del PRD).
 
 ## Decisiones / desviaciones
 - **Se revierte la decisión de la Semana 09** de omitir el mapa: el cliente lo pidió de
-  vuelta. Se construye con **Google Maps Platform**, como está comprometido en el PRD.
+  vuelta. Se construye completo (ver el cambio de proveedor más abajo).
 - El buscador por **texto/autocompletado de ubicación se mantiene**: el mapa se suma
   como otra forma de buscar, no sustituye a la anterior.
-- **El cliente decidió no contratar la llave de Google Maps por ahora.** El mapa queda
-  **construido y desactivado**, y el sitio no muestra ni rastro de ello:
-  - el botón de "mapa" **no aparece** en el buscador (no lleva a ninguna pantalla vacía);
-  - un enlace antiguo con `?view=map` abre la cuadrícula normal;
-  - en la ficha, la sección **Ubicación** muestra la dirección y un botón
-    **"Ver en Google Maps"**, que sigue siendo útil sin costo alguno;
-  - en el panel, la ubicación se captura como hasta ahora (pegando un enlace de Maps
-    o escribiendo las coordenadas).
-  Cuando TAR quiera activarlo, basta con agregar la llave y volver a desplegar:
-  **no hace falta más desarrollo**.
+- **Cambio de proveedor de mapas: de Google Maps a OpenStreetMap.** TAR decidió no
+  abrir cuenta de facturación en Google (Google la exige aunque no llegue a cobrar).
+  En lugar de dejar el mapa apagado, se sustituyó por **Leaflet + OpenStreetMap**:
+  - **sin llave, sin tarjeta y sin cuotas** que vigilar;
+  - **mismas funciones y mismo aspecto**: etiquetas de precio con los colores de la
+    marca, agrupación por zonas, vista previa al pulsar y pin arrastrable en el panel;
+  - es software y datos **libres**, lo que además refuerza la independencia de
+    proveedores que pide el proyecto;
+  - el botón **"Cómo llegar"** de cada ficha sigue abriendo Google Maps en el teléfono
+    del visitante (eso no nos cuesta nada, es la app que casi todos usan para navegar).
+
+  Es una **desviación respecto a la propuesta original** (§7.0 contemplaba Google Maps
+  Platform) y conviene dejarla asentada por escrito. Si algún día TAR prefiere Google,
+  el cambio de vuelta es acotado.
 
 ## Riesgos / bloqueos / pendientes del cliente
-- 🗺️ **Decisión de TAR: por ahora no se contrata la llave de Google Maps.** El mapa
-  queda construido y **desactivado**, sin afectar en nada al resto del sitio (ver
-  "Decisiones"). Se activa cuando TAR lo decida, sin más desarrollo.
+- 🗺️ **Confirmar por escrito el cambio de proveedor de mapas** (Google → OpenStreetMap),
+  por ser una desviación de la propuesta original. No bloquea nada: ya está funcionando.
 - Sigue pendiente **publicar el inventario real con su ubicación**: hoy la mayoría de
   las propiedades están en borrador y sin punto en el mapa.
 
@@ -108,6 +116,5 @@ pero no había forma de llevarlo a un servidor real.
 
 ## Lo que sigue
 - Recibir el servidor y el dominio para ejecutar el despliegue ya preparado.
-- Cuando TAR decida activar el mapa: agregar la llave y volver a desplegar.
 - Fase QA: auditoría de rendimiento (Lighthouse) en el servidor, caché en la API y
   pruebas de extremo a extremo.

@@ -107,10 +107,9 @@ punto de una de estas formas (de la más cómoda a la de respaldo):
 
 Un distintivo indica si ya está **Ubicado** o **Sin ubicar**.
 
-> ℹ️ **Hoy el mapa está desactivado**, porque no se contrató la llave de Google Maps.
-> Se usan las otras dos formas (pegar el enlace de Maps o escribir las coordenadas) y
-> la propiedad se publica igual, sin ninguna limitación. Si más adelante se contrata
-> la llave, el mapa aparece solo en esta misma pantalla.
+> ℹ️ El mapa funciona **sin ninguna cuenta ni contratación**: usa OpenStreetMap, el
+> mapa libre que mantiene una comunidad mundial. No hay cuotas ni facturas que
+> vigilar.
 
 ### 4.5 Imágenes
 En la ficha de la propiedad, sección **Imágenes**:
@@ -402,10 +401,8 @@ entregas fallidas quedan en la **bitácora** para reintentarlas.
 
 ## 10. Qué falta (para tener todo el panorama)
 - **Firma del diseño** por parte de TAR: cierra la ventana de cambios de interfaz.
-- **Mapa (opcional, hoy desactivado por decisión de TAR).** Está construido y listo:
-  vista de mapa en el buscador, mapa en cada ficha y pin arrastrable en este panel.
-  Se enciende contratando la llave de Google Maps; mientras tanto el sitio no muestra
-  nada a medias (el botón de mapa simplemente no aparece).
+- **Mapa: ✅ funcionando.** Vista de mapa en el buscador del sitio, mapa en cada
+  ficha y pin arrastrable en este panel. No necesita contratar nada.
 - **Salida a producción** (dominio, respaldos, capacitación): Fase de Lanzamiento.
 
 > Glosario de términos: **[GLOSARIO.md](GLOSARIO.md)**. Documentación técnica de la
