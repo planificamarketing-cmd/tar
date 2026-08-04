@@ -51,8 +51,6 @@ function money(value: unknown, currency: string | null): string | null {
   return `$${numFmt.format(n)} ${currency ?? 'MXN'}`;
 }
 
-type PropertyForFlyer = Awaited<ReturnType<typeof getPropertyByIdAdmin>>;
-
 // Carga una imagen (local por disco o remota por fetch) y la recorta a cobertura al
 // tamaño en puntos pedido (se rasteriza a 2× para nitidez de impresión). Devuelve un
 // JPEG o null si no se pudo obtener.
