@@ -61,7 +61,43 @@ tal como lo describe la propuesta (§7.1 y §7.3 del PRD).
 - 3 pantallas nuevas con mapa (buscador, ficha, panel) · vista de mapa integrada a los
   filtros existentes · peso inicial del buscador sin cambio (~110 kB).
 
+## Anexo — Preparación para la salida a producción (mismo corte)
+
+Además del mapa, se dejó **lista y probada** toda la maquinaria para instalar la
+plataforma en el servidor. Antes no existía: el sitio funcionaba en desarrollo,
+pero no había forma de llevarlo a un servidor real.
+
+- **Instalación en un solo comando.** Con el servidor listo, poner la plataforma
+  en línea es: traer el código, llenar el archivo de configuración y ejecutar
+  `./infra/deploy.sh`. El script revisa la configuración (y avisa de los errores
+  típicos, como dejar datos de desarrollo), instala, actualiza la base de datos,
+  levanta todo, comprueba que responde y permite **volver a la versión anterior**
+  con un solo comando si algo sale mal.
+- **Certificado de seguridad (HTTPS) automático**, renovación incluida, y
+  redirección de `www` a una sola dirección — importante para Google.
+- **La base de datos y la API quedan cerradas a internet**: solo el sitio es
+  público. Verificado.
+- **Respaldos diarios en tres capas**: en el servidor (30 días), copia fuera del
+  servidor en Cloudflare R2, y las imágenes completas del proveedor. El respaldo
+  **comprueba cada archivo que genera**, para que nunca se dé por bueno uno
+  dañado.
+- **Restauración probada de verdad**, no solo escrita: se hizo un respaldo, se
+  modificó la base después, se restauró y se confirmó que el sistema volvió
+  exactamente al momento del respaldo.
+- **Ambiente de pruebas** (staging) listo para levantar en el mismo servidor, con
+  base de datos aparte, contraseña y oculto a los buscadores.
+- **Manual de despliegue** (`docs/README-DEPLOY.md`): instalación, actualizaciones,
+  respaldos, qué hacer ante la pérdida total del servidor (objetivo: menos de 2
+  horas), tabla de problemas frecuentes y lista de verificación para el arranque.
+
+> Nota técnica menor: el servidor comprime con **zstd y gzip** en lugar de brotli
+> (el software de servidor no incluye brotli de fábrica). zstd comprime mejor que
+> brotli en navegadores modernos y gzip cubre al resto, así que no hay pérdida.
+
+**Lo que falta para lanzar es únicamente el servidor y el dominio del cliente.**
+
 ## Lo que sigue
 - Recibir la llave de Google Maps y verificar el mapa con el inventario real.
+- Recibir el servidor y el dominio para ejecutar el despliegue ya preparado.
 - Fase QA: auditoría de rendimiento (Lighthouse) en el servidor, caché en la API y
   pruebas de extremo a extremo.
