@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { fetchProperties } from '@/lib/public';
+import { fetchPropertiesSafe } from '@/lib/public';
 import { IVerif } from '@/components/public/icons';
 
 export const metadata: Metadata = {
@@ -61,7 +61,8 @@ const TIMELINE = [
 ];
 
 export default async function NosotrosPage() {
-  const res = await fetchProperties({ sort: 'relevancia', limit: 1 });
+  // `Safe`: esta página se prerrenderiza en el build, sin API disponible.
+  const res = await fetchPropertiesSafe({ sort: 'relevancia', limit: 1 });
   const heroImg = res.data.find((p) => p.cover)?.cover?.urlWebp;
 
   return (

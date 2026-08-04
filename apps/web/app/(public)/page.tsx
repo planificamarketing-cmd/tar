@@ -4,7 +4,7 @@ import { PropertyCard } from '@/components/public/property-card';
 import { HeroSearch } from '@/components/public/hero-search';
 import { Faq } from '@/components/public/faq';
 import { IChevR } from '@/components/public/icons';
-import { fetchProperties, fetchLocations, buildSuggestions } from '@/lib/public';
+import { fetchPropertiesSafe, fetchLocationsSafe, buildSuggestions } from '@/lib/public';
 
 const HERO_TYPES: [string, string][] = [
   ['departamento', 'Departamentos'],
@@ -23,10 +23,12 @@ const EXPLORE: { type: string; label: string; desc: string }[] = [
 export default async function HomePage() {
   // Revalida seguido (60 s) para que un cambio de destaque/remate o una publicación
   // se refleje pronto en la portada, sin depender solo de la revalidación on-demand.
+  // Variantes `*Safe`: la portada se prerrenderiza en el build, cuando la API
+  // todavía no está viva (ver lib/public.ts). La ISR la rellena a los 60 s.
   const [featured, recent, locations] = await Promise.all([
-    fetchProperties({ sort: 'relevancia', limit: 6 }, 60),
-    fetchProperties({ sort: 'recientes', limit: 6 }, 60),
-    fetchLocations(),
+    fetchPropertiesSafe({ sort: 'relevancia', limit: 6 }, 60),
+    fetchPropertiesSafe({ sort: 'recientes', limit: 6 }, 60),
+    fetchLocationsSafe(),
   ]);
 
   const suggestions = buildSuggestions(locations);

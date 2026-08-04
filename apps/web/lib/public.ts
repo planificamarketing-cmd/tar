@@ -113,6 +113,32 @@ export async function fetchProperty(
   }
 }
 
+// Variantes tolerantes a fallo, para las páginas que Next PRERRENDERIZA en el
+// build (`/`, `/nosotros`). Durante `next build` —y en particular al construir
+// la imagen de Docker (§11)— la API todavía no existe: si el fetch tirara, el
+// build entero fallaría y el despliegue quedaría bloqueado. Con esto la página
+// se genera vacía y la ISR la rellena en la primera revalidación.
+// Las páginas dinámicas (`/propiedades`) siguen usando las versiones estrictas:
+// ahí un fallo de la API sí debe verse, y su error boundary lo maneja.
+export async function fetchPropertiesSafe(
+  filters: PublicPropertyFilters = {},
+  revalidate = REVALIDATE,
+): Promise<Paginated<PropertyListItem>> {
+  try {
+    return await fetchProperties(filters, revalidate);
+  } catch {
+    return { data: [], meta: { page: 1, limit: filters.limit ?? 0, total: 0 } };
+  }
+}
+
+export async function fetchLocationsSafe(): Promise<LocationOption[]> {
+  try {
+    return await fetchLocations();
+  } catch {
+    return [];
+  }
+}
+
 export async function fetchAmenities(): Promise<Amenity[]> {
   const { data } = await apiFetch<{ data: Amenity[] }>('/amenities', {
     auth: false,
