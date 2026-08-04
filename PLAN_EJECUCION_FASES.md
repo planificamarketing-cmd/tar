@@ -133,7 +133,7 @@ _12 tests (7 leads + 5 webhooks, incl. firma HMAC). Entrega real verificada en `
 - [x] `next/font` self-hosted (familia DM); `next/image` en todo el sitio.
 
 **Entregable:** sitio público completo, navegable, conectado a la API. ✅
-**DoD:** todas las rutas de §7.1 funcionan; una propiedad publicada aparece indexable con URL canónica; enviar un lead dispara webhook + email. ✅ **Verificado en vivo + `pnpm --filter web build`.** Pendiente: la **API key de Google Maps** del cliente para ver el mapa renderizado (sin ella la vista se degrada a un aviso, sin errores) y las métricas §9 (Lighthouse) en staging → FASE QA.
+**DoD:** todas las rutas de §7.1 funcionan; una propiedad publicada aparece indexable con URL canónica; enviar un lead dispara webhook + email. ✅ **Verificado en vivo + `pnpm --filter web build`.** Nota: el mapa queda **construido y desactivado** por decisión del cliente (2026-08-03: no se contrata la API key de Google Maps por ahora). Sin key el botón de mapa no se muestra y `?view=map` cae a la cuadrícula → el sitio no expone nada a medias; se enciende agregando la key y redesplegando. Pendiente de FASE QA: métricas §9 (Lighthouse) en staging.
 
 ---
 

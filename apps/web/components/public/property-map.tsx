@@ -21,10 +21,9 @@ export default function PropertyMap({ lat, lng, title, address }: PropertyMapPro
 
   if (!mapsEnabled) {
     return (
-      <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-line bg-canvas/60 p-5">
-        <p className="text-sm text-muted">
-          El mapa interactivo se activa al configurar la llave de Google Maps. Mientras
-          tanto puedes abrir la ubicación directamente:
+      <div className="flex flex-col items-start gap-3 rounded-2xl border border-line bg-canvas/60 p-5">
+        <p className="flex items-center gap-1.5 text-sm text-ink">
+          <IPin s={13} /> {address}
         </p>
         <a
           href={directions}

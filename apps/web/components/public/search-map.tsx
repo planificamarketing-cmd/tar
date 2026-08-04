@@ -298,17 +298,19 @@ function MapLayer({ filters }: { filters: SearchMapFilters }) {
   );
 }
 
-// ── Aviso cuando la API key aún no está configurada ──────────────────────────
+// Respaldo si se llega aquí sin mapa disponible. Normalmente es inalcanzable:
+// el botón de mapa se oculta y `?view=map` cae a la cuadrícula (ver
+// `listing-controls.tsx` y la página del listado). Queda por si alguien fuerza
+// la ruta, y sin mencionar detalles de configuración: es una pantalla pública.
 function MapUnavailable() {
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-line bg-white px-6 py-16 text-center">
+    <div className="flex h-full flex-col items-center justify-center gap-3 rounded-2xl border border-line bg-white px-6 py-16 text-center">
       <div className="font-display text-xl font-semibold text-navy">
-        Mapa no disponible
+        La vista de mapa no está disponible
       </div>
       <p className="max-w-md text-sm text-muted">
-        La vista de mapa necesita la llave de Google Maps de TAR Internacional. En
-        cuanto se configure, aquí aparecerán las propiedades con su precio sobre el
-        mapa.
+        Puedes explorar todo el catálogo desde el listado, con filtros por zona,
+        tipo de inmueble y precio.
       </p>
       <Link
         href="/propiedades"

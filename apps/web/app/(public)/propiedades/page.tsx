@@ -8,7 +8,7 @@ import { MobileFilters } from '@/components/public/mobile-filters';
 import { SearchMapPanel } from '@/components/public/search-map-loader';
 import { fetchProperties, fetchLocations, buildSuggestions } from '@/lib/public';
 import type { PublicPropertyFilters } from '@/lib/public';
-import type { MapSearchFilters } from '@/lib/maps';
+import { mapsEnabled, type MapSearchFilters } from '@/lib/maps';
 import type { PropertyType } from '@tar/shared';
 
 export const metadata: Metadata = {
@@ -43,6 +43,7 @@ export default async function ListingsPage({
 }: {
   searchParams: Record<string, string | string[] | undefined>;
 }) {
+  const rawView = one(searchParams.view) || 'grid';
   const params = {
     operation: one(searchParams.operation),
     type: one(searchParams.type),
@@ -55,7 +56,9 @@ export default async function ListingsPage({
     maxArea: one(searchParams.maxArea),
     q: one(searchParams.q),
     sort: one(searchParams.sort) || 'relevancia',
-    view: one(searchParams.view) || 'grid',
+    // Sin llave de Google Maps, un `?view=map` (enlace viejo o compartido) cae a
+    // la cuadrícula en vez de mostrar una vista vacía.
+    view: rawView === 'map' && !mapsEnabled ? 'grid' : rawView,
     page: one(searchParams.page) || '1',
   };
 

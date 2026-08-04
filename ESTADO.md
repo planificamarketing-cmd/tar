@@ -4,7 +4,7 @@
 
 **Última actualización:** 2026-08-03 · sesión: **MAPA INTERACTIVO + INFRAESTRUCTURA DE PRODUCCIÓN**. Dos bloques grandes: (1) se reactivó el mapa que estaba descartado y se construyó completo; (2) se construyó desde cero toda la infra de despliegue, que **no existía** — el proyecto no se podía desplegar. **112 tests API en verde**, `lint` + `typecheck` en verde, **stack de producción probado de punta a punta en local** (incluida la restauración de respaldos).
 
-**Fase actual:** cierre de **FASE B** + adelanto de **FASE QA/LANZAMIENTO**. Avance global ~96%. Lo que falta depende del cliente (key de Maps, servidor, datos reales) o es QA medible solo en el servidor.
+**Fase actual:** cierre de **FASE B** + adelanto de **FASE QA/LANZAMIENTO**. Avance global ~96%. Lo que falta depende del cliente (servidor, datos reales, inventario publicado) o es QA medible solo en el servidor. **El mapa queda construido y desactivado**: el cliente decidió no contratar la key de Google Maps por ahora.
 
 ---
 
@@ -20,7 +20,12 @@ Backend ya existía (`GET /properties/map`, PostGIS `ST_Within` + bbox); todo lo
 2. **Mapa en la ficha** (`property-map.tsx`): sección "Ubicación" con pin, dirección y **"Cómo llegar"**. Solo si hay `geo`.
 3. **`LocationPicker` con mapa** (`location-map.tsx`): clic o **pin arrastrable**; `Recenter` reposiciona al pegar un enlace de Maps o teclear coordenadas (no al arrastrar). Pegado de enlaces y captura manual siguen como respaldo.
 4. **Rendimiento (§9)**: los tres mapas con `next/dynamic ssr:false` desde wrappers `*-loader.tsx` → chunks aparte; **First Load JS de `/propiedades` sin cambio (~110 kB)**.
-5. **Degradado sin API key**: `mapsEnabled` (`lib/maps.ts`) false → aviso claro, **nunca un error**.
+5. **Desactivado limpiamente sin API key** (decisión del cliente 2026-08-03: no se contrata por ahora). `mapsEnabled` (`lib/maps.ts`) false →
+   - el **botón de mapa no se renderiza** en `listing-controls.tsx`;
+   - `?view=map` **cae a la cuadrícula** en la página del listado (enlaces viejos/compartidos);
+   - la ficha muestra **dirección + botón "Ver en Google Maps"** (útil, sin costo);
+   - el `LocationPicker` oculta el mapa y deja el pegado de enlaces + coordenadas.
+   Los textos públicos **no mencionan llaves ni configuración**. Se enciende agregando la key y redesplegando, sin tocar código.
 
 **Verificado:** `/properties/map` → 12 puntos, **9** con bbox CDMX, **0** en Yucatán, **7** con `operation=renta`, **6** combinando → bbox y filtros componen. Rutas `?view=map` → 200.
 
@@ -57,8 +62,8 @@ No existía **nada**: ni `deploy.sh`, ni `Caddyfile`, ni compose de producción,
 
 ## Siguiente — pendientes
 **Depende del cliente (bloquea "cerrar"):**
-- 🔑 **API key de Google Maps + Map ID** → único faltante para ver el mapa renderizado; restringir por referrer al dominio final.
 - 🖥️ **Servidor Ubuntu + dominio** → para ejecutar el despliegue que ya está construido y probado.
+- 🗺️ **Mapa: NO se contrata la key por ahora** (decisión 2026-08-03). No es un pendiente ni un bloqueo: queda construido y desactivado. Si algún día se activa → poner `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` + `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID`, restringir por referrer al dominio y redesplegar. **No volver a tocar código del mapa.**
 - Datos reales de contacto + Aviso de Privacidad oficial.
 - **Publicar el inventario real con ubicación** (105 props en borrador sin geo → mapa y sitio casi vacíos).
 - SendGrid, `NEXT_PUBLIC_MEDIA_HOSTNAME`, `REVALIDATE_SECRET`, Cloudflare R2.

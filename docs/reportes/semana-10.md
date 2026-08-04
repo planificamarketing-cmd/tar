@@ -7,6 +7,10 @@ Incorporar el **mapa interactivo** al sitio y al panel. En la Semana 09 se habí
 acordado dejarlo fuera; el cliente pidió reactivarlo, así que se construye completo
 tal como lo describe la propuesta (§7.1 y §7.3 del PRD).
 
+> **Nota de cierre:** ya terminado, TAR decidió **no contratar por ahora la llave de
+> Google Maps**. El trabajo queda hecho y **desactivado limpiamente** (el visitante
+> no ve nada a medias); se enciende agregando la llave, sin desarrollo adicional.
+
 ## Entregables / lo realizado
 - **Vista de mapa en el buscador (`/propiedades`).** Junto a *cuadrícula* y *lista*
   ahora hay un tercer botón: **mapa**. Muestra las propiedades como **etiquetas de
@@ -45,17 +49,23 @@ tal como lo describe la propuesta (§7.1 y §7.3 del PRD).
   vuelta. Se construye con **Google Maps Platform**, como está comprometido en el PRD.
 - El buscador por **texto/autocompletado de ubicación se mantiene**: el mapa se suma
   como otra forma de buscar, no sustituye a la anterior.
-- **Degradado seguro:** mientras no exista la llave de Google Maps, las tres pantallas
-  muestran un aviso claro (y en la ficha, un enlace a Google Maps) en lugar de fallar.
-  El resto del sitio funciona al 100%.
+- **El cliente decidió no contratar la llave de Google Maps por ahora.** El mapa queda
+  **construido y desactivado**, y el sitio no muestra ni rastro de ello:
+  - el botón de "mapa" **no aparece** en el buscador (no lleva a ninguna pantalla vacía);
+  - un enlace antiguo con `?view=map` abre la cuadrícula normal;
+  - en la ficha, la sección **Ubicación** muestra la dirección y un botón
+    **"Ver en Google Maps"**, que sigue siendo útil sin costo alguno;
+  - en el panel, la ubicación se captura como hasta ahora (pegando un enlace de Maps
+    o escribiendo las coordenadas).
+  Cuando TAR quiera activarlo, basta con agregar la llave y volver a desplegar:
+  **no hace falta más desarrollo**.
 
 ## Riesgos / bloqueos / pendientes del cliente
-- 🔑 **Llave de Google Maps de TAR** (y el *Map ID* de la misma cuenta). Es lo único que
-  falta para ver el mapa funcionando; el código ya está listo y esperándola. Al
-  entregarla conviene **restringirla al dominio definitivo** para que nadie más la use.
+- 🗺️ **Decisión de TAR: por ahora no se contrata la llave de Google Maps.** El mapa
+  queda construido y **desactivado**, sin afectar en nada al resto del sitio (ver
+  "Decisiones"). Se activa cuando TAR lo decida, sin más desarrollo.
 - Sigue pendiente **publicar el inventario real con su ubicación**: hoy la mayoría de
-  las propiedades están en borrador y sin punto en el mapa, así que el mapa se verá
-  vacío hasta que se ubiquen.
+  las propiedades están en borrador y sin punto en el mapa.
 
 ## Métricas
 - 3 pantallas nuevas con mapa (buscador, ficha, panel) · vista de mapa integrada a los
@@ -97,7 +107,7 @@ pero no había forma de llevarlo a un servidor real.
 **Lo que falta para lanzar es únicamente el servidor y el dominio del cliente.**
 
 ## Lo que sigue
-- Recibir la llave de Google Maps y verificar el mapa con el inventario real.
 - Recibir el servidor y el dominio para ejecutar el despliegue ya preparado.
+- Cuando TAR decida activar el mapa: agregar la llave y volver a desplegar.
 - Fase QA: auditoría de rendimiento (Lighthouse) en el servidor, caché en la API y
   pruebas de extremo a extremo.

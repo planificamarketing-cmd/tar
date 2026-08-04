@@ -107,9 +107,10 @@ punto de una de estas formas (de la más cómoda a la de respaldo):
 
 Un distintivo indica si ya está **Ubicado** o **Sin ubicar**.
 
-> ℹ️ El mapa aparece cuando está configurada la **llave de Google Maps** de TAR. Si aún
-> no lo está, las otras dos formas siguen funcionando igual y la propiedad se puede
-> publicar sin problema.
+> ℹ️ **Hoy el mapa está desactivado**, porque no se contrató la llave de Google Maps.
+> Se usan las otras dos formas (pegar el enlace de Maps o escribir las coordenadas) y
+> la propiedad se publica igual, sin ninguna limitación. Si más adelante se contrata
+> la llave, el mapa aparece solo en esta misma pantalla.
 
 ### 4.5 Imágenes
 En la ficha de la propiedad, sección **Imágenes**:
@@ -401,9 +402,10 @@ entregas fallidas quedan en la **bitácora** para reintentarlas.
 
 ## 10. Qué falta (para tener todo el panorama)
 - **Firma del diseño** por parte de TAR: cierra la ventana de cambios de interfaz.
-- **Llave de Google Maps** de TAR: activa el mapa en el panel y en el sitio público
-  (la vista de mapa del buscador y el mapa de cada ficha). Sin ella todo lo demás
-  funciona; solo se muestra un aviso en lugar del mapa.
+- **Mapa (opcional, hoy desactivado por decisión de TAR).** Está construido y listo:
+  vista de mapa en el buscador, mapa en cada ficha y pin arrastrable en este panel.
+  Se enciende contratando la llave de Google Maps; mientras tanto el sitio no muestra
+  nada a medias (el botón de mapa simplemente no aparece).
 - **Salida a producción** (dominio, respaldos, capacitación): Fase de Lanzamiento.
 
 > Glosario de términos: **[GLOSARIO.md](GLOSARIO.md)**. Documentación técnica de la
