@@ -1,27 +1,36 @@
-// Capa base del mapa (PRD §6.2, §7.1, §7.3). El proveedor es Google Maps
-// Platform (contractual); el clustering se calcula en cliente con supercluster a
-// partir de los puntos que devuelve `GET /properties/map` para el bbox visible.
+// Capa base del mapa (PRD §6.2, §7.1, §7.3). El clustering se calcula en cliente
+// con supercluster a partir de los puntos que devuelve `GET /properties/map` para
+// el bbox visible.
 //
-// La API key es del cliente y se restringe por referrer HTTP al dominio final
-// (§ nota de despliegue del PRD). Mientras no exista, `mapsEnabled` es false y
-// todo lo que dependa del mapa se degrada a un aviso —nunca a un error—: el
-// sitio sigue siendo 100% usable por el listado y el buscador de texto.
+// PROVEEDOR — desviación documentada del PRD §7.0: el PRD contrataba Google Maps
+// Platform, pero el cliente decidió (2026-08-03) no abrir cuenta de facturación
+// en Google. Se sustituye por **Leaflet** (librería open-source, sin llave) con
+// mosaicos de CARTO sobre datos de OpenStreetMap. Beneficios: sin llave, sin
+// tarjeta, sin cuota que vigilar, y encaja con la regla de "solo dependencias
+// open-source / sin vendor lock-in" del proyecto.
+//
+// El proveedor de mosaicos es CONFIGURABLE por entorno: si algún día se quiere
+// cambiar (MapTiler, Stadia, servidor propio) se ajustan dos variables, sin tocar
+// código. La atribución es obligatoria: OpenStreetMap la exige por licencia.
 import { apiFetch } from './api';
 import type { FeaturedLevel } from '@tar/shared';
 import type { PublicPropertyFilters } from './public';
 import type { PropertyDetail } from './types';
 
-export const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
+// Estilo claro y sobrio ("voyager"), que no compite con los marcadores de marca.
+// `{r}` sirve las teselas en alta densidad (retina) cuando el navegador lo pide.
+export const MAP_TILES_URL =
+  process.env.NEXT_PUBLIC_MAP_TILES_URL ||
+  'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
 
-// Map ID de Google Cloud: lo exige `AdvancedMarker` (marcadores HTML, necesarios
-// para los *price-pill*). `DEMO_MAP_ID` funciona para desarrollo; en producción
-// se fija el Map ID de la cuenta del cliente con el estilo de marca aplicado.
-export const MAPS_MAP_ID = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID || 'DEMO_MAP_ID';
+export const MAP_TILES_ATTRIBUTION =
+  process.env.NEXT_PUBLIC_MAP_TILES_ATTRIBUTION ||
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
-export const mapsEnabled = MAPS_API_KEY.length > 0;
+export const MAP_MAX_ZOOM = 19;
 
 // Centro por defecto: CDMX. Solo se usa cuando no hay ningún punto que encuadrar.
-export const DEFAULT_CENTER = { lat: 19.4326, lng: -99.1332 };
+export const DEFAULT_CENTER: [number, number] = [19.4326, -99.1332];
 export const DEFAULT_ZOOM = 11;
 
 // Payload ligero de `/properties/map` (§5.2). `price`/`currency` ya vienen en la

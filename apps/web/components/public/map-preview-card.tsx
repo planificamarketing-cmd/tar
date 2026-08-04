@@ -18,7 +18,8 @@ export function MapPreviewCard({
   onClose: () => void;
 }) {
   return (
-    <div className="pointer-events-auto absolute inset-x-3 bottom-3 z-[5] sm:inset-x-auto sm:left-3 sm:w-[330px]">
+    // z-[500]: los paneles de Leaflet llegan a 400 y taparían la tarjeta.
+    <div className="pointer-events-auto absolute inset-x-3 bottom-3 z-[500] sm:inset-x-auto sm:left-3 sm:w-[330px]">
       <div className="relative overflow-hidden rounded-2xl border border-line bg-white shadow-[0_12px_36px_rgba(0,0,0,0.18)]">
         <button
           type="button"

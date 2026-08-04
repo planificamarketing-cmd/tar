@@ -2,7 +2,6 @@
 
 import { useSetParams, type ListingParams } from './use-listing-params';
 import { IGrid, IList, IMap } from './icons';
-import { mapsEnabled } from '@/lib/maps';
 
 const SORTS: [string, string][] = [
   ['relevancia', 'Relevancia'],
@@ -11,16 +10,11 @@ const SORTS: [string, string][] = [
   ['precio_desc', 'Precio ↓'],
 ];
 
-const ALL_VIEWS = [
+const VIEWS = [
   ['grid', IGrid, 'Vista de cuadrícula'],
   ['list', IList, 'Vista de lista'],
   ['map', IMap, 'Vista de mapa'],
 ] as const;
-
-// Sin llave de Google Maps el botón de mapa no se muestra: llevaría a una vista
-// vacía. El código del mapa sigue ahí y el botón reaparece solo en cuanto se
-// configure la llave, sin tocar nada más.
-const VIEWS = mapsEnabled ? ALL_VIEWS : ALL_VIEWS.filter(([v]) => v !== 'map');
 
 // Orden + alternar vista cuadrícula/lista/mapa del listado (escriben en la URL).
 export function ListingControls({ params }: { params: ListingParams }) {

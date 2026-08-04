@@ -4,8 +4,15 @@
 // Un solo pin, sin clustering ni búsqueda: es contexto de la propiedad, no un
 // buscador. Se monta con `ssr:false` desde `property-map-loader.tsx` para no
 // pesar en el LCP de la ficha (§9).
-import { APIProvider, Map as GoogleMap, AdvancedMarker } from '@vis.gl/react-google-maps';
-import { MAPS_API_KEY, MAPS_MAP_ID, mapsEnabled } from '@/lib/maps';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import {
+  MAP_MAX_ZOOM,
+  MAP_TILES_ATTRIBUTION,
+  MAP_TILES_URL,
+} from '@/lib/maps';
+import { pinHtml } from './map-marker';
 import { IPin } from './icons';
 
 export type PropertyMapProps = {
@@ -16,51 +23,35 @@ export type PropertyMapProps = {
 };
 
 export default function PropertyMap({ lat, lng, title, address }: PropertyMapProps) {
-  // Enlace de indicaciones: funciona aunque no haya API key (abre Google Maps).
+  // Enlace de indicaciones: se apoya en Google Maps del lado del visitante (no
+  // requiere cuenta ni llave nuestra) porque es lo que casi todo el mundo usa
+  // para navegar.
   const directions = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-
-  if (!mapsEnabled) {
-    return (
-      <div className="flex flex-col items-start gap-3 rounded-2xl border border-line bg-canvas/60 p-5">
-        <p className="flex items-center gap-1.5 text-sm text-ink">
-          <IPin s={13} /> {address}
-        </p>
-        <a
-          href={directions}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full bg-navy px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-navy-soft"
-        >
-          <IPin s={13} /> Ver en Google Maps
-        </a>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-3">
       <div className="relative h-[320px] overflow-hidden rounded-2xl border border-line">
-        <APIProvider apiKey={MAPS_API_KEY} language="es" region="MX">
-          <GoogleMap
-            mapId={MAPS_MAP_ID}
-            defaultCenter={{ lat, lng }}
-            defaultZoom={15}
-            gestureHandling="cooperative"
-            disableDefaultUI
-            zoomControl
-            clickableIcons={false}
-            className="h-full w-full"
-          >
-            <AdvancedMarker position={{ lat, lng }} title={title}>
-              <div className="relative -translate-y-1">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand text-white shadow-[0_3px_12px_rgba(210,16,62,0.45)] ring-[3px] ring-white">
-                  <IPin s={16} />
-                </div>
-                <div className="absolute left-1/2 top-full -mt-[5px] h-[10px] w-[10px] -translate-x-1/2 rotate-45 bg-brand" />
-              </div>
-            </AdvancedMarker>
-          </GoogleMap>
-        </APIProvider>
+        <MapContainer
+          center={[lat, lng]}
+          zoom={15}
+          maxZoom={MAP_MAX_ZOOM}
+          // Sin zoom con la rueda: en móvil y al hacer scroll por la ficha, el
+          // mapa "secuestraría" el desplazamiento de la página.
+          scrollWheelZoom={false}
+          className="h-full w-full"
+        >
+          <TileLayer url={MAP_TILES_URL} attribution={MAP_TILES_ATTRIBUTION} />
+          <Marker
+            position={[lat, lng]}
+            title={title}
+            icon={L.divIcon({
+              html: pinHtml(),
+              className: '',
+              iconSize: [0, 0],
+              iconAnchor: [0, 0],
+            })}
+          />
+        </MapContainer>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="flex items-center gap-1.5 text-[13px] text-muted">

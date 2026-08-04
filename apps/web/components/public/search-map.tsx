@@ -1,38 +1,41 @@
 'use client';
 
-// SearchMap (§7.1 vista mapa del listado, §7.3, §6.2). Google Maps Platform con
-// clustering en cliente (supercluster) sobre los puntos de `GET /properties/map`
-// para el bbox visible + los filtros activos del listado.
+// SearchMap (§7.1 vista mapa del listado, §7.3, §6.2). Leaflet + mosaicos de
+// CARTO/OpenStreetMap (ver la nota de proveedor en `lib/maps.ts`), con clustering
+// en cliente (supercluster) sobre los puntos de `GET /properties/map` para el
+// bbox visible y los filtros activos.
 //
 // Se monta SIEMPRE vía `next/dynamic ssr:false` (ver `search-map-loader.tsx`):
-// el JS de Google Maps no debe entrar en el bundle de la vista de cuadrícula ni
-// bloquear el LCP (§9).
+// Leaflet toca `window` al importarse y su JS no debe entrar en el bundle de las
+// vistas de cuadrícula y lista ni bloquear el LCP (§9).
+import 'leaflet/dist/leaflet.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
-// `Map` se importa con alias: el componente de Google chocaría con el `Map` nativo.
+import L from 'leaflet';
 import {
-  APIProvider,
-  Map as GoogleMap,
-  AdvancedMarker,
+  MapContainer,
+  TileLayer,
+  Marker,
+  ZoomControl,
   useMap,
-} from '@vis.gl/react-google-maps';
+  useMapEvents,
+} from 'react-leaflet';
 import Supercluster from 'supercluster';
 import type { ClusterFeature, PointFeature } from 'supercluster';
 import {
   DEFAULT_CENTER,
   DEFAULT_ZOOM,
-  MAPS_API_KEY,
-  MAPS_MAP_ID,
+  MAP_MAX_ZOOM,
+  MAP_TILES_ATTRIBUTION,
+  MAP_TILES_URL,
   fetchMapPoints,
   fetchMapPreview,
-  mapsEnabled,
   pillPrice,
   type Bbox,
   type MapPoint,
   type MapPreview,
   type MapSearchFilters,
 } from '@/lib/maps';
-import { ClusterBubble, PricePill } from './map-marker';
+import { clusterBubbleHtml, pricePillHtml } from './map-marker';
 import { MapPreviewCard } from './map-preview-card';
 
 export type SearchMapFilters = MapSearchFilters;
@@ -45,12 +48,16 @@ const isCluster = (f: Feature): f is ClusterFeature<Record<string, never>> =>
 
 // GeoJSON tipa `coordinates` como `number[]`; los puntos siempre traen par
 // [lng, lat] (el endpoint filtra los que no tienen geo).
-function latLng(f: Feature): google.maps.LatLngLiteral {
+function latLng(f: Feature): [number, number] {
   const [lng = 0, lat = 0] = f.geometry.coordinates;
-  return { lat, lng };
+  return [lat, lng];
 }
 
-// ── Capa de datos + marcadores (vive DENTRO de <Map>, usa su instancia) ───────
+// `divIcon` con tamaño 0: el markup se ancla solo (ver `map-marker.ts`).
+const icon = (html: string) =>
+  L.divIcon({ html, className: '', iconSize: [0, 0], iconAnchor: [0, 0] });
+
+// ── Capa de datos + marcadores (vive DENTRO de <MapContainer>) ───────────────
 function MapLayer({ filters }: { filters: SearchMapFilters }) {
   const map = useMap();
   const [points, setPoints] = useState<MapPoint[]>([]);
@@ -70,16 +77,13 @@ function MapLayer({ filters }: { filters: SearchMapFilters }) {
   const previewCache = useRef(new Map<string, MapPreview>());
   const filtersKey = JSON.stringify(filters);
 
-  const readBbox = useCallback((): Bbox | null => {
-    const b = map?.getBounds();
-    if (!b) return null;
-    const sw = b.getSouthWest();
-    const ne = b.getNorthEast();
+  const readBbox = useCallback((): Bbox => {
+    const b = map.getBounds();
     return {
-      minLng: sw.lng(),
-      minLat: sw.lat(),
-      maxLng: ne.lng(),
-      maxLat: ne.lat(),
+      minLng: b.getWest(),
+      minLat: b.getSouth(),
+      maxLng: b.getEast(),
+      maxLat: b.getNorth(),
     };
   }, [map]);
 
@@ -111,26 +115,21 @@ function MapLayer({ filters }: { filters: SearchMapFilters }) {
   // que cumplen los filtros —sin bbox— para poder encuadrar el mapa sobre el
   // inventario real. A partir de ahí manda el bbox visible.
   useEffect(() => {
-    if (!map) return;
     let cancelled = false;
     setReady(false);
     setSelected(null);
     void (async () => {
       const data = await load();
-      if (cancelled || !data) {
-        if (!cancelled) setReady(true);
-        return;
+      if (cancelled) return;
+      if (data && data.length > 0) {
+        const bounds = L.latLngBounds(
+          data.map((p) => [p.lat as number, p.lng as number] as [number, number]),
+        );
+        if (data.length === 1) map.setView(bounds.getCenter(), 15);
+        else map.fitBounds(bounds, { padding: [48, 48] });
       }
-      if (data.length > 0) {
-        const b = new google.maps.LatLngBounds();
-        for (const p of data) b.extend({ lat: p.lat as number, lng: p.lng as number });
-        if (data.length === 1) {
-          map.setCenter(b.getCenter());
-          map.setZoom(15);
-        } else {
-          map.fitBounds(b, 48);
-        }
-      }
+      setBbox(readBbox());
+      setZoom(Math.round(map.getZoom()));
       setReady(true);
     })();
     return () => {
@@ -140,20 +139,17 @@ function MapLayer({ filters }: { filters: SearchMapFilters }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, filtersKey]);
 
-  // Cámara: mantiene bbox/zoom para el clustering y dispara la búsqueda por
-  // desplazamiento cuando el usuario deja de mover el mapa.
-  useEffect(() => {
-    if (!map) return;
-    const onIdle = () => {
+  // Cámara: `moveend` cubre arrastre y zoom. Mantiene bbox/zoom para el
+  // clustering y dispara la búsqueda por desplazamiento.
+  useMapEvents({
+    moveend: () => {
       setBbox(readBbox());
-      setZoom(Math.round(map.getZoom() ?? DEFAULT_ZOOM));
+      setZoom(Math.round(map.getZoom()));
       if (!ready) return;
-      if (autoSearch) void load(readBbox() ?? undefined);
+      if (autoSearch) void load(readBbox());
       else setMoved(true);
-    };
-    const l = map.addListener('idle', onIdle);
-    return () => l.remove();
-  }, [map, ready, autoSearch, load, readBbox]);
+    },
+  });
 
   useEffect(() => () => inFlight.current?.abort(), []);
 
@@ -206,11 +202,9 @@ function MapLayer({ filters }: { filters: SearchMapFilters }) {
   }
 
   function expandCluster(f: ClusterFeature<Record<string, never>>) {
-    if (!map) return;
     const id = f.properties.cluster_id as unknown as number;
-    const next = Math.min(index.getClusterExpansionZoom(id), 20);
-    map.setZoom(next);
-    map.panTo(latLng(f));
+    const next = Math.min(index.getClusterExpansionZoom(id), MAP_MAX_ZOOM);
+    map.setView(latLng(f), next);
   }
 
   return (
@@ -219,38 +213,34 @@ function MapLayer({ filters }: { filters: SearchMapFilters }) {
         if (isCluster(f)) {
           const count = f.properties.point_count as unknown as number;
           return (
-            <AdvancedMarker
+            <Marker
               key={`cluster-${String(f.properties.cluster_id)}`}
               position={latLng(f)}
-              zIndex={1}
-              onClick={() => expandCluster(f)}
+              icon={icon(clusterBubbleHtml(count))}
+              zIndexOffset={0}
               title={`${count} propiedades`}
-            >
-              <ClusterBubble count={count} />
-            </AdvancedMarker>
+              eventHandlers={{ click: () => expandCluster(f) }}
+            />
           );
         }
         const p = f.properties.point;
         const isSel = selected?.id === p.id;
+        const label = pillPrice(p.price, p.currency);
         return (
-          <AdvancedMarker
+          <Marker
             key={p.id}
             position={latLng(f)}
-            zIndex={isSel ? 4 : p.featured !== 'normal' ? 3 : 2}
-            onClick={() => void selectPoint(p)}
-            title={pillPrice(p.price, p.currency)}
-          >
-            <PricePill
-              label={pillPrice(p.price, p.currency)}
-              featured={p.featured}
-              selected={isSel}
-            />
-          </AdvancedMarker>
+            icon={icon(pricePillHtml(label, p.featured, isSel))}
+            zIndexOffset={isSel ? 1000 : p.featured !== 'normal' ? 500 : 100}
+            title={label}
+            eventHandlers={{ click: () => void selectPoint(p) }}
+          />
         );
       })}
 
-      {/* Barra de estado: conteo, carga y control de búsqueda por desplazamiento */}
-      <div className="pointer-events-none absolute inset-x-3 top-3 z-[6] flex flex-wrap items-start justify-between gap-2">
+      {/* Barra de estado: conteo, carga y control de búsqueda por desplazamiento.
+          z-[500] va por encima de los paneles de Leaflet (que llegan a 400). */}
+      <div className="pointer-events-none absolute inset-x-3 top-3 z-[500] flex flex-wrap items-start justify-between gap-2">
         <span className="pointer-events-auto rounded-full bg-white/95 px-3 py-1.5 text-[12px] font-semibold text-navy shadow-[0_2px_10px_rgba(0,0,0,0.14)]">
           {loading
             ? 'Buscando…'
@@ -266,7 +256,7 @@ function MapLayer({ filters }: { filters: SearchMapFilters }) {
             checked={autoSearch}
             onChange={(e) => {
               setAutoSearch(e.target.checked);
-              if (e.target.checked) void load(readBbox() ?? undefined);
+              if (e.target.checked) void load(readBbox());
             }}
             className="h-3.5 w-3.5 accent-[#D2103E]"
           />
@@ -277,8 +267,8 @@ function MapLayer({ filters }: { filters: SearchMapFilters }) {
       {!autoSearch && moved && (
         <button
           type="button"
-          onClick={() => void load(readBbox() ?? undefined)}
-          className="absolute left-1/2 top-14 z-[6] -translate-x-1/2 rounded-full bg-brand px-4 py-2 text-[13px] font-semibold text-white shadow-[0_4px_16px_rgba(210,16,62,0.4)] transition hover:bg-brand-hover"
+          onClick={() => void load(readBbox())}
+          className="absolute left-1/2 top-14 z-[500] -translate-x-1/2 rounded-full bg-brand px-4 py-2 text-[13px] font-semibold text-white shadow-[0_4px_16px_rgba(210,16,62,0.4)] transition hover:bg-brand-hover"
         >
           Buscar en esta zona
         </button>
@@ -298,30 +288,6 @@ function MapLayer({ filters }: { filters: SearchMapFilters }) {
   );
 }
 
-// Respaldo si se llega aquí sin mapa disponible. Normalmente es inalcanzable:
-// el botón de mapa se oculta y `?view=map` cae a la cuadrícula (ver
-// `listing-controls.tsx` y la página del listado). Queda por si alguien fuerza
-// la ruta, y sin mencionar detalles de configuración: es una pantalla pública.
-function MapUnavailable() {
-  return (
-    <div className="flex h-full flex-col items-center justify-center gap-3 rounded-2xl border border-line bg-white px-6 py-16 text-center">
-      <div className="font-display text-xl font-semibold text-navy">
-        La vista de mapa no está disponible
-      </div>
-      <p className="max-w-md text-sm text-muted">
-        Puedes explorar todo el catálogo desde el listado, con filtros por zona,
-        tipo de inmueble y precio.
-      </p>
-      <Link
-        href="/propiedades"
-        className="mt-1 rounded-full bg-navy px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-navy-soft"
-      >
-        Ver el listado
-      </Link>
-    </div>
-  );
-}
-
 export default function SearchMap({
   filters,
   className = '',
@@ -329,29 +295,22 @@ export default function SearchMap({
   filters: SearchMapFilters;
   className?: string;
 }) {
-  if (!mapsEnabled) {
-    return (
-      <div className={className}>
-        <MapUnavailable />
-      </div>
-    );
-  }
   return (
     <div className={`relative overflow-hidden rounded-2xl border border-line ${className}`}>
-      <APIProvider apiKey={MAPS_API_KEY} language="es" region="MX">
-        <GoogleMap
-          mapId={MAPS_MAP_ID}
-          defaultCenter={DEFAULT_CENTER}
-          defaultZoom={DEFAULT_ZOOM}
-          gestureHandling="greedy"
-          disableDefaultUI
-          zoomControl
-          clickableIcons={false}
-          className="h-full w-full"
-        >
-          <MapLayer filters={filters} />
-        </GoogleMap>
-      </APIProvider>
+      <MapContainer
+        center={DEFAULT_CENTER}
+        zoom={DEFAULT_ZOOM}
+        maxZoom={MAP_MAX_ZOOM}
+        scrollWheelZoom
+        // El zoom va abajo a la derecha: arriba a la izquierda taparía el
+        // contador de propiedades.
+        zoomControl={false}
+        className="h-full w-full"
+      >
+        <TileLayer url={MAP_TILES_URL} attribution={MAP_TILES_ATTRIBUTION} />
+        <ZoomControl position="bottomright" />
+        <MapLayer filters={filters} />
+      </MapContainer>
     </div>
   );
 }

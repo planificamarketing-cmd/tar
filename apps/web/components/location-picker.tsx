@@ -6,7 +6,6 @@ import type { PropertyFormValues } from '@/lib/property-form';
 import { Combobox } from './combobox';
 import { resolveMapsLocation, useLocations } from '@/lib/queries';
 import { normalizeText } from '@/lib/text';
-import { mapsEnabled } from '@/lib/maps';
 import { LocationMapPanel } from './location-map-loader';
 
 type Props = {
@@ -202,21 +201,17 @@ export function LocationPicker({ value, onChange }: Props) {
           </span>
         </div>
 
-        {mapsEnabled && (
-          <div className="mt-3">
-            <LocationMapPanel
-              lat={latNum}
-              lng={lngNum}
-              onPick={(lat, lng) =>
-                onChange({ lat: lat.toFixed(6), lng: lng.toFixed(6) })
-              }
-            />
-            <p className="mt-1.5 text-xs text-muted">
-              Haz clic en el mapa o arrastra el pin para ajustar el punto exacto. Las
-              coordenadas de abajo se actualizan solas.
-            </p>
-          </div>
-        )}
+        <div className="mt-3">
+          <LocationMapPanel
+            lat={latNum}
+            lng={lngNum}
+            onPick={(lat, lng) => onChange({ lat: lat.toFixed(6), lng: lng.toFixed(6) })}
+          />
+          <p className="mt-1.5 text-xs text-muted">
+            Haz clic en el mapa o arrastra el pin para ajustar el punto exacto. Las
+            coordenadas de abajo se actualizan solas.
+          </p>
+        </div>
 
         <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
