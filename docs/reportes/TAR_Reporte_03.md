@@ -1,7 +1,8 @@
 # TAR Internacional — Reporte 03
 
 **Etapa:** Sitio público, herramientas de captación, mapa interactivo y preparación para
-producción · **Corte:** 17 de Agosto 2026 · **Entrega 03**
+producción · **Corte:** 17 de Agosto 2026 (con **actualización del 18 de Agosto**) ·
+**Entrega 03**
 
 ## Resumen
 
@@ -28,7 +29,49 @@ respaldos diarios y restauración verificada. Todo se ve y funciona bien en **ce
 tableta y computadora**.
 
 **Con esto, lo único que falta para salir a producción es el servidor y el dominio del
-cliente, los datos oficiales de TAR y publicar el inventario real.**
+cliente y los datos oficiales de TAR.** El **inventario real ya quedó publicado y ubicado en
+el mapa** en la actualización del 18 de agosto (ver el apartado siguiente).
+
+## Actualización del 18 de agosto (posterior al corte)
+
+Después de entregar este reporte se realizaron los siguientes avances, ya visibles y
+**probados en navegador real**:
+
+- **Inventario real publicado y ubicado en el mapa.** Las **105 propiedades** reales que
+  estaban importadas pero **sin ubicación** se **geocodificaron automáticamente** a partir de
+  la dirección que ya traía cada una (calle, colonia, alcaldía/municipio) y se **publicaron**.
+  Hoy el sitio muestra el inventario real con su punto en el mapa. La geocodificación usa
+  **OpenStreetMap** (sin costo ni llave): **87 quedaron a nivel de calle** y **18 a nivel de
+  colonia** (desarrollos descritos por zona o torre, sin número exacto); estas 18 se pueden
+  **afinar arrastrando el pin** en el panel. Se dejó una **herramienta reutilizable** para
+  repetir el proceso tras cada futura importación.
+
+- **Catálogo depurado.** Se retiraron las **propiedades de demostración** (con imágenes de
+  relleno) que quedaban del entorno de pruebas y **dos entradas de prueba** ("TEST"), de modo
+  que el catálogo muestre **solo inventario real**. Se marcaron como **destacadas** seis
+  propiedades reales representativas para la portada.
+
+- **El mapa ahora es una sección propia del menú.** Antes era un botón poco visible dentro del
+  listado; ahora hay una pestaña **"Mapa"** en la navegación, a **pantalla completa** y con el
+  **diseño de referencia** (prototipo): la **lista de propiedades a un lado y el mapa al
+  otro**, sincronizados. Al elegir una propiedad en la lista, el mapa **vuela hacia ella** y la
+  tarjeta se **resalta**; al pulsar un pin, aparece una **burbuja sobre el inmueble** con su
+  foto, precio y datos. La sección incluye su **buscador por ubicación**, pestañas de
+  **venta/renta** y filtros de **precio, tipo y recámaras**.
+
+- **Portada a pantalla completa.** La sección de bienvenida (*hero*) del inicio pasa a
+  **ocupar toda la pantalla**, con una foto real del inventario de fondo.
+
+- **Precios por metro cuadrado, corregidos en pantalla.** Se detectó que parte del **inventario
+  comercial** (oficinas, locales y bodegas) traía el precio **por m²** en lugar del total —así
+  viene de EasyBroker—, lo que hacía ver rentas como "$24/mes". Ahora esos precios se muestran
+  con su **unidad correcta** ("**$24/m²/mes**") en el sitio, las tarjetas y el mapa. Es un
+  **ajuste de presentación**: **no altera los datos**. El arreglo definitivo (guardar el total,
+  o la unidad, desde el origen) conviene hacerlo en la **próxima importación**, con la unidad
+  confirmada. Ver *Pendientes y riesgos*.
+
+- **Filtros más frescos.** El **autocompletado de ubicación** de los filtros ahora **refleja
+  pronto** las colonias del inventario recién publicado.
 
 ## El sitio público
 
@@ -227,9 +270,17 @@ la salida a producción sea un trámite de horas y no un proyecto aparte.
 - **Datos oficiales del cliente.** Para cerrar el sitio se requieren los **datos de contacto
   reales** (teléfono, correo, dirección) y el **texto oficial del Aviso de Privacidad**; hoy
   se muestran textos de ejemplo.
-- **Inventario real.** Las propiedades reales ya importadas deben **publicarse con su
-  ubicación** para que aparezcan en el sitio y en el mapa; requiere fijar su punto (ya se
-  puede hacer con un clic o arrastrando el pin).
+- **Inventario real.** ✅ **Ya publicado** (105 propiedades con ubicación en el mapa, ver la
+  actualización del 18 de agosto). Queda como afinamiento **arrastrar el pin** de las **18
+  propiedades geocodificadas a nivel de colonia** para dejarlas en el punto exacto, y —cuando
+  llegue— sustituir el inventario por la **corrida definitiva del importador** (siguiente
+  punto).
+- **Unidad de precio del inventario comercial.** Parte de las oficinas/locales/bodegas trae el
+  precio **por m²** (no total) desde EasyBroker; hoy se **muestra con su unidad** ("$24/m²/mes")
+  como ajuste de presentación. El **arreglo de fondo** —decidir si se guarda el **total** o la
+  **unidad** y aplicarlo en el importador— conviene hacerlo en la **corrida definitiva**, con la
+  convención confirmada por TAR. Mientras tanto, los **filtros de precio** de esas propiedades
+  comerciales pueden no acotar con exactitud (comparan el número tal cual).
 - ⚠️ **Antes de cancelar EasyBroker.** La corrida definitiva del importador debe hacerse
   **mientras la cuenta de EasyBroker siga activa**: al cancelarla, las direcciones de las
   fotos alojadas allí dejan de funcionar y **las imágenes serían irrecuperables**. Conviene
@@ -249,14 +300,18 @@ la salida a producción sea un trámite de horas y no un proyecto aparte.
 - **Motor de la plataforma (backend):** completo y probado.
 - **Panel de administración:** completo y operable, **usable desde el celular** y con captura
   de ubicación en mapa.
-- **Sitio público:** navegable de extremo a extremo, con **vista de mapa**; pendiente de
-  **datos reales del cliente** y de **publicar el inventario** con su ubicación.
+- **Sitio público:** navegable de extremo a extremo, con **inventario real publicado**
+  (105 propiedades) y **hero a pantalla completa**; pendiente solo de los **datos reales del
+  cliente**.
 - **Folleto PDF, herramientas de captación (UTM) y exportación a CSV:** entregados y verificados.
 - **Mapa interactivo (buscador, ficha y panel):** entregado y verificado en navegador real,
-  con OpenStreetMap.
+  con OpenStreetMap. Se sumó una **página de mapa dedicada** ("Mapa" en el menú) a pantalla
+  completa, con lista y mapa sincronizados, buscador y filtros propios.
 - **Infraestructura de producción (instalación, HTTPS, respaldos, restauración, staging):**
   construida y **probada de extremo a extremo**; a la espera del servidor del cliente.
-- **Inventario real:** importado; pendiente de publicación con ubicación.
+- **Inventario real:** **publicado** (105 propiedades con ubicación en el mapa, geocodificadas
+  con OpenStreetMap). Pendiente: afinar los **18 pines a nivel de colonia** y la **corrida
+  definitiva del importador** antes de cancelar EasyBroker.
 - **Pruebas finales y salida a producción:** pendientes del servidor definitivo.
 
 ## Lo que se verá en la siguiente sesión
@@ -272,8 +327,10 @@ la salida a producción sea un trámite de horas y no un proyecto aparte.
 
 1. Recibir del cliente los **datos oficiales** (contacto y Aviso de Privacidad) y los
    **accesos de producción** (servidor, dominio, correo).
-2. Ejecutar la **corrida definitiva del importador** *antes* de cancelar EasyBroker.
-3. **Publicar el inventario real** con su ubicación en el mapa.
+2. Ejecutar la **corrida definitiva del importador** *antes* de cancelar EasyBroker, ya con la
+   **unidad de precio** confirmada (total vs. por m²); volver a **geocodificar y publicar** con
+   la herramienta ya creada.
+3. **Afinar** con el pin las **18 propiedades** ubicadas a nivel de colonia.
 4. Aprovisionar el **servidor**, ejecutar el despliegue y conectar el envío de correos y las
    integraciones.
 5. **Pruebas finales** de rendimiento y salida a producción.
@@ -319,6 +376,25 @@ la salida a producción sea un trámite de horas y no un proyecto aparte.
 - **Rendimiento del mapa (§9).** Los tres mapas se cargan **solo cuando se abre esa vista**
   (archivos aparte): el peso inicial del buscador se mantiene en **~110 kB**, igual que antes
   de agregarlo.
+- **Geocodificación del inventario (18 ago).** Script reutilizable (`geocode:borrador`) que
+  toma la dirección de cada propiedad y consulta **Nominatim/OpenStreetMap** (1 petición/s,
+  con *User-Agent* de contacto) mediante una **cascada de respaldo** (calle+colonia → calle →
+  centro de colonia → centro de municipio) que marca la precisión de cada resultado. Sobre las
+  105: **87 a nivel calle, 18 aproximadas, 0 fallidas**, todas dentro del rango de México. La
+  publicación en lote (`publish:borrador`) replica la lógica del panel (genera *slug* único,
+  fija `published_at`) pero **sin emitir los webhooks** `property.published`, para no notificar
+  105 "altas" al CRM/n8n suscrito.
+- **Página de mapa dedicada (`/mapa`).** *Split* lista + mapa alimentado por un **único**
+  `GET /properties/map` **enriquecido** (título, portada, recámaras/baños/superficie,
+  ubicación y operación) para que lista y pines muestren el mismo conjunto filtrado; selección
+  sincronizada en ambos sentidos con *flyTo* y **burbuja (popup) anclada al pin**; filtros
+  propios (buscador de ubicación, venta/renta, precio/tipo/recámaras) escritos en la URL. Se
+  retiró la vista de mapa del listado para evitar el botón poco visible.
+- **Precio por m² (presentación).** Detección por magnitud —renta &lt; $2,500 o venta &lt;
+  $500,000 no son totales plausibles en este mercado (el total más bajo real es $3,159 en renta
+  y $950,000 en venta)— y formateo "**$X/m²**"/"**$X/m²/mes**" en el formateador compartido, de
+  modo que el sitio, las tarjetas y los *price-pill* del mapa quedan consistentes. No toca la
+  base de datos.
 - **Infraestructura.** Imágenes de contenedor propias para el sitio y el motor, orquestación
   con Docker Compose (base de datos, migraciones, motor, sitio y servidor web), un único
   origen público con TLS automático, compresión **zstd + gzip** (el servidor web no incluye
@@ -341,3 +417,10 @@ la salida a producción sea un trámite de horas y no un proyecto aparte.
   aplican juntos. **Producción:** stack levantado completo en local con HTTPS; sitio, panel,
   API y documentación respondiendo; base de datos y motor **cerrados** desde el exterior;
   ciclo de respaldo → cambio → restauración verificado con corte temporal correcto.
+- **Verificación (18 ago).** Revisión de tipos sin errores en sitio y motor. En **navegador real
+  (Playwright)**: la página **/mapa** renderiza el *split* con **107 tarjetas** y sus pines;
+  seleccionar en la lista **vuela** el mapa y abre la **burbuja** sobre el pin; la tarjeta activa
+  se resalta y se **centra**; el buscador, las pestañas venta/renta y los filtros de
+  precio/tipo/recámaras **acotan** (p. ej. *Oficinas* baja de 107 a 53) y escriben la URL; los
+  precios comerciales muestran "**$X/m²**". Base de datos tras la publicación: **105 disponibles**,
+  0 en borrador, 0 de prueba.
