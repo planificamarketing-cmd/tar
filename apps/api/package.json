@@ -12,6 +12,8 @@
     "test": "vitest run",
     "smoke": "tsx --env-file=../../.env scripts/smoke.ts",
     "import:inventario": "tsx --env-file=../../.env scripts/import-inventario.ts",
+    "geocode:borrador": "tsx --env-file=../../.env scripts/geocode-borrador.ts",
+    "publish:borrador": "tsx --env-file=../../.env scripts/publish-borrador.ts",
     "openapi": "tsx scripts/export-openapi.ts"
   },
   "dependencies": {
