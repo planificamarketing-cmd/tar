@@ -76,46 +76,42 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      {/* ── HERO ── */}
-      <section className="bg-canvas px-4 pb-6 pt-[84px] lg:px-6 lg:pb-7 lg:pt-[100px]">
-        <div className="mx-auto max-w-[1400px]">
-          <div className="relative flex min-h-[82vh] flex-col overflow-hidden rounded-[24px] lg:min-h-[90vh]">
-            {/* Fondo */}
-            <div className="absolute inset-0 bg-navy">
-              {heroImg && (
-                <Image src={heroImg} alt="" fill priority sizes="100vw" className="object-cover" />
-              )}
-              <div className="absolute inset-0 bg-[linear-gradient(105deg,rgba(15,27,45,0.95)_0%,rgba(15,27,45,0.74)_40%,rgba(15,27,45,0.28)_72%,rgba(107,24,32,0.38)_100%)]" />
-              <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.6)_0%,transparent_46%)]" />
-            </div>
+      {/* ── HERO (pantalla completa, full-bleed) ── */}
+      <section className="relative flex min-h-[100svh] flex-col overflow-hidden bg-navy">
+        {/* Fondo */}
+        <div className="absolute inset-0">
+          {heroImg && (
+            <Image src={heroImg} alt="" fill priority sizes="100vw" className="object-cover" />
+          )}
+          <div className="absolute inset-0 bg-[linear-gradient(105deg,rgba(15,27,45,0.95)_0%,rgba(15,27,45,0.74)_40%,rgba(15,27,45,0.28)_72%,rgba(107,24,32,0.38)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.6)_0%,transparent_46%)]" />
+        </div>
 
-            {/* Titular */}
-            <div className="relative z-[2] px-5 pb-7 pt-[72px] lg:px-12 lg:pt-24">
-              <h1 className="mb-5 max-w-[860px] font-display text-[clamp(40px,5vw,68px)] font-semibold leading-[1.05] tracking-[-1.5px] text-white">
-                Bienes raíces que <span className="italic text-white/60">construyen</span> patrimonio.
-              </h1>
-              <p className="mb-6 max-w-[520px] text-[15.5px] leading-relaxed text-white/70">
-                {total} propiedades en las mejores zonas de México. Departamentos, oficinas, locales
-                y bodegas seleccionados por un equipo con seis décadas de experiencia.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {HERO_TYPES.map(([t, l]) => (
-                  <Link
-                    key={t}
-                    href={`/propiedades?type=${t}`}
-                    className="rounded-full border border-white/25 bg-white/10 px-[18px] py-[9px] text-[13px] font-medium text-white backdrop-blur transition-colors hover:bg-white hover:text-navy"
-                  >
-                    {l}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Tarjeta de búsqueda */}
-            <div className="relative z-[2] mt-auto px-4 pb-6 lg:px-8 lg:pb-8">
-              <HeroSearch suggestions={suggestions} />
-            </div>
+        {/* Titular */}
+        <div className="relative z-[2] mx-auto w-full max-w-[1400px] px-5 pb-7 pt-[120px] lg:px-12 lg:pt-[150px]">
+          <h1 className="mb-5 max-w-[860px] font-display text-[clamp(40px,5.5vw,76px)] font-semibold leading-[1.05] tracking-[-1.5px] text-white">
+            Bienes raíces que <span className="italic text-white/60">construyen</span> patrimonio.
+          </h1>
+          <p className="mb-6 max-w-[520px] text-[15.5px] leading-relaxed text-white/70">
+            {total} propiedades en las mejores zonas de México. Departamentos, oficinas, locales
+            y bodegas seleccionados por un equipo con seis décadas de experiencia.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {HERO_TYPES.map(([t, l]) => (
+              <Link
+                key={t}
+                href={`/propiedades?type=${t}`}
+                className="rounded-full border border-white/25 bg-white/10 px-[18px] py-[9px] text-[13px] font-medium text-white backdrop-blur transition-colors hover:bg-white hover:text-navy"
+              >
+                {l}
+              </Link>
+            ))}
           </div>
+        </div>
+
+        {/* Tarjeta de búsqueda */}
+        <div className="relative z-[2] mx-auto mt-auto w-full max-w-[1400px] px-4 pb-8 lg:px-12 lg:pb-10">
+          <HeroSearch suggestions={suggestions} />
         </div>
       </section>
 
