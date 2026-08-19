@@ -11,7 +11,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tar}
       POSTGRES_DB: ${POSTGRES_DB:-tar_portal}
     ports:
-      - '5432:5432'
+      - '${DB_PORT:-5432}:5432'
     volumes:
       - tar-db-data:/var/lib/postgresql/data
     healthcheck:
