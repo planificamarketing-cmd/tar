@@ -13,8 +13,9 @@
 // cambiar (MapTiler, Stadia, servidor propio) se ajustan dos variables, sin tocar
 // código. La atribución es obligatoria: OpenStreetMap la exige por licencia.
 import { apiFetch } from './api';
-import type { FeaturedLevel } from '@tar/shared';
-import type { PublicPropertyFilters } from './public';
+import type { FeaturedLevel, PropertyType } from '@tar/shared';
+import type { PublicPropertyFilters, Operation } from './public';
+import { isPerM2Price } from './public';
 import type { PropertyDetail } from './types';
 
 // Estilo claro y sobrio ("voyager"), que no compite con los marcadores de marca.
@@ -43,6 +44,16 @@ export type MapPoint = {
   price: string | number | null;
   currency: string | null;
   featured: FeaturedLevel;
+  // Campos enriquecidos (§7.1 vista mapa split): alimentan las tarjetas del panel
+  // de lista lateral sin una segunda petición. Opcionales por compatibilidad.
+  operation?: Operation; // operación a la que corresponde `price` (para el formato /m²)
+  title?: string;
+  propertyType?: PropertyType;
+  bedrooms?: number | null;
+  bathrooms?: number | null;
+  areaM2?: string | number | null;
+  location?: { colonia: string | null; municipio: string | null; estado: string | null } | null;
+  cover?: { urlWebp: string; urlThumb: string } | null;
 };
 
 export type Bbox = { minLng: number; minLat: number; maxLng: number; maxLat: number };
@@ -112,11 +123,14 @@ export async function fetchMapPreview(slug: string): Promise<MapPreview> {
 export function pillPrice(
   price: string | number | null | undefined,
   currency: string | null | undefined,
+  operation?: Operation,
 ): string {
   const n = typeof price === 'number' ? price : Number(price);
   if (price == null || !Number.isFinite(n) || n === 0) return 'Consultar';
   const usd = (currency ?? 'MXN') === 'USD';
   const prefix = usd ? 'US$' : '$';
+  // Tasa por m² (parte del inventario comercial): se marca con su unidad.
+  if (operation && isPerM2Price(n, operation)) return `${prefix}${Math.round(n)}/m²`;
   if (n >= 1_000_000) {
     const m = n / 1_000_000;
     return `${prefix}${m.toFixed(m % 1 === 0 || m >= 10 ? 0 : 1)}${usd ? 'M' : ' MDP'}`;

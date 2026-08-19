@@ -10,13 +10,17 @@ import type { Suggestion } from '@/lib/public';
 export function MobileFilters({
   params,
   suggestions,
+  alwaysShow = false,
 }: {
   params: ListingParams;
   suggestions: Suggestion[];
+  // Por defecto solo aparece en <lg (en escritorio manda el sidebar). En la vista
+  // mapa no hay sidebar, así que el botón "Filtros" debe verse en todos los anchos.
+  alwaysShow?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="lg:hidden">
+    <div className={alwaysShow ? '' : 'lg:hidden'}>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}

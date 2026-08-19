@@ -1,7 +1,7 @@
 'use client';
 
 import { useSetParams, type ListingParams } from './use-listing-params';
-import { IGrid, IList, IMap } from './icons';
+import { IGrid, IList } from './icons';
 
 const SORTS: [string, string][] = [
   ['relevancia', 'Relevancia'],
@@ -10,10 +10,10 @@ const SORTS: [string, string][] = [
   ['precio_desc', 'Precio ↓'],
 ];
 
+// El mapa vive en su propia página (/mapa), no como vista del listado.
 const VIEWS = [
   ['grid', IGrid, 'Vista de cuadrícula'],
   ['list', IList, 'Vista de lista'],
-  ['map', IMap, 'Vista de mapa'],
 ] as const;
 
 // Orden + alternar vista cuadrícula/lista/mapa del listado (escriben en la URL).

@@ -147,10 +147,15 @@ export async function fetchAmenities(): Promise<Amenity[]> {
   return data;
 }
 
+// El catálogo de ubicaciones alimenta el autocompletar de los filtros; debe
+// reflejar pronto las colonias de propiedades recién publicadas. Por eso usa una
+// revalidación corta (2 min) en vez de la hora por defecto del resto del sitio.
+const LOCATIONS_REVALIDATE = 120;
+
 export async function fetchLocations(): Promise<LocationOption[]> {
   const { data } = await apiFetch<{ data: LocationOption[] }>('/locations', {
     auth: false,
-    next: { revalidate: REVALIDATE },
+    next: { revalidate: LOCATIONS_REVALIDATE },
   } as RequestInit);
   return data;
 }
@@ -179,6 +184,25 @@ function money(n: number, currency: string): string {
   }).format(n);
 }
 
+// Detección de precio POR m² (ver Reporte 03 §datos). Parte del inventario
+// comercial importado (oficinas, locales, bodegas) trae el precio como TASA por m²
+// en lugar del total, y la BD no tiene columna de unidad. Se distingue por
+// magnitud: en este mercado (CDMX/Edomex) una renta < $2,500 o una venta <
+// $500,000 no es un total plausible sino una tasa/m² (la renta total más baja del
+// inventario es $3,159 y la venta total más baja $950,000). Es un arreglo de
+// PRESENTACIÓN —no muta datos—; el definitivo es reimportar con la unidad correcta.
+const PER_M2_RENT_MAX = 2_500;
+const PER_M2_SALE_MAX = 500_000;
+
+export function isPerM2Price(
+  price: string | number | null | undefined,
+  operation: Operation,
+): boolean {
+  const n = typeof price === 'number' ? price : Number(price);
+  if (!Number.isFinite(n) || n <= 0) return false;
+  return operation === 'renta' ? n < PER_M2_RENT_MAX : n < PER_M2_SALE_MAX;
+}
+
 export function formatPricePublic(
   price: string | number | null | undefined,
   currency: string | null | undefined,
@@ -188,6 +212,10 @@ export function formatPricePublic(
   const n = typeof price === 'number' ? price : Number(price);
   if (price == null || Number.isNaN(n) || n === 0) return 'Precio a consultar';
   const cur = currency ?? 'MXN';
+  // Tasa por m²: se muestra con su unidad, como el diseño de referencia.
+  if (isPerM2Price(n, operation)) {
+    return `${money(n, cur)}/m²${operation === 'renta' ? '/mes' : ''}`;
+  }
   if (operation === 'renta') return `${money(n, cur)}/mes`;
   if ((opts.compact ?? true) && cur === 'MXN' && n >= 1_000_000) {
     const mdp = n / 1_000_000;

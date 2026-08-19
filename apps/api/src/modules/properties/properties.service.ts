@@ -324,9 +324,17 @@ export async function mapProperties(q: PropertyMapQuery) {
     .select({
       id: properties.id,
       slug: properties.slug,
+      title: properties.title,
+      propertyType: properties.propertyType,
       featured: properties.featured,
       lat: latSql,
       lng: lngSql,
+      bedrooms: properties.bedrooms,
+      bathrooms: properties.bathrooms,
+      areaM2: properties.areaM2,
+      colonia: locations.colonia,
+      municipio: locations.municipio,
+      estado: locations.estado,
       priceSale: properties.priceSale,
       currencySale: properties.currencySale,
       priceRent: properties.priceRent,
@@ -336,6 +344,10 @@ export async function mapProperties(q: PropertyMapQuery) {
     .leftJoin(locations, eq(properties.locationId, locations.id))
     .where(and(...c))
     .limit(1000);
+
+  // La portada permite que el panel de lista de la vista mapa (split) muestre
+  // miniatura sin una segunda petición por propiedad. Mismo helper que el listado.
+  const covers = await coverImages(rows.map((r) => r.id));
 
   // price/currency corresponden a la operación filtrada, en moneda ORIGINAL.
   return rows.map((r) => {
@@ -350,12 +362,30 @@ export async function mapProperties(q: PropertyMapQuery) {
       : q.operation === 'venta'
         ? r.currencySale
         : (r.currencySale ?? r.currencyRent);
+    // Operación a la que corresponde el precio mostrado (para el formato /m² en
+    // el cliente): la filtrada, o —sin filtro— venta si hay precio de venta.
+    const operation: 'venta' | 'renta' =
+      q.operation === 'renta'
+        ? 'renta'
+        : q.operation === 'venta'
+          ? 'venta'
+          : r.priceSale != null
+            ? 'venta'
+            : 'renta';
     return {
       id: r.id,
       slug: r.slug,
+      title: r.title,
+      propertyType: r.propertyType,
       featured: r.featured,
+      operation,
       lat: r.lat,
       lng: r.lng,
+      bedrooms: r.bedrooms,
+      bathrooms: r.bathrooms,
+      areaM2: r.areaM2,
+      location: { colonia: r.colonia, municipio: r.municipio, estado: r.estado },
+      cover: covers.get(r.id) ?? null,
       price,
       currency,
     };

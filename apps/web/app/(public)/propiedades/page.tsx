@@ -5,7 +5,6 @@ import { PropertyRow } from '@/components/public/property-row';
 import { ListingSidebar } from '@/components/public/listing-sidebar';
 import { ListingControls } from '@/components/public/listing-controls';
 import { MobileFilters } from '@/components/public/mobile-filters';
-import { SearchMapPanel } from '@/components/public/search-map-loader';
 import { fetchProperties, fetchLocations, buildSuggestions } from '@/lib/public';
 import type { PublicPropertyFilters } from '@/lib/public';
 import type { MapSearchFilters } from '@/lib/maps';
@@ -126,75 +125,70 @@ export default async function ListingsPage({
       </div>
 
       <div className="mx-auto flex max-w-[1400px] flex-col gap-5 px-4 py-6 lg:flex-row lg:gap-7 lg:px-8 lg:py-8">
-        {/* Filtros móvil */}
-        <MobileFilters params={params} suggestions={suggestions} />
+          {/* Filtros móvil */}
+          <MobileFilters params={params} suggestions={suggestions} />
 
-        {/* Sidebar escritorio */}
-        <aside className="hidden w-[240px] shrink-0 lg:block">
-          <div className="sticky top-[100px] rounded-2xl border border-[#F1F1F0] bg-white p-5">
-            <div className="mb-4 font-display text-base font-bold text-navy">Filtros</div>
-            <ListingSidebar params={params} suggestions={suggestions} />
+          {/* Sidebar escritorio */}
+          <aside className="hidden w-[240px] shrink-0 lg:block">
+            <div className="sticky top-[100px] rounded-2xl border border-[#F1F1F0] bg-white p-5">
+              <div className="mb-4 font-display text-base font-bold text-navy">Filtros</div>
+              <ListingSidebar params={params} suggestions={suggestions} />
+            </div>
+          </aside>
+
+          {/* Resultados */}
+          <div className="min-w-0 flex-1">
+            {data.length === 0 ? (
+              <div className="py-20 text-center">
+                <div className="mb-2 font-display text-2xl text-navy">Sin resultados</div>
+                <div className="text-sm text-muted">Prueba ajustando los filtros.</div>
+              </div>
+            ) : params.view === 'list' ? (
+              <div className="flex flex-col gap-3.5">
+                {data.map((p) => (
+                  <PropertyRow key={p.id} p={p} />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {data.map((p) => (
+                  <PropertyCard key={p.id} p={p} />
+                ))}
+              </div>
+            )}
+
+            {/* Paginación */}
+            {totalPages > 1 && (
+              <div className="mt-9 flex flex-wrap justify-center gap-1.5">
+                {paginationRange(page, totalPages).map((n, i) =>
+                  n === '…' ? (
+                    <span
+                      key={`gap-${i}`}
+                      className="flex h-10 w-10 items-center justify-center text-[13px] text-muted"
+                    >
+                      …
+                    </span>
+                  ) : (
+                    <Link
+                      key={n}
+                      href={pageHref(n)}
+                      scroll
+                      aria-current={n === page ? 'page' : undefined}
+                      className={[
+                        'flex h-10 w-10 items-center justify-center rounded-full border text-[13px]',
+                        n === page
+                          ? 'border-navy bg-navy font-semibold text-white'
+                          : 'border-line bg-white text-ink hover:border-navy',
+                      ].join(' ')}
+                    >
+                      {n}
+                    </Link>
+                  ),
+                )}
+              </div>
+            )}
           </div>
-        </aside>
-
-        {/* Resultados */}
-        <div className="min-w-0 flex-1">
-          {params.view === 'map' ? (
-            <SearchMapPanel
-              filters={sharedFilters}
-              className="h-[calc(100vh-230px)] min-h-[440px]"
-            />
-          ) : data.length === 0 ? (
-            <div className="py-20 text-center">
-              <div className="mb-2 font-display text-2xl text-navy">Sin resultados</div>
-              <div className="text-sm text-muted">Prueba ajustando los filtros.</div>
-            </div>
-          ) : params.view === 'list' ? (
-            <div className="flex flex-col gap-3.5">
-              {data.map((p) => (
-                <PropertyRow key={p.id} p={p} />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {data.map((p) => (
-                <PropertyCard key={p.id} p={p} />
-              ))}
-            </div>
-          )}
-
-          {/* Paginación (el mapa no pagina: dibuja todo el bbox visible) */}
-          {params.view !== 'map' && totalPages > 1 && (
-            <div className="mt-9 flex flex-wrap justify-center gap-1.5">
-              {paginationRange(page, totalPages).map((n, i) =>
-                n === '…' ? (
-                  <span
-                    key={`gap-${i}`}
-                    className="flex h-10 w-10 items-center justify-center text-[13px] text-muted"
-                  >
-                    …
-                  </span>
-                ) : (
-                  <Link
-                    key={n}
-                    href={pageHref(n)}
-                    scroll
-                    aria-current={n === page ? 'page' : undefined}
-                    className={[
-                      'flex h-10 w-10 items-center justify-center rounded-full border text-[13px]',
-                      n === page
-                        ? 'border-navy bg-navy font-semibold text-white'
-                        : 'border-line bg-white text-ink hover:border-navy',
-                    ].join(' ')}
-                  >
-                    {n}
-                  </Link>
-                ),
-              )}
-            </div>
-          )}
         </div>
-      </div>
     </div>
   );
 }

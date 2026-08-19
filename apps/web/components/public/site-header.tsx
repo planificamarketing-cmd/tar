@@ -12,6 +12,7 @@ import { IMenu, IClose } from './icons';
 const NAV: { href: string; label: string }[] = [
   { href: '/', label: 'Inicio' },
   { href: '/propiedades', label: 'Propiedades' },
+  { href: '/mapa', label: 'Mapa' },
   { href: '/nosotros', label: 'Nosotros' },
 ];
 
