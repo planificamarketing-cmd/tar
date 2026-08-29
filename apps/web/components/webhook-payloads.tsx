@@ -72,8 +72,16 @@ const EXAMPLES: Record<string, unknown> = {
       balconyM2: null,
       gardenM2: null,
       isRemate: true,
+      isExclusive: true,
       location: { estado: 'Ciudad de México', municipio: 'Cuauhtémoc', colonia: 'Polanco' },
       cover: 'https://tu-sitio.com/media/…/portada.webp',
+      // Ficha PDF lista para adjuntar al correo del prospecto (sin dirección exacta).
+      flyer: {
+        url: 'https://tu-sitio.com/api/v1/properties/casa-en-polanco/flyer.pdf',
+        filename: 'ficha-casa-en-polanco.pdf',
+        contentType: 'application/pdf',
+        includesAddress: false,
+      },
     },
   },
   'lead.status_changed': { id: '2a9b…', from: 'nuevo', to: 'cita_agendada' },

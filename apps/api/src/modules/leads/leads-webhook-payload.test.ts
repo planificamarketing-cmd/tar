@@ -13,6 +13,7 @@ import { db, schema, pool } from '@tar/db';
 import { createApp } from '../../app';
 import { emitEvent } from '../../lib/events';
 import { createLead } from './leads.service';
+import { publicApiUrl } from '../../env';
 
 const app = createApp();
 const ADMIN_EMAIL = 'leadwh-test-admin@tar.local';
@@ -53,11 +54,18 @@ beforeAll(async () => {
       rentableAreaM2: 110,
       terraceM2: 20,
       isRemate: true,
+      isExclusive: true,
       estado: 'Ciudad de México',
       municipio: 'Cuauhtémoc',
       colonia: COLONIA,
+      lat: 19.43,
+      lng: -99.16,
     });
   officeId = res.body.data.id;
+  // Publicada: solo con ficha pública el folleto PDF del payload es descargable.
+  await request(app)
+    .post(`/api/v1/properties/${officeId}/publish`)
+    .set('Authorization', `Bearer ${token}`);
 });
 
 afterAll(async () => {
@@ -109,7 +117,25 @@ describe('Webhook lead.created — payload enriquecido con la propiedad', () => 
     expect(property.rentableAreaM2).toBe(110);
     expect(property.terraceM2).toBe(20);
     expect(property.isRemate).toBe(true);
+    expect(property.isExclusive).toBe(true);
     expect((property.price as { rent: number }).rent).toBe(30_000);
     expect(property.location).toBeTruthy();
+
+    // Folleto PDF listo para adjuntar al prospecto: SIEMPRE sin dirección exacta.
+    const flyer = property.flyer as Record<string, unknown>;
+    expect(flyer).toBeTruthy();
+    expect(flyer.url).toBe(
+      `${publicApiUrl}/properties/${property.slug as string}/flyer.pdf`,
+    );
+    expect(flyer.contentType).toBe('application/pdf');
+    expect(flyer.includesAddress).toBe(false);
+
+    // Y el enlace del folleto responde un PDF de verdad, sin autenticación.
+    const pdf = await request(app)
+      .get(`/api/v1/properties/${property.slug as string}/flyer.pdf`)
+      .buffer(true);
+    expect(pdf.status).toBe(200);
+    expect(pdf.headers['content-type']).toBe('application/pdf');
+    expect(pdf.body.slice(0, 4).toString('latin1')).toBe('%PDF');
   });
 });

@@ -75,6 +75,7 @@ Variables obligatorias (el despliegue se detiene si falta alguna):
 | `DATABASE_URL` | `postgres://tar:CLAVE@db:5432/tar_portal` | ⚠️ El servidor de base de datos se llama **`db`**, no `localhost` |
 | `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | *(cadenas largas al azar)* | Firman las sesiones del panel |
 | `PUBLIC_SITE_URL` | `https://tarinternacional.com` | Enlaces que salen en los avisos automáticos. Sin barra final |
+| `PUBLIC_API_URL` | `https://tarinternacional.com/api/v1` | Base pública de la API para los enlaces descargables de los avisos (ficha PDF del prospecto). Vacía = se deriva de `PUBLIC_SITE_URL` |
 | `MEDIA_DIR` | `/srv/tar/media` | Ruta **dentro** del contenedor. No cambiar |
 | `MEDIA_HOST_DIR` | `/srv/tar/media` | Ruta **en el servidor**. Debe existir (paso 2.2) |
 | `MEDIA_BASE_URL` | `https://tarinternacional.com/media` | Dirección pública de las imágenes |

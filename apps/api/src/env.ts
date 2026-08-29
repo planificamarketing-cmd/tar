@@ -23,6 +23,11 @@ const EnvSchema = z
     MEDIA_BASE_URL: z.string().url().default('http://localhost:4000/media'),
     // Base del sitio público (para armar el enlace de la propiedad en los webhooks).
     PUBLIC_SITE_URL: z.string().url().default('http://localhost:3000'),
+    // Base PÚBLICA de la API (para armar enlaces descargables en los webhooks, p. ej.
+    // la ficha PDF del prospecto). En producción la API vive en el mismo dominio
+    // detrás de Caddy, así que basta `https://dominio/api/v1`; si se deja vacía se
+    // deriva de PUBLIC_SITE_URL.
+    PUBLIC_API_URL: z.string().url().optional(),
     // Secreto compartido con el sitio Next.js para disparar la revalidación
     // on-demand (ISR) al publicar/despublicar/cambiar estatus. Sin él, la
     // revalidación queda desactivada y el sitio se refresca solo por tiempo.
@@ -64,6 +69,12 @@ if (!parsed.success) {
 }
 
 export const env = parsed.data;
+
+// Base pública de la API para enlaces que se comparten fuera (webhooks). En
+// producción, Caddy sirve API y web en el mismo dominio bajo /api/v1.
+export const publicApiUrl: string = (
+  env.PUBLIC_API_URL ?? `${env.PUBLIC_SITE_URL}/api/v1`
+).replace(/\/$/, '');
 
 const corsAllowlist = env.CORS_ORIGINS.split(',')
   .map((o) => o.trim())

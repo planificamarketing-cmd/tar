@@ -316,6 +316,26 @@ exactamente lo que llega al publicar una propiedad:
   > 📋 **La referencia completa de cada payload está en el propio panel:** *Ajustes →
   > Integraciones → "Qué datos manda cada aviso"* (con botón de copiar).
 
+#### Mandar la ficha PDF al prospecto en automático
+Cuando alguien deja sus datos en el formulario de una propiedad, el aviso
+`lead.created` incluye —dentro de `data.property`— el **folleto PDF ya listo**:
+
+```json
+"flyer": {
+  "url": "https://tu-sitio.com/api/v1/properties/casa-en-polanco/flyer.pdf",
+  "filename": "ficha-casa-en-polanco.pdf",
+  "contentType": "application/pdf",
+  "includesAddress": false
+}
+```
+
+En n8n (o Make/Zapier): un nodo **HTTP Request** que descargue `flyer.url` como
+archivo binario y un nodo de **correo** que lo adjunte al `data.email` del prospecto.
+El enlace es público (no necesita llave ni login) y **el PDF no lleva la dirección
+exacta**: es la versión pensada para enviar. La copia con dirección se descarga a mano
+desde la ficha (**Folleto PDF**). Si la propiedad no está publicada, `flyer` llega
+como `null`.
+
 **Pasos en n8n:**
 1. Agrega un nodo **Webhook**. En **HTTP Method** elige **POST** (viene en `GET` por
    defecto — esa suele ser la razón por la que "no deja" recibir el aviso).

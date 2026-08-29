@@ -5,7 +5,7 @@ import { ApiError } from '../../middleware/error-handler';
 import { emitEvent } from '../../lib/events';
 import { sendNewLeadNotification } from '../../lib/mailer';
 import { getPropertyByIdAdmin } from '../properties/properties.service';
-import { env } from '../../env';
+import { env, publicApiUrl } from '../../env';
 
 const { leads, leadEvents, properties, users } = schema;
 
@@ -25,11 +25,19 @@ const LEAD_TYPE_ES: Record<string, string> = {
   cita: 'Solicitud de cita',
 };
 
+// Estatus con ficha pública: solo en esos casos el folleto PDF es descargable sin
+// autenticación (la ruta pública lo rechaza en borrador).
+const PUBLIC_STATUSES = ['disponible', 'apartado'];
+
 // Snapshot compacto de la propiedad para el webhook `lead.created`: incluye los
 // datos útiles (precio, m² —incl. útil/rentable de oficina y áreas exteriores—,
-// remate, ubicación, enlace y portada) para que el consumidor (n8n, CRM…) reciba
-// el contexto completo del formulario sin una 2ª llamada. Misma filosofía que
-// `property.published`.
+// remate, exclusiva, ubicación, enlace, portada y el FOLLETO PDF) para que el
+// consumidor (n8n, CRM…) reciba el contexto completo del formulario sin una 2ª
+// llamada. Misma filosofía que `property.published`.
+//
+// El folleto que viaja aquí es SIEMPRE la versión sin dirección exacta: es el
+// material que se le manda al prospecto en automático. La copia con dirección se
+// descarga a mano desde el panel.
 type PropertyDetailShape = Awaited<ReturnType<typeof getPropertyByIdAdmin>>;
 function buildLeadPropertySnapshot(d: PropertyDetailShape): Record<string, unknown> {
   return {
@@ -59,8 +67,19 @@ function buildLeadPropertySnapshot(d: PropertyDetailShape): Record<string, unkno
     balconyM2: num(d.balconyM2),
     gardenM2: num(d.gardenM2),
     isRemate: d.isRemate,
+    isExclusive: d.isExclusive,
     location: d.location,
     cover: d.images.find((i) => i.isCover)?.urlWebp ?? d.images[0]?.urlWebp ?? null,
+    flyer:
+      d.slug && PUBLIC_STATUSES.includes(d.status)
+        ? {
+            url: `${publicApiUrl}/properties/${d.slug}/flyer.pdf`,
+            filename: `ficha-${d.slug}.pdf`,
+            contentType: 'application/pdf',
+            // La automatización puede adjuntarlo tal cual: no lleva la dirección.
+            includesAddress: false,
+          }
+        : null,
   };
 }
 
