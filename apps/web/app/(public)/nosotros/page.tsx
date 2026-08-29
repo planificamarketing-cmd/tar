@@ -71,7 +71,7 @@ export default async function NosotrosPage() {
       <section className="relative flex min-h-[58vh] items-end overflow-hidden bg-navy">
         {heroImg && <Image src={heroImg} alt="" fill priority sizes="100vw" className="object-cover" />}
         <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(107,24,32,0.86)_0%,rgba(139,26,40,0.6)_32%,rgba(15,27,45,0.82)_72%,rgba(26,43,71,0.9)_100%)]" />
-        <div className="relative z-[1] mx-auto w-full max-w-[1400px] px-5 pb-10 pt-24 lg:px-10 lg:pb-14">
+        <div className="relative z-[1] mx-auto w-full max-w-[1400px] px-5 pb-10 pt-24 lg:px-10 lg:pb-14 lg:pt-28">
           <div className="mb-5 inline-block border-t border-brand pt-2.5 font-mono text-[11px] uppercase tracking-[3px] text-white/60">
             Nosotros
           </div>

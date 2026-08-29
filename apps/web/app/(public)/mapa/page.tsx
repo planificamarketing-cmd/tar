@@ -64,7 +64,7 @@ export default async function MapaPage({
   // operación y píldoras de precio/tipo/recámaras) viven DENTRO del split, como el
   // prototipo-v3, no en una barra aparte.
   return (
-    <div className="h-[100svh] pt-[64px] lg:pt-[76px]">
+    <div className="h-[100svh] pt-[76px] lg:pt-[100px]">
       <MapSplitPanel filters={sharedFilters} params={params} suggestions={suggestions} />
     </div>
   );

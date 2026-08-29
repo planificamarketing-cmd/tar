@@ -42,7 +42,7 @@ export function SiteHeader() {
         floating ? 'bg-transparent' : 'border-b border-[#F1F1F0] bg-white/95 backdrop-blur',
       ].join(' ')}
     >
-      <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-5 py-2.5 lg:px-8 lg:py-3">
+      <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-5 py-1.5 lg:px-8 lg:py-2">
         <Link href="/" className="flex shrink-0 items-center" aria-label="TAR Internacional — inicio">
           <Image
             src="/brand/tar-logo.svg"
@@ -50,7 +50,7 @@ export function SiteHeader() {
             width={208}
             height={64}
             priority
-            className={['h-[52px] w-auto lg:h-[66px]', floating ? 'drop-shadow-[0_2px_12px_rgba(0,0,0,0.22)]' : ''].join(' ')}
+            className={['h-[64px] w-auto lg:h-[84px]', floating ? 'drop-shadow-[0_2px_12px_rgba(0,0,0,0.22)]' : ''].join(' ')}
           />
         </Link>
 

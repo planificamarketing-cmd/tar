@@ -135,7 +135,7 @@ export default async function PropertyDetailPage({ params }: { params: { slug: s
   };
 
   return (
-    <div className="min-h-screen bg-canvas pt-[84px]">
+    <div className="min-h-screen bg-canvas pt-[88px] lg:pt-[112px]">
       <TrackView propertyId={p.id} />
       <script
         type="application/ld+json"

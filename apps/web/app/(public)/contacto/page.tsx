@@ -16,7 +16,7 @@ const INFO = [
 
 export default function ContactoPage() {
   return (
-    <div className="min-h-screen bg-canvas pt-16">
+    <div className="min-h-screen bg-canvas pt-[76px] lg:pt-[100px]">
       {/* Encabezado */}
       <section className="bg-navy px-5 py-12 lg:px-10 lg:py-16">
         <div className="mx-auto max-w-[1100px]">

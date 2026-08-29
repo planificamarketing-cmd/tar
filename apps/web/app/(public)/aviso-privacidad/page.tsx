@@ -74,7 +74,7 @@ const SECCIONES: Section[] = [
 
 export default function AvisoPrivacidadPage() {
   return (
-    <div className="min-h-screen bg-canvas pt-16">
+    <div className="min-h-screen bg-canvas pt-[76px] lg:pt-[100px]">
       {/* Encabezado */}
       <section className="bg-navy px-5 py-10 lg:px-10 lg:py-14">
         <div className="mx-auto max-w-[900px]">

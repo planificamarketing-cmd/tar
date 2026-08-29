@@ -107,7 +107,7 @@ export default async function ListingsPage({
   };
 
   return (
-    <div className="min-h-screen bg-canvas pt-[84px]">
+    <div className="min-h-screen bg-canvas pt-[88px] lg:pt-[112px]">
       {/* Barra superior */}
       <div className="border-b border-[#F1F1F0] bg-white">
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-4 px-4 py-4 lg:px-8">
