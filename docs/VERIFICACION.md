@@ -25,13 +25,39 @@ añade comprobaciones aquí.
 
 Pruebas de integración (Vitest + Supertest) que se ejecutan contra la BD real y
 cubren los casos felices y los de error (credenciales, validación, rotación de
-tokens, guardas de rol, etc.). Hoy: **22 pruebas**.
+tokens, guardas de rol, etc.). Hoy: **121 pruebas**.
 
 ```bash
 pnpm test
 ```
 
-## 3. Manual — probar endpoint por endpoint
+## 3. `pnpm test:e2e` — el sitio en un navegador real (Playwright)
+
+Abre el sitio en Chromium (escritorio 1440 px y móvil 390 px) y comprueba lo que
+**ve un visitante**: portada, listado con filtros, ficha, página de mapa, y los
+ajustes pedidos por TAR (tamaño del logotipo, que la ficha **no** publique la calle,
+el **círculo de zona** sobre el mapa y las insignias de **Exclusiva**).
+
+```bash
+pnpm db:seed        # datos de muestra (las pruebas leen el inventario real de la API)
+pnpm test:e2e       # levanta API + web si no están corriendo, y ejecuta las pruebas
+```
+
+Las capturas quedan en `apps/web/test-results/capturas/` (fuera del repo). Para verlas
+paso a paso: `pnpm --filter web test:e2e:ui`.
+
+> **Requisito del sistema (una sola vez).** El navegador de Playwright necesita tres
+> librerías de Ubuntu que no vienen de fábrica en WSL:
+>
+> ```bash
+> sudo apt-get install -y libnss3 libnspr4 libasound2t64
+> pnpm --filter web exec playwright install chromium   # descarga el navegador
+> ```
+>
+> Sin ellas el navegador no arranca y falla con `libnspr4.so: cannot open shared
+> object file`.
+
+## 4. Manual — probar endpoint por endpoint
 
 Levanta la API y pruébala con el archivo de peticiones o con `curl`:
 

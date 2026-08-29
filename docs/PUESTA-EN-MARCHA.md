@@ -30,7 +30,8 @@ Usuario de prueba del panel: **`admin@tarinternacional.com` / `admin123`**.
 |---|---|---|
 | **Ver la documentación de la API** e incluso probarla | `pnpm dev` | http://localhost:4000/**docs** (Swagger) |
 | **Verificar que TODO el backend funciona** (checklist) | `pnpm smoke` | (consola) |
-| **Correr las pruebas automáticas** (44) | `pnpm test` | (consola) |
+| **Correr las pruebas automáticas** (121) | `pnpm test` | (consola) |
+| **Probar el sitio en un navegador real** (Playwright) | `pnpm test:e2e` | capturas en `apps/web/test-results/capturas/` |
 | **Ver la base de datos** en el navegador | `pnpm db:web` | http://`<IP-WSL>`:**8081** (pgweb) |
 | **Ver la BD** con otra herramienta (DBeaver/pgAdmin) | host `<IP-WSL>`, 5432, `tar`/`tar`, db `tar_portal` | — |
 | **Probar endpoints a mano** | abrir `apps/api/requests.http` con la extensión *REST Client* de VS Code | — |

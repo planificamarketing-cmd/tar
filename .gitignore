@@ -27,6 +27,12 @@ apps/api/uploads/
 # Disponibles localmente para el importador (Fase A.5) y contenido; NO van al repo.
 /data/
 
+# Playwright: resultados, capturas y reportes de las pruebas E2E (se regeneran)
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
 # Respaldos y temporales
 /var/backups/
 /snapshots/
