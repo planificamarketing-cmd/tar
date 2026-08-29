@@ -6,8 +6,9 @@
 // pesar en el LCP de la ficha (§9).
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Circle } from 'react-leaflet';
 import {
+  MAP_AREA_RADIUS_M,
   MAP_MAX_ZOOM,
   MAP_TILES_ATTRIBUTION,
   MAP_TILES_URL,
@@ -33,7 +34,7 @@ export default function PropertyMap({ lat, lng, title, address }: PropertyMapPro
       <div className="relative h-[320px] overflow-hidden rounded-2xl border border-line">
         <MapContainer
           center={[lat, lng]}
-          zoom={15}
+          zoom={14}
           maxZoom={MAP_MAX_ZOOM}
           // Sin zoom con la rueda: en móvil y al hacer scroll por la ficha, el
           // mapa "secuestraría" el desplazamiento de la página.
@@ -41,6 +42,19 @@ export default function PropertyMap({ lat, lng, title, address }: PropertyMapPro
           className="h-full w-full"
         >
           <TileLayer url={MAP_TILES_URL} attribution={MAP_TILES_ATTRIBUTION} />
+          {/* Zona aproximada: el círculo comunica el área sin publicar la
+              ubicación al metro (la exacta se comparte ya en el cierre). */}
+          <Circle
+            center={[lat, lng]}
+            radius={MAP_AREA_RADIUS_M}
+            pathOptions={{
+              color: '#D2103E',
+              weight: 1.5,
+              opacity: 0.55,
+              fillColor: '#D2103E',
+              fillOpacity: 0.08,
+            }}
+          />
           <Marker
             position={[lat, lng]}
             title={title}
@@ -66,6 +80,10 @@ export default function PropertyMap({ lat, lng, title, address }: PropertyMapPro
           Cómo llegar →
         </a>
       </div>
+      <p className="text-[12px] leading-relaxed text-muted/80">
+        El círculo marca la <strong className="font-semibold">zona aproximada</strong> de
+        la propiedad. La dirección exacta se comparte con tu asesor durante el proceso.
+      </p>
     </div>
   );
 }

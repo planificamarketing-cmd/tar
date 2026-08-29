@@ -30,6 +30,14 @@ export const MAP_TILES_ATTRIBUTION =
 
 export const MAP_MAX_ZOOM = 19;
 
+// Radio (metros) del círculo de "zona aproximada" que se dibuja en el mapa de la
+// ficha alrededor del pin: TAR no divulga la ubicación exacta hasta que la
+// operación avanza al cierre, así que el círculo comunica el área. Configurable
+// por entorno para poder abrirlo o cerrarlo sin tocar código.
+export const MAP_AREA_RADIUS_M = Number(
+  process.env.NEXT_PUBLIC_MAP_AREA_RADIUS_M || 400,
+);
+
 // Centro por defecto: CDMX. Solo se usa cuando no hay ningún punto que encuadrar.
 export const DEFAULT_CENTER: [number, number] = [19.4326, -99.1332];
 export const DEFAULT_ZOOM = 11;

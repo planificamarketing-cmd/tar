@@ -88,6 +88,7 @@ Recomendadas:
 |---|---|
 | `NEXT_PUBLIC_MEDIA_HOSTNAME` | `tarinternacional.com` — permite optimizar las fotos |
 | `NEXT_PUBLIC_MAP_TILES_URL` + `NEXT_PUBLIC_MAP_TILES_ATTRIBUTION` | Solo para cambiar de proveedor de mosaicos del mapa. Vacías = CARTO/OpenStreetMap por defecto, que **no requiere llave ni cuenta** |
+| `NEXT_PUBLIC_MAP_AREA_RADIUS_M` | Radio en metros del círculo de *zona aproximada* del mapa de la ficha. Vacío = 400 m |
 | `SENDGRID_API_KEY` + `LEADS_NOTIFY_TO` | Envío de correos al recibir un prospecto |
 | `REVALIDATE_SECRET` | Que los cambios del panel se vean al instante. **Mismo valor** que usa el sitio |
 | `GOOGLE_GEOCODING_API_KEY` | Ubicar automáticamente las propiedades al importarlas |

@@ -14,7 +14,6 @@ import {
   primaryOperation,
   formatPricePublic,
   locationLabel,
-  displayAddress,
   TYPE_LABEL_SINGULAR,
 } from '@/lib/public';
 import type { PropertyDetail } from '@/lib/types';
@@ -193,7 +192,8 @@ export default async function PropertyDetailPage({ params }: { params: { slug: s
               </h1>
               <div className="flex items-center gap-1.5 text-sm text-muted">
                 <IPin s={13} />
-                {p.address ? `${p.address} · ` : ''}
+                {/* Solo la zona: la dirección exacta no se publica en el portal
+                    (se comparte con el asesor durante el proceso). */}
                 {locationLabel(p.location)}
               </div>
 
@@ -263,7 +263,7 @@ export default async function PropertyDetailPage({ params }: { params: { slug: s
                   lat={p.lat}
                   lng={p.lng}
                   title={p.title}
-                  address={displayAddress(p.address, p.location)}
+                  address={locationLabel(p.location)}
                 />
               </div>
             )}
