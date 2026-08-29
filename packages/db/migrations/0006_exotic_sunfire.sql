@@ -1,0 +1,1 @@
+ALTER TABLE "properties" ADD COLUMN "is_exclusive" boolean DEFAULT false NOT NULL;

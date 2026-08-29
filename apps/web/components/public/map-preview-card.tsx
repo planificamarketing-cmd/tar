@@ -58,6 +58,11 @@ export function MapPreviewCard({
                   Remate
                 </span>
               )}
+              {preview.isExclusive && !preview.isRemate && (
+                <span className="absolute left-1 top-1 rounded-full bg-navy px-1.5 py-[1px] text-[9px] font-bold text-white">
+                  Exclusiva
+                </span>
+              )}
             </div>
 
             <div className="min-w-0 flex-1 pr-5">

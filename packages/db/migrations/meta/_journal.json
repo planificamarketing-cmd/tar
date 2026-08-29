@@ -43,6 +43,13 @@
       "when": 1784269580015,
       "tag": "0005_brainy_firebrand",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788034787981,
+      "tag": "0006_exotic_sunfire",
+      "breakpoints": true
     }
   ]
 }

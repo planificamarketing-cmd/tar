@@ -27,9 +27,16 @@ export function PropertyRow({ p }: { p: PropertyListItem }) {
         ) : (
           <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,transparent,transparent_14px,rgba(255,255,255,0.04)_14px,rgba(255,255,255,0.04)_28px)]" />
         )}
-        <span className="absolute left-3 top-3 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-navy">
-          {operation === 'venta' ? 'En venta' : 'En renta'}
-        </span>
+        <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
+          <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-navy">
+            {operation === 'venta' ? 'En venta' : 'En renta'}
+          </span>
+          {p.isExclusive && (
+            <span className="rounded-full bg-navy px-2.5 py-1 text-[11px] font-bold text-white">
+              EXCLUSIVA
+            </span>
+          )}
+        </div>
         {p.isRemate && (
           <span className="absolute right-3 top-3 rounded-full bg-brand px-2.5 py-1 text-[11px] font-bold text-white">
             En remate

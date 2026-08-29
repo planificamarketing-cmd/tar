@@ -24,6 +24,7 @@ import {
 import { mediaUrl } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import {
+  ExclusiveBadge,
   FeaturedBadge,
   PropertyStatusBadge,
   RemateBadge,
@@ -523,6 +524,7 @@ export default function PropertiesPage() {
                       <span className="truncate">{p.title}</span>
                       <FeaturedBadge level={p.featured} />
                       <RemateBadge isRemate={p.isRemate} />
+                      <ExclusiveBadge isExclusive={p.isExclusive} />
                     </Link>
                     <div className="mt-0.5 truncate text-xs text-muted">
                       {p.location?.colonia
@@ -596,6 +598,7 @@ export default function PropertiesPage() {
                           <span className="truncate">{p.title}</span>
                           <FeaturedBadge level={p.featured} />
                           <RemateBadge isRemate={p.isRemate} />
+                          <ExclusiveBadge isExclusive={p.isExclusive} />
                         </Link>
                         <div className="truncate text-xs text-muted">
                           {p.location?.colonia

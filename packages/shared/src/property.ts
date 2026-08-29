@@ -68,6 +68,8 @@ export const propertyAdminQuerySchema = paginationSchema.extend({
   featured: featuredLevelSchema.optional(),
   // 'true' → solo propiedades marcadas en remate.
   remate: z.enum(['true', 'false']).optional(),
+  // 'true' → solo propiedades en exclusiva.
+  exclusiva: z.enum(['true', 'false']).optional(),
   q: z.string().trim().min(1).optional(),
   sort: propertyAdminSortSchema,
   // 'true' → solo archivadas (soft-deleted); por defecto solo las activas.
@@ -141,6 +143,8 @@ const basePropertyShape = {
   featured: featuredLevelSchema.optional(),
   // Etiqueta "en remate" (convive con cualquier estatus; venta y renta).
   isRemate: z.boolean().optional(),
+  // Propiedad en exclusiva con TAR (insignia + entra a destacadas).
+  isExclusive: z.boolean().optional(),
   amenities: z.array(z.string().uuid()).optional(),
 };
 

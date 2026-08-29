@@ -182,6 +182,9 @@ export const properties = pgTable(
     featured: featuredLevel('featured').notNull().default('normal'),
     // Etiqueta "en remate" (convive con cualquier estatus; aplica a venta y renta).
     isRemate: boolean('is_remate').notNull().default(false),
+    // Propiedad en EXCLUSIVA con TAR. Además de la insignia, cuenta como
+    // destacada en el orden por relevancia (entra sola a la portada).
+    isExclusive: boolean('is_exclusive').notNull().default(false),
     // Full-text en español sobre title+description (filtro `q`).
     searchVector: tsvector('search_vector').generatedAlwaysAs(
       sql`to_tsvector('spanish', coalesce(title, '') || ' ' || coalesce(description, ''))`,

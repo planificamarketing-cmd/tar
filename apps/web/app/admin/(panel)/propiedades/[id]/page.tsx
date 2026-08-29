@@ -18,6 +18,7 @@ import { PropertyFields } from '@/components/property-fields';
 import { ImageUploader } from '@/components/image-uploader';
 import { VideoUploader } from '@/components/video-uploader';
 import {
+  ExclusiveBadge,
   PropertyStatusBadge,
   RemateBadge,
 } from '@/components/property-status-badge';
@@ -109,6 +110,7 @@ export default function EditPropertyPage() {
           <div className="mt-1.5 flex items-center gap-2">
             <PropertyStatusBadge status={prop.status} />
             <RemateBadge isRemate={prop.isRemate} />
+            <ExclusiveBadge isExclusive={prop.isExclusive} />
           </div>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">

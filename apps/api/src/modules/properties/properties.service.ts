@@ -75,6 +75,7 @@ const propertyColumns = {
   status: properties.status,
   featured: properties.featured,
   isRemate: properties.isRemate,
+  isExclusive: properties.isExclusive,
   publishedAt: properties.publishedAt,
   createdAt: properties.createdAt,
   updatedAt: properties.updatedAt,
@@ -165,7 +166,9 @@ export async function listProperties(q: PropertyQuery): Promise<Paginated<unknow
     q.operation === 'renta' ? properties.priceRentMxn : properties.priceSaleMxn;
   // relevancia: premium > destacada > normal; dentro de cada nivel, las que
   // están "en remate" van primero y luego las más recientes.
-  const featuredRank = sql`CASE ${properties.featured} WHEN 'premium' THEN 0 WHEN 'destacada' THEN 1 ELSE 2 END`;
+  // Una propiedad en exclusiva cuenta como destacada aunque no se marque a mano:
+  // así entra sola a la portada (§ decisión del cliente, ago-2026).
+  const featuredRank = sql`CASE WHEN ${properties.featured} = 'premium' THEN 0 WHEN ${properties.featured} = 'destacada' OR ${properties.isExclusive} THEN 1 ELSE 2 END`;
   const remateRank = sql`CASE WHEN ${properties.isRemate} THEN 0 ELSE 1 END`;
   const orderBy: SQL[] =
     q.sort === 'precio_asc'
@@ -215,6 +218,7 @@ export async function listPropertiesAdmin(
   if (q.type) c.push(eq(properties.propertyType, q.type));
   if (q.featured) c.push(eq(properties.featured, q.featured));
   if (q.remate === 'true') c.push(eq(properties.isRemate, true));
+  if (q.exclusiva === 'true') c.push(eq(properties.isExclusive, true));
   if (q.q)
     c.push(sql`${properties.searchVector} @@ plainto_tsquery('spanish', ${q.q})`);
   const where = and(...c);
@@ -266,6 +270,7 @@ export async function exportPropertiesRows(q: PropertyAdminQuery) {
   if (q.type) c.push(eq(properties.propertyType, q.type));
   if (q.featured) c.push(eq(properties.featured, q.featured));
   if (q.remate === 'true') c.push(eq(properties.isRemate, true));
+  if (q.exclusiva === 'true') c.push(eq(properties.isExclusive, true));
   if (q.q)
     c.push(sql`${properties.searchVector} @@ plainto_tsquery('spanish', ${q.q})`);
 
@@ -327,6 +332,7 @@ export async function mapProperties(q: PropertyMapQuery) {
       title: properties.title,
       propertyType: properties.propertyType,
       featured: properties.featured,
+      isExclusive: properties.isExclusive,
       lat: latSql,
       lng: lngSql,
       bedrooms: properties.bedrooms,
@@ -378,6 +384,7 @@ export async function mapProperties(q: PropertyMapQuery) {
       title: r.title,
       propertyType: r.propertyType,
       featured: r.featured,
+      isExclusive: r.isExclusive,
       operation,
       lat: r.lat,
       lng: r.lng,
@@ -589,6 +596,7 @@ export async function createProperty(
           : null,
       featured: input.featured ?? 'normal',
       isRemate: input.isRemate ?? false,
+      isExclusive: input.isExclusive ?? false,
       status: 'borrador',
       createdBy: userId,
     })
@@ -632,6 +640,7 @@ export async function updateProperty(id: string, input: UpdatePropertyInput) {
   assign('postalCode', 'postalCode');
   assign('featured', 'featured');
   assign('isRemate', 'isRemate');
+  assign('isExclusive', 'isExclusive');
   const numAssign = (k: keyof UpdatePropertyInput, col: string) => {
     if (input[k] !== undefined) set[col] = input[k]?.toString() ?? null;
   };
@@ -721,6 +730,7 @@ function buildPublishedPayload(
     balconyM2: num(d.balconyM2),
     gardenM2: num(d.gardenM2),
     isRemate: d.isRemate,
+    isExclusive: d.isExclusive,
     address: d.address,
     postalCode: d.postalCode,
     location: d.location,
@@ -900,6 +910,7 @@ export async function duplicateProperty(id: string, userId: string) {
       geo: src.geo,
       featured: src.featured,
       isRemate: src.isRemate,
+      isExclusive: src.isExclusive,
       status: 'borrador',
       slug: null,
       publishedAt: null,

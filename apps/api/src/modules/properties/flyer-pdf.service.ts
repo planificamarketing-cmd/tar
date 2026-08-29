@@ -159,6 +159,7 @@ export async function generateFlyerPdf(
   // Etiquetas (remate / destaque) sobre la portada.
   const badges: { text: string; bg: string; fg: string }[] = [];
   if (p.isRemate) badges.push({ text: 'EN REMATE', bg: BRAND, fg: '#FFFFFF' });
+  if (p.isExclusive) badges.push({ text: 'EXCLUSIVA', bg: NAVY, fg: '#FFFFFF' });
   if (p.featured === 'premium')
     badges.push({ text: 'PREMIUM', bg: GOLD, fg: '#FFFFFF' });
   else if (p.featured === 'destacada')

@@ -55,6 +55,11 @@ export function PropertyCard({ p }: { p: PropertyListItem }) {
               ★ DESTACADO
             </span>
           )}
+          {p.isExclusive && (
+            <span className="rounded-full bg-navy px-2.5 py-[5px] text-[11px] font-bold tracking-wide text-white shadow-[0_2px_8px_rgba(0,0,0,0.2)]">
+              EXCLUSIVA
+            </span>
+          )}
           <span className="rounded-full bg-white px-3 py-[5px] text-[11px] font-semibold text-navy shadow-[0_2px_8px_rgba(0,0,0,0.12)]">
             {operation === 'venta' ? 'En venta' : 'En renta'}
           </span>

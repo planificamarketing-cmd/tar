@@ -40,6 +40,7 @@ export type PropertyListItem = {
   status: PropertyStatus;
   featured: FeaturedLevel;
   isRemate: boolean;
+  isExclusive: boolean;
   priceSale: string | null;
   currencySale: string | null;
   priceRent: string | null;

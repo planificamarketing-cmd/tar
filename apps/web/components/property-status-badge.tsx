@@ -41,3 +41,17 @@ export function RemateBadge({ isRemate }: { isRemate: boolean }) {
     </span>
   );
 }
+
+// Chip "Exclusiva" — propiedad en exclusiva con TAR. Cuenta como destacada en el
+// orden por relevancia, así que además de la insignia entra sola a la portada.
+export function ExclusiveBadge({ isExclusive }: { isExclusive: boolean }) {
+  if (!isExclusive) return null;
+  return (
+    <span
+      className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold"
+      style={{ backgroundColor: '#0F1B2D14', color: '#0F1B2D' }}
+    >
+      Exclusiva
+    </span>
+  );
+}

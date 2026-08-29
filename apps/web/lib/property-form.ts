@@ -38,6 +38,7 @@ export type PropertyFormValues = {
   lng: string;
   featured: FeaturedLevel;
   isRemate: boolean;
+  isExclusive: boolean;
   amenities: string[];
 };
 
@@ -71,6 +72,7 @@ export const EMPTY_PROPERTY: PropertyFormValues = {
   lng: '',
   featured: 'normal',
   isRemate: false,
+  isExclusive: false,
   amenities: [],
 };
 
@@ -108,6 +110,7 @@ export function fromDetail(p: PropertyDetail): PropertyFormValues {
     lng: s(p.lng),
     featured: p.featured,
     isRemate: p.isRemate ?? false,
+    isExclusive: p.isExclusive ?? false,
     amenities: p.amenities.map((a) => a.id),
   };
 }
@@ -159,6 +162,7 @@ export function toPayload(v: PropertyFormValues): CreatePropertyInput {
     lng: num(v.lng),
     featured: v.featured,
     isRemate: v.isRemate,
+    isExclusive: v.isExclusive,
     amenities: v.amenities,
   } as CreatePropertyInput;
 }

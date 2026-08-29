@@ -78,6 +78,7 @@ function buildSvg(p: PropertyForFlyer): Buffer {
   // Etiquetas (remate / destaque) como pastillas.
   const pills: { text: string; bg: string; fg: string }[] = [];
   if (p.isRemate) pills.push({ text: 'EN REMATE', bg: BRAND, fg: WHITE });
+  if (p.isExclusive) pills.push({ text: 'EXCLUSIVA', bg: WHITE, fg: NAVY });
   if (p.featured === 'premium') pills.push({ text: 'PREMIUM', bg: GOLD, fg: NAVY });
   else if (p.featured === 'destacada')
     pills.push({ text: 'DESTACADA', bg: GOLD, fg: NAVY });

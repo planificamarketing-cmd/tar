@@ -44,6 +44,7 @@ export type MapPoint = {
   price: string | number | null;
   currency: string | null;
   featured: FeaturedLevel;
+  isExclusive?: boolean;
   // Campos enriquecidos (§7.1 vista mapa split): alimentan las tarjetas del panel
   // de lista lateral sin una segunda petición. Opcionales por compatibilidad.
   operation?: Operation; // operación a la que corresponde `price` (para el formato /m²)
@@ -99,6 +100,7 @@ export type MapPreview = Pick<
   | 'propertyType'
   | 'featured'
   | 'isRemate'
+  | 'isExclusive'
   | 'priceSale'
   | 'currencySale'
   | 'priceRent'

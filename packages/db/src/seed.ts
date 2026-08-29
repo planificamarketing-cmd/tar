@@ -79,6 +79,7 @@ interface SeedProperty {
   lat: number;
   lng: number;
   featured: 'normal' | 'destacada' | 'premium';
+  isExclusive?: boolean;
   amenities: string[]; // nombres
 }
 
@@ -107,7 +108,7 @@ const PROPS: SeedProperty[] = [
     type: 'departamento', loc: 1,
     priceSale: null, currencySale: null, priceRent: 28000, currencyRent: 'MXN',
     bedrooms: 1, bathrooms: 1, halfBathrooms: 0, parking: 1, areaM2: 75, lotM2: null,
-    lat: 19.4180, lng: -99.1626, featured: 'normal',
+    lat: 19.4180, lng: -99.1626, featured: 'normal', isExclusive: true,
     amenities: ['Roof garden', 'Elevador'],
   },
   {
@@ -242,6 +243,7 @@ async function main() {
         geo: sql`ST_SetSRID(ST_MakePoint(${p.lng}, ${p.lat}), 4326)::geography`,
         status: 'disponible',
         featured: p.featured,
+        isExclusive: p.isExclusive ?? false,
         publishedAt: sql`now()`,
         createdBy: admin!.id,
       })

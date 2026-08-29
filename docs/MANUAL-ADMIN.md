@@ -135,7 +135,7 @@ puede previsualizar y eliminar.
   **Patio**, **Terraza** y **Balcón** (departamento, casa y oficina) y **Jardín**
   (casa y departamento). Cada una es opcional y lleva sus m².
 
-### 4.7 Amenidades, destaque y remate
+### 4.7 Amenidades, destaque, remate y exclusiva
 - **Amenidades:** marca las que apliquen (alberca, elevador, seguridad…). Si te falta
   una, escríbela en **"Agregar amenidad"** y pulsa **Agregar**: se añade al catálogo y
   queda seleccionada. La próxima vez ya aparece para todas las propiedades.
@@ -143,6 +143,11 @@ puede previsualizar y eliminar.
   el orden del listado público.
 - **En remate:** casilla independiente del destaque. Aplica a **venta y renta** y
   convive con cualquier estatus; muestra la etiqueta **En remate** en el listado.
+- **En exclusiva:** casilla para las propiedades que TAR tiene en exclusiva. Hace dos
+  cosas: (1) muestra la insignia **Exclusiva** en el listado, la ficha y el flyer, y
+  (2) la propiedad **cuenta como destacada** en el orden por relevancia, así que
+  **entra sola a la sección "Propiedades destacadas" de la portada** sin que tengas
+  que cambiarle el destaque. En la exportación CSV aparece la columna *En exclusiva*.
 
 ### 4.8 Publicar
 Pulsa **Publicar** (en la ficha o en la tabla). Para publicar, la propiedad debe tener:

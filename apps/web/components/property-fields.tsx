@@ -350,6 +350,23 @@ export function PropertyFields({ value, onChange }: Props) {
             </span>
           </span>
         </label>
+
+        {/* Exclusiva — además de la insignia, cuenta como destacada al ordenar */}
+        <label className="mt-3 flex items-center gap-3">
+          <input
+            type="checkbox"
+            checked={value.isExclusive}
+            onChange={(e) => onChange({ isExclusive: e.target.checked })}
+            className="h-4 w-4 rounded border-line text-brand focus:ring-brand"
+          />
+          <span className="text-sm font-medium text-ink">
+            En exclusiva
+            <span className="ml-2 font-normal text-muted">
+              Marca la propiedad como exclusiva de TAR: muestra la insignia y entra
+              sola a las destacadas de la portada.
+            </span>
+          </span>
+        </label>
       </Section>
     </div>
   );

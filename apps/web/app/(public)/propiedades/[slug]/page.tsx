@@ -182,6 +182,11 @@ export default async function PropertyDetailPage({ params }: { params: { slug: s
                     En remate
                   </span>
                 )}
+                {p.isExclusive && (
+                  <span className="rounded-full bg-navy px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
+                    Exclusiva
+                  </span>
+                )}
               </div>
               <h1 className="mb-2 font-display text-[clamp(26px,3vw,38px)] font-semibold leading-tight tracking-[-0.5px] text-navy">
                 {p.title}
