@@ -72,7 +72,7 @@ No existía **nada**: ni `deploy.sh`, ni `Caddyfile`, ni compose de producción,
 
 **Huecos de código que siguen abiertos (ordenados por impacto):**
 1. **E2E Playwright: cero.** `pnpm test:e2e` corre en vacío (ningún paquete define el script). Faltan los 4 flujos del plan.
-2. **Lighthouse CI:** no existe `pnpm lighthouse` ni `lighthouserc`, pese a estar documentado en CLAUDE.md. §9 es contrato.
+2. **Lighthouse CI:** no existe `pnpm lighthouse` ni `lighthouserc`, pese a estar documentado. §9 es contrato.
 3. **CI incompleto:** `.github/workflows/ci.yml` corre lint+typecheck+build pero **no los tests**, ni e2e, ni Lighthouse como gate.
 4. **Caché HTTP + ETag en la API:** solo 2 endpoints tienen `Cache-Control`, ninguno ETag (§9, TTFB). Ojo: Caddy ya cachea media y assets, esto es para los GET públicos de la API.
 5. **Entregables §15:** falta ERD y manual de administración **en PDF**.

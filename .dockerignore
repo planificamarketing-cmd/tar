@@ -22,7 +22,6 @@ coverage
 # Historia y herramientas de desarrollo
 .git
 .github
-.claude
 .vscode
 
 # Documentación y material que no afecta al runtime
