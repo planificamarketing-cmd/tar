@@ -132,6 +132,20 @@ _12 tests (7 leads + 5 webhooks, incl. firma HMAC). Entrega real verificada en `
 - [x] Páginas `not-found` personalizadas; `images.remotePatterns` hacia el dominio de media (dev + prod por env).
 - [x] `next/font` self-hosted (familia DM); `next/image` en todo el sitio.
 
+### Ajustes solicitados por el cliente (agosto 2026)
+Peticiones posteriores al cierre de la Fase B. No amplían el alcance del PRD: ajustan
+presentación y **privacidad de la ubicación** sobre lo ya construido.
+
+- [x] **Página de mapa dedicada** `/mapa` (split lista + mapa sincronizados, filtros propios en la URL, precio por m² en propiedades comerciales) y **geocodificación del inventario real** con OpenStreetMap/Nominatim + publicación en lote. _(18 ago)_
+- [x] **Hero a pantalla completa** en la portada y **galería de ficha tipo mosaico con lightbox**. _(18 ago)_
+- [x] **Dirección exacta opcional en el folleto PDF**, desactivada por defecto: el folleto público (y el que se manda a un prospecto) muestra solo la zona; el staff descarga la copia interna con calle y número, o la versión sin dirección desde el mismo panel (`?direccion=0`). La ficha pública del portal también deja de imprimir la calle.
+- [x] **Logo del portal más grande** en la cabecera (64/84 px móvil/escritorio), con menos padding vertical para no crecer la barra fija.
+- [x] **Propiedades en exclusiva**: campo nuevo `is_exclusive`, insignia en listado/ficha/panel/flyers, filtro admin y, sobre todo, **cuentan como destacadas** en el orden por relevancia → entran solas a la portada.
+- [x] **Zona aproximada en el mapa de la ficha**: se conserva el pin y se dibuja un círculo de radio configurable (400 m por defecto), con la nota de que la dirección exacta se comparte durante el proceso.
+- [x] **Ficha PDF hacia el prospecto por webhook**: el aviso `lead.created` incluye `property.flyer` (URL pública descargable, nombre de archivo y `includesAddress: false`) para que la automatización lo adjunte al correo del interesado.
+
+**Pendiente del cliente:** confirmar si la ficha del portal debe seguir sin dirección exacta (hoy así queda) y el radio del círculo de zona.
+
 **Entregable:** sitio público completo, navegable, conectado a la API. ✅
 **DoD:** todas las rutas de §7.1 funcionan; una propiedad publicada aparece indexable con URL canónica; enviar un lead dispara webhook + email. ✅ **Verificado en vivo + `pnpm --filter web build`.** El **mapa funciona sin llave ni cuenta** (Leaflet + OpenStreetMap); verificado con capturas: mosaicos cargando, marcadores, clustering, vista previa al clic y pin arrastrable en el panel. Pendiente de FASE QA: métricas §9 (Lighthouse) en staging.
 

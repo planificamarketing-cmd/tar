@@ -38,7 +38,8 @@ Plantillas: [`_plantilla-semanal.md`](_plantilla-semanal.md) ·
 | 8 | Fase C Backoffice (usuarios, integraciones, scripts) · **cierre** | [semana-08](semana-08.md) | ✅ |
 | 9 | Fase B Frontend público (inicio, catálogo, ficha, empresa, SEO) | [semana-09](semana-09.md) | ✅ |
 | 10 | Fase B — mapa interactivo (buscador, ficha y panel) | [semana-10](semana-10.md) | ✅ |
-| 11–13 | Fase B — pulido y ajustes del cliente | _(en curso)_ | ⏳ |
+| 11 | Fase B — ajustes del cliente (privacidad de ubicación, exclusivas, marca) | [semana-11](semana-11.md) | ✅ |
+| 12–13 | Fase B — pulido y ajustes del cliente | _(en curso)_ | ⏳ |
 | 14–15 | Fase QA | — | ⏳ |
 | 16 | Lanzamiento | — | ⏳ |
 
