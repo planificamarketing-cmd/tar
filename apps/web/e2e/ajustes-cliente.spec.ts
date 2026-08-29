@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { fetchProperty, fetchPublicProperties, SHOTS } from './helpers';
+import { esperarMosaicos, fetchProperty, fetchPublicProperties, SHOTS } from './helpers';
 
 // Comprueba en navegador real los ajustes que pidió TAR (agosto 2026):
 // logo más grande, privacidad de la ubicación (sin calle + círculo de zona) y
@@ -69,7 +69,7 @@ test.describe('Ajustes del cliente — marca y ubicación', () => {
     await expect(mapa.locator('.leaflet-marker-icon')).toHaveCount(1);
     await expect(page.getByText(/zona aproximada/i)).toBeVisible();
     await expect(page.getByRole('link', { name: /cómo llegar/i })).toBeVisible();
-    await expect(page.locator('.leaflet-tile-loaded').first()).toBeVisible();
+    await esperarMosaicos(mapa);
     await page.screenshot({ path: `${SHOTS}/ficha-mapa-zona.png` });
   });
 });

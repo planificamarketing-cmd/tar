@@ -1,4 +1,4 @@
-import type { APIRequestContext } from '@playwright/test';
+import { expect, type APIRequestContext, type Locator } from '@playwright/test';
 
 const API = process.env.E2E_API_URL ?? 'http://localhost:4000';
 
@@ -35,3 +35,20 @@ export async function fetchProperty(
 
 // Carpeta donde se dejan las capturas de evidencia (fuera del repo por defecto).
 export const SHOTS = process.env.E2E_SHOTS_DIR ?? 'test-results/capturas';
+
+// Espera a que TODOS los mosaicos pedidos estén pintados (no solo el primero): si
+// el proveedor fallara, el mapa saldría gris y la prueba lo detectaría. Se compara
+// contra el total pedido en vez de un número fijo, porque el móvil necesita menos
+// mosaicos que el escritorio.
+export async function esperarMosaicos(mapa: Locator): Promise<void> {
+  await expect
+    .poll(
+      async () => {
+        const total = await mapa.locator('.leaflet-tile').count();
+        const listos = await mapa.locator('.leaflet-tile-loaded').count();
+        return total > 0 && listos === total ? 'listos' : `${listos}/${total}`;
+      },
+      { timeout: 20_000 },
+    )
+    .toBe('listos');
+}

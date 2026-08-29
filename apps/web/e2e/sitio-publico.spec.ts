@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { fetchPublicProperties, SHOTS } from './helpers';
+import { esperarMosaicos, fetchPublicProperties, SHOTS } from './helpers';
 
 // Humo del sitio público: que las rutas de §7.1 respondan y muestren contenido real.
 test.describe('Sitio público — humo', () => {
@@ -35,8 +35,9 @@ test.describe('Sitio público — humo', () => {
 
   test('la página de mapa carga el split de lista y mapa', async ({ page }) => {
     await page.goto('/mapa');
-    await expect(page.locator('.leaflet-container')).toBeVisible();
-    await expect(page.locator('.leaflet-tile-loaded').first()).toBeVisible();
+    const mapa = page.locator('.leaflet-container');
+    await expect(mapa).toBeVisible();
+    await esperarMosaicos(mapa);
     await page.screenshot({ path: `${SHOTS}/mapa.png` });
   });
 });

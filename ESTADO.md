@@ -41,8 +41,10 @@ pnpm test                                # 121 en verde
 - **Requisito del SO (una vez):** `sudo apt-get update && sudo apt-get install -y libnss3 libnspr4 libasound2t64`. Sin eso Chromium no arranca (`libnspr4.so`). No usar `playwright install-deps`: quiere 244 paquetes (Firefox, WebKit, xvfb).
 - El seed ahora pone **calle real** en dos propiedades (`street`), porque antes guardaba "Colonia, Municipio" como dirección y no se podía comprobar que el portal la oculta.
 
-## ⚠️ Hallazgo abierto: los mosaicos de CARTO ahora exigen llave
-En las capturas del navegador los mosaicos salen con la marca de agua **"API KEY REQUIRED"** (`carto.com/basemaps/apikey`). Comprobado con `curl` directo al tile: CARTO responde 200 pero estampa el aviso. **Afecta a producción**: el mapa se ve como si estuviera roto. Los mosaicos **estándar de OpenStreetMap** (`https://tile.openstreetmap.org/{z}/{x}/{y}.png`) responden limpios y sin llave. Como `MAP_TILES_URL` es configurable, el cambio es de una línea (el valor por defecto de `apps/web/lib/maps.ts`) — **pendiente de decidir con el cliente**: mosaicos OSM estándar (gratis, otro estilo) vs. cuenta gratuita de CARTO para conservar el estilo "voyager".
+## Mosaicos del mapa: CARTO → OpenStreetMap estándar (2026-08-29)
+Las capturas del navegador destaparon que **CARTO empezó a estampar "API KEY REQUIRED"** sobre los mosaicos servidos sin llave (comprobado también con `curl` al tile: responde 200 pero marcado). El cliente descartó abrir cuenta también en CARTO, así que el valor por defecto de `MAP_TILES_URL` pasa a los **mosaicos estándar de OpenStreetMap** (`https://tile.openstreetmap.org/{z}/{x}/{y}.png`), que responden limpios y sin cuenta. Verificado en navegador: ficha y `/mapa` pintan el mosaico completo, con la atribución obligatoria.
+- Sin `{s}` (subdominios) ni `{r}` (retina): esa URL no los admite.
+- **Condición de uso:** atribución visible, nada de descargas masivas y tráfico razonable. Si el portal creciera, la salida es proveedor de pago o servidor propio — solo cambian dos variables de entorno.
 
 ## Pendiente del cliente
 - Confirmar si la **ficha del portal** debe quedarse sin calle (hoy así está) y si **400 m** es el radio correcto del círculo.

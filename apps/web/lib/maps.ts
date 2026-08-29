@@ -5,28 +5,33 @@
 // PROVEEDOR — desviación documentada del PRD §7.0: el PRD contrataba Google Maps
 // Platform, pero el cliente decidió (2026-08-03) no abrir cuenta de facturación
 // en Google. Se sustituye por **Leaflet** (librería open-source, sin llave) con
-// mosaicos de CARTO sobre datos de OpenStreetMap. Beneficios: sin llave, sin
-// tarjeta, sin cuota que vigilar, y encaja con la regla de "solo dependencias
-// open-source / sin vendor lock-in" del proyecto.
+// los mosaicos ESTÁNDAR de OpenStreetMap. Sin llave, sin tarjeta, sin cuenta.
 //
-// El proveedor de mosaicos es CONFIGURABLE por entorno: si algún día se quiere
-// cambiar (MapTiler, Stadia, servidor propio) se ajustan dos variables, sin tocar
-// código. La atribución es obligatoria: OpenStreetMap la exige por licencia.
+// Se usaron mosaicos de CARTO hasta el 2026-08-29: ese día se detectó que CARTO
+// empezó a estampar "API KEY REQUIRED" sobre los mosaicos servidos sin llave, así
+// que se cambió al servidor estándar de la OpenStreetMap Foundation. El cliente
+// descartó abrir cuenta también en CARTO.
+//
+// Condiciones de uso de los mosaicos de OSM (tile usage policy): atribución
+// visible —obligatoria por licencia, NO retirarla—, nada de descargas masivas y
+// tráfico razonable. Si el portal creciera mucho, la salida es un proveedor de
+// pago o servidor propio: basta cambiar las dos variables de entorno, sin tocar
+// código.
 import { apiFetch } from './api';
 import type { FeaturedLevel, PropertyType } from '@tar/shared';
 import type { PublicPropertyFilters, Operation } from './public';
 import { isPerM2Price } from './public';
 import type { PropertyDetail } from './types';
 
-// Estilo claro y sobrio ("voyager"), que no compite con los marcadores de marca.
-// `{r}` sirve las teselas en alta densidad (retina) cuando el navegador lo pide.
+// Mosaicos estándar de OpenStreetMap. No admiten subdominios `{s}` ni la variante
+// retina `{r}`: la URL va tal cual.
 export const MAP_TILES_URL =
   process.env.NEXT_PUBLIC_MAP_TILES_URL ||
-  'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+  'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 
 export const MAP_TILES_ATTRIBUTION =
   process.env.NEXT_PUBLIC_MAP_TILES_ATTRIBUTION ||
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
+  '&copy; colaboradores de <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
 export const MAP_MAX_ZOOM = 19;
 

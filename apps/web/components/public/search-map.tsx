@@ -1,7 +1,7 @@
 'use client';
 
 // SearchMap (§7.1 vista mapa del listado, §7.3, §6.2). Leaflet + mosaicos de
-// CARTO/OpenStreetMap (ver la nota de proveedor en `lib/maps.ts`), con clustering
+// OpenStreetMap (ver la nota de proveedor en `lib/maps.ts`), con clustering
 // en cliente (supercluster) sobre los puntos de `GET /properties/map` para el
 // bbox visible y los filtros activos.
 //

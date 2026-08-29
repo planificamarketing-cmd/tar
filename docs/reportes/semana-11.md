@@ -62,7 +62,21 @@ que TAR tiene en exclusiva.
    En n8n basta un nodo **HTTP Request** que descargue esa URL y un nodo de correo que
    la adjunte al `email` del prospecto. **Siempre es la versión sin dirección.**
 
+7. **El mapa dejó de mostrar la marca de agua "API KEY REQUIRED".** Al revisar el
+   sitio en un navegador real apareció que **CARTO** —el proveedor de mosaicos que
+   se venía usando— empezó a estampar ese aviso sobre los mapas servidos sin llave.
+   Se cambió al servidor **estándar de OpenStreetMap**, que responde limpio y
+   tampoco pide cuenta ni tarjeta. El mapa se ve igual de completo, con otro estilo
+   de colores. Sigue siendo configurable por entorno, así que cambiar de proveedor
+   en el futuro no requiere tocar el código.
+
 ## Evidencia de que funciona
+- **Pruebas en navegador real (nuevas).** Se instaló **Playwright** y se dejaron
+  **18 pruebas** que recorren el sitio en escritorio (1440 px) y celular (390 px):
+  portada, listado con filtros, ficha, página de mapa, el tamaño del logotipo, que
+  la ficha **no** publique la calle, el círculo de zona sobre el mapa y las
+  insignias de exclusiva. **18 en verde.** Se ejecutan con `pnpm test:e2e` y dejan
+  capturas de cada pantalla.
 - **Calidad:** revisión de estilo y de tipos sin errores en todo el monorepo;
   **121 pruebas automáticas en verde** (9 nuevas: 5 sobre la línea de ubicación del
   folleto, 4 sobre el campo exclusiva) y compilación de producción del sitio en verde.
