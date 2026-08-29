@@ -1134,6 +1134,9 @@
                   "isRemate": {
                     "type": "boolean"
                   },
+                  "isExclusive": {
+                    "type": "boolean"
+                  },
                   "amenities": {
                     "type": "array",
                     "items": {
@@ -1699,6 +1702,9 @@
                   "isRemate": {
                     "type": "boolean"
                   },
+                  "isExclusive": {
+                    "type": "boolean"
+                  },
                   "amenities": {
                     "type": "array",
                     "items": {
@@ -1842,6 +1848,20 @@
             "required": true,
             "name": "id",
             "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "0",
+                "1"
+              ],
+              "description": "Dirección exacta en el folleto. 1 (por defecto) la incluye; 0 genera la versión para compartir con un prospecto, solo con la zona.",
+              "example": "0"
+            },
+            "required": false,
+            "name": "direccion",
+            "in": "query"
           }
         ],
         "responses": {
@@ -1898,7 +1918,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Folleto PDF completo de la propiedad (público)",
+            "description": "Folleto PDF de la propiedad (público). Nunca incluye la dirección exacta: solo la zona.",
             "content": {
               "application/pdf": {
                 "schema": {
