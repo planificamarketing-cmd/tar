@@ -36,6 +36,14 @@ curl -so f.pdf "localhost:4000/api/v1/properties/<slug>/flyer.pdf"   # 200, PDF 
 pnpm test                                # 121 en verde
 ```
 
+## Pruebas de navegador (Playwright) — nuevo en esta sesión
+`@playwright/test` instalado en `apps/web` con `playwright.config.ts` (proyectos **escritorio 1440** y **móvil 390**; levanta API y web solo si no están corriendo). `pnpm test:e2e` → **18 en verde**, 0 omitidas. Especificaciones en `apps/web/e2e/`: humo del sitio público y verificación de los ajustes de agosto (altura del logo medida sobre el elemento, ausencia de la calle en la ficha, círculo + pin en el mapa, insignia Exclusiva y su entrada a la portada). Capturas en `apps/web/test-results/capturas/` (ignorado por git).
+- **Requisito del SO (una vez):** `sudo apt-get update && sudo apt-get install -y libnss3 libnspr4 libasound2t64`. Sin eso Chromium no arranca (`libnspr4.so`). No usar `playwright install-deps`: quiere 244 paquetes (Firefox, WebKit, xvfb).
+- El seed ahora pone **calle real** en dos propiedades (`street`), porque antes guardaba "Colonia, Municipio" como dirección y no se podía comprobar que el portal la oculta.
+
+## ⚠️ Hallazgo abierto: los mosaicos de CARTO ahora exigen llave
+En las capturas del navegador los mosaicos salen con la marca de agua **"API KEY REQUIRED"** (`carto.com/basemaps/apikey`). Comprobado con `curl` directo al tile: CARTO responde 200 pero estampa el aviso. **Afecta a producción**: el mapa se ve como si estuviera roto. Los mosaicos **estándar de OpenStreetMap** (`https://tile.openstreetmap.org/{z}/{x}/{y}.png`) responden limpios y sin llave. Como `MAP_TILES_URL` es configurable, el cambio es de una línea (el valor por defecto de `apps/web/lib/maps.ts`) — **pendiente de decidir con el cliente**: mosaicos OSM estándar (gratis, otro estilo) vs. cuenta gratuita de CARTO para conservar el estilo "voyager".
+
 ## Pendiente del cliente
 - Confirmar si la **ficha del portal** debe quedarse sin calle (hoy así está) y si **400 m** es el radio correcto del círculo.
 - **Marcar en el panel** qué propiedades son exclusivas (el campo existe, el dato lo tiene TAR).
