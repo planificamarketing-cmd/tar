@@ -80,6 +80,9 @@ interface SeedProperty {
   lng: number;
   featured: 'normal' | 'destacada' | 'premium';
   isExclusive?: boolean;
+  // Calle y número. Se deja en algunas propiedades para poder comprobar que el
+  // portal NO la publica (solo la zona) y que el folleto interno sí la imprime.
+  street?: string;
   amenities: string[]; // nombres
 }
 
@@ -91,6 +94,7 @@ const PROPS: SeedProperty[] = [
     priceSale: 12500000, currencySale: 'MXN', priceRent: null, currencyRent: null,
     bedrooms: 3, bathrooms: 3, halfBathrooms: 1, parking: 2, areaM2: 185, lotM2: null,
     lat: 19.4333, lng: -99.1936, featured: 'premium',
+    street: 'Av. Presidente Masaryk 250',
     amenities: ['Alberca', 'Gimnasio', 'Seguridad 24h', 'Elevador'],
   },
   {
@@ -109,6 +113,7 @@ const PROPS: SeedProperty[] = [
     priceSale: null, currencySale: null, priceRent: 28000, currencyRent: 'MXN',
     bedrooms: 1, bathrooms: 1, halfBathrooms: 0, parking: 1, areaM2: 75, lotM2: null,
     lat: 19.4180, lng: -99.1626, featured: 'normal', isExclusive: true,
+    street: 'Calle Orizaba 101, int. 4',
     amenities: ['Roof garden', 'Elevador'],
   },
   {
@@ -239,7 +244,7 @@ async function main() {
         areaM2: p.areaM2?.toFixed(2) ?? null,
         lotM2: p.lotM2?.toFixed(2) ?? null,
         locationId: loc.id,
-        address: `${loc.colonia}, ${loc.municipio}`,
+        address: p.street ?? `${loc.colonia}, ${loc.municipio}`,
         geo: sql`ST_SetSRID(ST_MakePoint(${p.lng}, ${p.lat}), 4326)::geography`,
         status: 'disponible',
         featured: p.featured,
