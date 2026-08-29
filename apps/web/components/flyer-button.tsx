@@ -11,19 +11,23 @@ export function FlyerButton({
   className,
   label = 'Flyer',
   format = 'png',
+  includeAddress = true,
 }: {
   id: string;
   name: string;
   className?: string;
   label?: string;
   format?: 'png' | 'pdf';
+  // Solo aplica al folleto PDF: en `false` se descarga la versión sin la
+  // dirección exacta, la que se comparte con prospectos.
+  includeAddress?: boolean;
 }) {
   const [busy, setBusy] = useState(false);
 
   async function go() {
     setBusy(true);
     try {
-      await downloadFlyer(id, name, format);
+      await downloadFlyer(id, name, format, includeAddress);
     } catch {
       window.alert(
         `No se pudo generar el ${format === 'pdf' ? 'folleto PDF' : 'flyer'}. Intenta de nuevo.`,
@@ -41,7 +45,9 @@ export function FlyerButton({
       className={className}
       title={
         format === 'pdf'
-          ? 'Descargar el folleto PDF completo de la propiedad'
+          ? includeAddress
+            ? 'Descargar el folleto PDF completo, con la dirección exacta (uso interno)'
+            : 'Descargar el folleto PDF sin la dirección exacta, para compartir con un prospecto'
           : 'Descargar un flyer (imagen) para compartir'
       }
     >

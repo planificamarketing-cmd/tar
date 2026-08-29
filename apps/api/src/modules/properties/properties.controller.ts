@@ -211,9 +211,13 @@ export async function flyer(req: Request, res: Response): Promise<void> {
 }
 
 // Folleto PDF (staff, por id): incluye borradores para previsualizar antes de publicar.
+// La dirección exacta SÍ sale por defecto (es la copia interna del asesor); con
+// `?direccion=0` se genera la versión para compartir con un prospecto, que solo
+// muestra la zona.
 export async function flyerPdf(req: Request, res: Response): Promise<void> {
   const id = uuidSchema.parse(req.params.id);
-  const pdf = await generateFlyerPdf(id);
+  const includeAddress = req.query.direccion !== '0';
+  const pdf = await generateFlyerPdf(id, { includeAddress });
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', `inline; filename="ficha-${id}.pdf"`);
   res.setHeader('Cache-Control', 'no-store');
@@ -221,10 +225,12 @@ export async function flyerPdf(req: Request, res: Response): Promise<void> {
 }
 
 // Folleto PDF público (por slug): solo propiedades publicadas (getPropertyBySlug
-// aplica el filtro de estatus públicos y lanza 404 en borradores).
+// aplica el filtro de estatus públicos y lanza 404 en borradores). NUNCA lleva la
+// dirección exacta: este es el archivo que ve el visitante y el que viaja en el
+// webhook de prospectos.
 export async function flyerPdfPublic(req: Request, res: Response): Promise<void> {
   const prop = await svc.getPropertyBySlug(String(req.params.slug));
-  const pdf = await generateFlyerPdf(prop.id);
+  const pdf = await generateFlyerPdf(prop.id, { includeAddress: false });
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader(
     'Content-Disposition',

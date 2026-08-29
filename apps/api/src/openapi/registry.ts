@@ -388,7 +388,19 @@ export function buildOpenApiDocument() {
     tags: ['Propiedades'],
     summary: 'Folleto PDF (staff, por id; incluye borradores)',
     security: sec,
-    request: { params: idParam },
+    request: {
+      params: idParam,
+      query: z.object({
+        direccion: z
+          .enum(['0', '1'])
+          .optional()
+          .openapi({
+            description:
+              'Dirección exacta en el folleto. 1 (por defecto) la incluye; 0 genera la versión para compartir con un prospecto, solo con la zona.',
+            example: '0',
+          }),
+      }),
+    },
     responses: {
       200: {
         description: 'Folleto PDF completo de la propiedad',
@@ -407,7 +419,8 @@ export function buildOpenApiDocument() {
     },
     responses: {
       200: {
-        description: 'Folleto PDF completo de la propiedad (público)',
+        description:
+          'Folleto PDF de la propiedad (público). Nunca incluye la dirección exacta: solo la zona.',
         content: { 'application/pdf': { schema: { type: 'string', format: 'binary' } } },
       },
       404: { description: 'No encontrada o no publicada', ...json(errorRef) },

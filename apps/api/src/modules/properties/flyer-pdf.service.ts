@@ -83,7 +83,19 @@ async function loadCover(
   }
 }
 
-export async function generateFlyerPdf(id: string): Promise<Buffer> {
+export interface FlyerPdfOptions {
+  // La dirección exacta (calle y número) solo se imprime cuando el staff lo pide.
+  // Por defecto queda FUERA: los folletos que salen hacia un prospecto muestran
+  // únicamente la zona (colonia, municipio, estado), porque la ubicación exacta se
+  // reserva hasta que la operación avanza al cierre.
+  includeAddress?: boolean;
+}
+
+export async function generateFlyerPdf(
+  id: string,
+  opts: FlyerPdfOptions = {},
+): Promise<Buffer> {
+  const includeAddress = opts.includeAddress ?? false;
   const p = await getPropertyByIdAdmin(id);
 
   // Prepara imágenes (portada + hasta 6 de galería) en paralelo.
@@ -194,7 +206,7 @@ export async function generateFlyerPdf(id: string): Promise<Buffer> {
   const loc = p.location
     ? [p.location.colonia, p.location.municipio, p.location.estado].filter(Boolean).join(', ')
     : '';
-  const fullLoc = [p.address, loc].filter(Boolean).join(' · ');
+  const fullLoc = locationLine(p.address, loc, includeAddress);
   if (fullLoc) {
     doc.font('Helvetica').fontSize(10.5).fillColor(MUTED).text(fullLoc, M, y, { width: CW });
     y = doc.y;
@@ -326,6 +338,24 @@ export async function generateFlyerPdf(id: string): Promise<Buffer> {
 
   doc.end();
   return done;
+}
+
+// Línea de ubicación del folleto. Sin `includeAddress` solo sale la zona
+// (colonia, municipio, estado). Con ella, une la calle a la zona SIN repetirla:
+// en el inventario importado el campo `address` ya suele traer la colonia (mismo
+// criterio que `displayAddress` de la web).
+export function locationLine(
+  address: string | null | undefined,
+  zone: string,
+  includeAddress: boolean,
+): string {
+  if (!includeAddress) return zone;
+  const addr = (address ?? '').trim();
+  if (!addr) return zone;
+  if (!zone) return addr;
+  const norm = (t: string) =>
+    t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return norm(addr).includes(norm(zone)) ? addr : `${addr}, ${zone}`;
 }
 
 // Título de sección con filete, gestionando salto de página si no cabe.

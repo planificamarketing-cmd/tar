@@ -122,6 +122,14 @@ export default function EditPropertyPage() {
           <FlyerButton
             id={id}
             name={prop.title}
+            label="PDF sin dirección"
+            format="pdf"
+            includeAddress={false}
+            className="rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm font-medium text-ink shadow-sm transition hover:bg-canvas disabled:opacity-50"
+          />
+          <FlyerButton
+            id={id}
+            name={prop.title}
             label="Folleto PDF"
             format="pdf"
             className="rounded-xl bg-navy px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:opacity-50"

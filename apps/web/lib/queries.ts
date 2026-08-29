@@ -249,10 +249,12 @@ export async function downloadFlyer(
   id: string,
   name: string,
   format: 'png' | 'pdf' = 'png',
+  // El folleto PDF del panel sale CON la dirección exacta (copia interna); en
+  // `false` se pide la versión para compartir con un prospecto, sin dirección.
+  includeAddress = true,
 ): Promise<void> {
-  const blob = await apiBlob(
-    format === 'pdf' ? `/properties/admin/${id}/flyer.pdf` : `/properties/${id}/flyer`,
-  );
+  const pdfPath = `/properties/admin/${id}/flyer.pdf${includeAddress ? '' : '?direccion=0'}`;
+  const blob = await apiBlob(format === 'pdf' ? pdfPath : `/properties/${id}/flyer`);
   const slug = (name || id)
     .toLowerCase()
     .normalize('NFD')
@@ -263,7 +265,8 @@ export async function downloadFlyer(
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${format === 'pdf' ? 'ficha' : 'flyer'}-${slug || 'propiedad'}.${format}`;
+  const suffix = format === 'pdf' && !includeAddress ? '-sin-direccion' : '';
+  a.download = `${format === 'pdf' ? 'ficha' : 'flyer'}-${slug || 'propiedad'}${suffix}.${format}`;
   document.body.appendChild(a);
   a.click();
   a.remove();

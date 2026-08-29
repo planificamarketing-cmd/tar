@@ -166,6 +166,18 @@ En cada fila (columna **Acciones**):
   historia/post) con la foto de portada, el precio, la ubicación, los datos clave y las
   etiquetas (En remate / Premium). Disponible para todos los roles. También está en la
   ficha, como **Descargar flyer**.
+- **Folleto PDF** (en la ficha) — descarga la **ficha completa imprimible** (carta) con
+  portada, precio, especificaciones, descripción, características, superficies y
+  galería. Hay dos versiones:
+  - **Folleto PDF** — la copia **interna**: incluye la **dirección exacta** (calle y
+    número).
+  - **PDF sin dirección** — la copia para **enviar a un prospecto**: muestra solo la
+    zona (colonia, municipio, estado). El archivo se descarga con el sufijo
+    `-sin-direccion` para que no se confundan.
+
+  > La ficha PDF que el visitante descarga desde el portal, y la que viaja hacia tus
+  > automatizaciones cuando alguien deja sus datos, es **siempre la versión sin
+  > dirección**. La dirección exacta solo sale si tú descargas la copia interna.
 - **Editar** — abre la ficha.
 - **Duplicar** — crea una **copia como borrador** (con "(copia)" en el título) para
   publicar variantes rápido. Copia datos y amenidades; no copia las fotos.
