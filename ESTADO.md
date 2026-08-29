@@ -2,7 +2,7 @@
 
 > **Partida guardada del proyecto.** Este archivo (+ `git log`) es lo ÚNICO que se lee al iniciar sesión. NO releer el PRD, el plan ni el código completos: consultar solo la sección puntual que toque la tarea en curso. Se regenera (se sobrescribe) al final de cada sesión.
 
-**Última actualización:** 2026-08-29 · sesión: **AJUSTES PEDIDOS POR EL CLIENTE** (privacidad de la ubicación, exclusivas, marca y folleto hacia el prospecto). Antes de empezar se trajeron de `origin/main` 6 commits del 18 de agosto (geocodificación del inventario, página `/mapa`, hero a pantalla completa y galería con lightbox) y se verificaron: `lint` + `typecheck` + **112 tests** en verde. Al cerrar la sesión: **121 tests**, `lint`, `typecheck` y `build` de producción en verde.
+**Última actualización:** 2026-08-29 (cierre de sesión) · sesión: **AJUSTES PEDIDOS POR EL CLIENTE** (privacidad de la ubicación, exclusivas, marca y folleto hacia el prospecto). Antes de empezar se trajeron de `origin/main` 6 commits del 18 de agosto (geocodificación del inventario, página `/mapa`, hero a pantalla completa y galería con lightbox) y se verificaron: `lint` + `typecheck` + **112 tests** en verde. Al cerrar la sesión: **121 tests**, `lint`, `typecheck` y `build` de producción en verde.
 
 **Fase actual:** Fase B cerrada + **bloque de ajustes del cliente** (ver `PLAN_EJECUCION_FASES.md` → "Ajustes solicitados por el cliente"). Avance global ~97%. Lo que falta depende del cliente (servidor, dominio, datos oficiales, marcar exclusivas) o es QA medible solo en el servidor.
 
@@ -45,6 +45,11 @@ pnpm test                                # 121 en verde
 Las capturas del navegador destaparon que **CARTO empezó a estampar "API KEY REQUIRED"** sobre los mosaicos servidos sin llave (comprobado también con `curl` al tile: responde 200 pero marcado). El cliente descartó abrir cuenta también en CARTO, así que el valor por defecto de `MAP_TILES_URL` pasa a los **mosaicos estándar de OpenStreetMap** (`https://tile.openstreetmap.org/{z}/{x}/{y}.png`), que responden limpios y sin cuenta. Verificado en navegador: ficha y `/mapa` pintan el mosaico completo, con la atribución obligatoria.
 - Sin `{s}` (subdominios) ni `{r}` (retina): esa URL no los admite.
 - **Condición de uso:** atribución visible, nada de descargas masivas y tráfico razonable. Si el portal creciera, la salida es proveedor de pago o servidor propio — solo cambian dos variables de entorno.
+
+## Al retomar (siguiente sesión)
+1. **11 commits locales sin subir** a `origin/main`: revisar y `git push` si procede.
+2. Servidores apagados; Docker `tar-db` queda arriba. Para volver: `pnpm dev` (+ `pnpm db:seed` si hiciera falta).
+3. Con la decisión del cliente sobre el radio del círculo y la ficha sin calle, ajustar y avisar. Después, **Fase QA**: Lighthouse/§9 sobre el servidor real.
 
 ## Pendiente del cliente
 - Confirmar si la **ficha del portal** debe quedarse sin calle (hoy así está) y si **400 m** es el radio correcto del círculo.
