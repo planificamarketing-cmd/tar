@@ -175,6 +175,52 @@ en el panel (`https://tudominio.com/admin`).
 
 ---
 
+### 2.7 Cargar el inventario de propiedades
+
+La migración desde EasyBroker es **única** y se ejecuta a mano (no hay
+sincronización automática). El archivo CSV **no viaja en el repositorio**: hay
+que subirlo al servidor primero, desde tu equipo:
+
+```bash
+ssh deploy@<IP-del-servidor> 'mkdir -p /opt/tar/data/inventario'
+scp INVENTARIO_DE_PROPIEDADES.csv deploy@<IP-del-servidor>:/opt/tar/data/inventario/
+```
+
+Conviene ensayar primero **en seco**: parsea y reporta, sin escribir ni
+descargar nada.
+
+```bash
+cd /opt/tar
+docker compose --env-file .env -f infra/docker-compose.prod.yml run --rm \
+  -v /opt/tar/data:/data:ro api \
+  node dist/import-inventario.cjs /data/inventario/INVENTARIO_DE_PROPIEDADES.csv --dry-run
+```
+
+Si el resumen cuadra, se repite **sin** `--dry-run`. Tarda bastante: descarga
+todas las fotos de EasyBroker y las reconvierte a WebP.
+
+> ⚠️ **Hazlo antes de cancelar la cuenta de EasyBroker.** Las fotos se descargan
+> de sus servidores: al cancelar, dejan de existir y ya no se pueden recuperar.
+
+El importador es **idempotente** (se reconoce cada propiedad por su referencia
+externa), así que se puede repetir sin duplicar nada.
+
+**Las propiedades entran en `borrador`, no publicadas.** Sin
+`GOOGLE_GEOCODING_API_KEY` no se pueden ubicar en el mapa al importarlas. Para
+rellenar las coordenadas sin necesidad de cuenta de Google, con OpenStreetMap:
+
+```bash
+docker compose --env-file .env -f infra/docker-compose.prod.yml run --rm api \
+  node dist/geocode-borrador.cjs
+```
+
+Respeta el límite de 1 consulta por segundo de Nominatim, así que ~105
+propiedades tardan unos dos minutos. **No cambia el estatus a propósito**: cada
+propiedad se revisa (sobre todo el pin, que puede ser aproximado) y se publica
+desde el panel.
+
+---
+
 ## 3. Actualizaciones del día a día
 
 ```bash
@@ -370,7 +416,7 @@ debe responder `200` con `"status":"ok"` y `"db":true`.
 - [ ] `/srv/tar/media` creada y con el dueño correcto.
 - [ ] `./infra/deploy.sh` termina en verde y `https://dominio/health` responde.
 - [ ] Certificado HTTPS emitido (candado en el navegador).
-- [ ] Inventario importado y revisado (`pnpm import:inventario`), **antes** de
+- [ ] Inventario importado y revisado (§2.7), **antes** de
       cancelar EasyBroker: al cancelarlo las fotos originales dejan de existir.
 - [ ] Primer administrador creado y acceso al panel comprobado.
 - [ ] Formulario de contacto probado de punta a punta (llega el correo y el aviso).
