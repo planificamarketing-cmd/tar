@@ -58,7 +58,15 @@ const EnvSchema = z
     }
   });
 
-const parsed = EnvSchema.safeParse(process.env);
+// Una variable declarada pero vacía (`LEADS_NOTIFY_TO=` en el .env) llegaría como
+// cadena vacía y reventaría los validadores de formato (.email(), .url()) de las
+// que son opcionales. Se descartan para que "vacía" signifique "sin definir", que
+// es lo que espera quien deja un hueco en el .env pendiente de rellenar.
+const definedEnv = Object.fromEntries(
+  Object.entries(process.env).filter(([, value]) => value?.trim() !== ''),
+);
+
+const parsed = EnvSchema.safeParse(definedEnv);
 if (!parsed.success) {
   // eslint-disable-next-line no-console
   console.error(
