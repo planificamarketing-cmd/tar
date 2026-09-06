@@ -12,7 +12,8 @@
 - **Servidor:** `194.238.29.19` (Hostinger, Ubuntu 24.04.4 LTS, 4 vCPU / 7.8 GB / 96 GB).
 - **Acceso:** `ssh deploy@194.238.29.19` con llave ed25519 (`~/.ssh/id_ed25519` en el equipo de GBS). **Root por SSH está cerrado** y la autenticación por contraseña desactivada. `deploy` tiene `sudo` sin contraseña (`/etc/sudoers.d/90-deploy`).
 - **Código:** `/opt/tar` · **Imágenes:** `/srv/tar/media` (100 MB) · **`.env`:** `/opt/tar/.env` (600).
-- **Dominio previsto:** `propiedades.tarinternacional.com.mx` (**pendiente de DNS**).
+- **Dominio TEMPORAL en uso:** **https://tar.194.238.29.19.sslip.io** — funcionando con certificado Let's Encrypt válido. `sslip.io` es DNS comodín: resuelve al literal de la IP, sin cuenta ni configuración.
+- **Dominio definitivo previsto:** `propiedades.tarinternacional.com.mx` (**pendiente del registro DNS**, lo gestiona Byteware / `dns.byteware.com.mx`).
 - **Panel:** `/admin` — administrador `sistemas@gbs-digital.com` (contraseña provisional entregada aparte; cambiar al entrar).
 
 ## Lo hecho en esta sesión (2026-09-06)
@@ -26,9 +27,26 @@
 - **`1774039`** — La API entraba en **bucle de reinicio** porque `LEADS_NOTIFY_TO=` vacío no pasa `.email()` aunque el campo sea opcional (igual pasaría con `PUBLIC_API_URL` y `.url()`). Las variables vacías ahora se descartan antes de validar.
 - **`2c834d3`** — La imagen de producción no lleva `tsx` ni la carpeta `scripts/`, así que **el inventario no se podía importar en el servidor**. `import-inventario` y `geocode-borrador` se compilan al bundle, con entradas nombradas para que `dist/` siga plano (con lista, tsup replicaba carpetas y rompía el CMD del contenedor).
 - **`38cb5ac`** — El manual de despliegue no documentaba la importación en producción: nueva §2.7.
+- **`d9e76ef`** — **El más grave.** El renderizado en servidor resolvía la base relativa `NEXT_PUBLIC_API_URL` contra `http://localhost:4000`, donde dentro del contenedor `web` no escucha nadie: `/mapa` daba 500 y la portada y el catálogo se quedaban **vacíos en silencio** (los `fetch…Safe` se tragan el error), así que el portal habría mostrado cero propiedades **aun después de publicarlas**. Se añade `API_INTERNAL_URL` (variable de servidor), que el compose fija a `http://api:4000`.
+
+## Cómo pasar del dominio temporal al definitivo
+Cuando exista el registro `propiedades A 194.238.29.19`, son **tres pasos** (no basta reiniciar Caddy):
+
+```bash
+cd /opt/tar
+# 1. Las 7 variables de dominio del .env
+sed -i -E 's#tar\.194\.238\.29\.19\.sslip\.io#propiedades.tarinternacional.com.mx#g' .env
+# 2. Las URLs de imagen, que se guardaron ABSOLUTAS en la BD (1173 filas)
+docker compose --env-file .env -f infra/docker-compose.prod.yml exec -T db \
+  psql -U tar -d tar_portal -c "update property_images set \
+    url_webp  = replace(url_webp,  'tar.194.238.29.19.sslip.io', 'propiedades.tarinternacional.com.mx'), \
+    url_thumb = replace(url_thumb, 'tar.194.238.29.19.sslip.io', 'propiedades.tarinternacional.com.mx');"
+# 3. Reconstruir: las NEXT_PUBLIC_* se incrustan en el build
+./infra/deploy.sh
+```
 
 ## Siguiente (máx. 3)
-1. **DNS:** falta el registro `propiedades A 194.238.29.19` (lo gestiona Byteware, `dns.byteware.com.mx`). En cuanto resuelva: `docker compose -f infra/docker-compose.prod.yml restart caddy` y el certificado se emite solo. Verificado ya que el enrutado funciona (HTTP→HTTPS devuelve 308); solo falta el certificado.
+1. **DNS del dominio definitivo** y luego los tres pasos de arriba.
 2. **Revisar y publicar** las 105 propiedades desde el panel: siguen en `borrador` a propósito. Muchas tienen el pin **aproximado** (centro de colonia o de municipio) y hay que ajustarlo con el pin arrastrable.
 3. **Fase QA:** Lighthouse y métricas §9 contra el dominio real, que solo se pueden medir en línea.
 
