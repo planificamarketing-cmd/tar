@@ -31,8 +31,10 @@ portal (100 MB). Por tipo: 53 oficinas, 27 departamentos, 12 locales
 comerciales, 8 bodegas industriales, 2 casas, 2 edificios y 1 terreno.
 
 **4. Las propiedades quedaron ubicadas en el mapa sin costo.**
-Como no se abrió cuenta de Google, se ubicaron con OpenStreetMap. La mayoría
-quedó localizada a nivel de calle; algunas, al centro de su colonia o municipio.
+Como no se abrió cuenta de Google, se ubicaron con OpenStreetMap: **87 quedaron
+localizadas a nivel de calle, 18 de forma aproximada** (centro de su colonia o
+municipio) y **ninguna se quedó sin ubicar**. Las 18 aproximadas están listadas
+en el registro para afinarlas con el pin arrastrable del panel.
 
 ## Evidencia de que funciona
 - `./infra/deploy.sh` termina en verde y reporta: *"API sana"*, *"Conexión a

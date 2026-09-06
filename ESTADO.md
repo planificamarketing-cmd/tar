@@ -19,7 +19,7 @@
 1. **Aprovisionamiento completo del VPS** según `SETUP_SERVIDOR_UBUNTU.md`: usuario `deploy`, UFW (solo 22/80/443 — 5432 y 4000 cerrados), fail2ban, zona horaria CDMX, swap de 2 GB, `unattended-upgrades`, Docker 29.8.0 + Compose v5.5.1 con rotación de logs, y hardening de SSH.
 2. **Stack desplegado** con `./infra/deploy.sh`: `tar-db` (PostGIS 16-3.4), `tar-api`, `tar-web` y `tar-caddy`, los cuatro sanos. La API ve la base y PostGIS.
 3. **Inventario real importado:** 105 propiedades creadas (35 venta / 70 renta), **1173 imágenes descargadas y 18 caídas**. Todas quedan en `borrador`.
-4. **Geocodificación con Nominatim** (`geocode:borrador`), que no requiere cuenta de Google.
+4. **Geocodificación con Nominatim** (`geocode:borrador`), que no requiere cuenta de Google: **87 exactas a nivel de calle, 18 aproximadas (centro de colonia o municipio), 0 sin resultado**. Las 105 tienen coordenadas.
 
 ### Tres fallos reales encontrados al desplegar (corregidos)
 - **`4e43c13`** — El Caddyfile tenía fijo el bloque `www.{$SITE_DOMAIN}`. Con un subdominio, Caddy pedía certificado para un nombre inexistente y reintentaba contra Let's Encrypt gastando cupo. Ahora la redirección `www` es opcional (`infra/caddy-sites/www-redirect.caddy.example`), solo para dominios raíz.
