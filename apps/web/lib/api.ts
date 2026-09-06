@@ -7,6 +7,15 @@ import type { UserRole } from '@tar/shared';
 // En producción se fija `NEXT_PUBLIC_API_URL` (subdominio de la API). En desarrollo,
 // si no está, se deriva del host del navegador → funciona igual por `localhost:3000`
 // que por la IP de WSL (172.x:3000) sin reconfigurar nada.
+// Origen de la API para las peticiones que salen del SERVIDOR (SSR). En dev la API
+// vive en el mismo host (localhost:4000); en producción es OTRO contenedor y hay que
+// llamarla por el nombre del servicio de Docker (`http://api:4000`), porque dentro
+// del contenedor `web` no hay nada escuchando en localhost:4000. Se configura con
+// API_INTERNAL_URL (variable de servidor: se lee al arrancar, no se incrusta).
+function internalApiOrigin(): string {
+  return process.env.API_INTERNAL_URL ?? 'http://localhost:4000';
+}
+
 function getApiBase(): string {
   const fromEnv = process.env.NEXT_PUBLIC_API_URL;
   if (fromEnv) {
@@ -14,14 +23,14 @@ function getApiBase(): string {
     // resuelve same-origin solo, sin :4000 ni CORS — sirve para el demo por túnel y
     // para producción tras Caddy. En SSR necesita una base absoluta.
     if (fromEnv.startsWith('/') && typeof window === 'undefined') {
-      return `http://localhost:4000${fromEnv}`;
+      return `${internalApiOrigin()}${fromEnv}`;
     }
     return fromEnv;
   }
   if (typeof window !== 'undefined') {
     return `${window.location.protocol}//${window.location.hostname}:4000/api/v1`;
   }
-  return 'http://localhost:4000/api/v1';
+  return `${internalApiOrigin()}/api/v1`;
 }
 
 // En modo proxy de un solo origen, `NEXT_PUBLIC_API_URL` es relativo ("/api/v1") y

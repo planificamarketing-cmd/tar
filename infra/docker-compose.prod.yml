@@ -94,6 +94,10 @@ services:
       NODE_ENV: production
       PORT: 3000
       TZ: ${TZ:-America/Mexico_City}
+      # El sitio renderiza en el servidor y ahí NEXT_PUBLIC_API_URL ("/api/v1") no
+      # es una URL válida: hay que llamar a la API por el nombre del servicio de la
+      # red interna de Docker. Sin esto, el SSR va a localhost:4000 y no hay nada.
+      API_INTERNAL_URL: http://api:4000
     depends_on:
       api:
         condition: service_started

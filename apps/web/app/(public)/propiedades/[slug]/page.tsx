@@ -19,7 +19,12 @@ import {
 import type { PropertyDetail } from '@/lib/types';
 
 const SITE_URL = process.env.PUBLIC_SITE_URL ?? 'http://localhost:3000';
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+// Se resuelve como en lib/api.ts: NEXT_PUBLIC_API_URL es relativo ("/api/v1") tras
+// Caddy, y este módulo corre en el SERVIDOR, donde un valor relativo no es una URL
+// válida. API_INTERNAL_URL apunta al contenedor de la API en producción.
+const API_INTERNAL = process.env.API_INTERNAL_URL ?? 'http://localhost:4000';
+const API_PATH = process.env.NEXT_PUBLIC_API_URL ?? '/api/v1';
+const API_URL = API_PATH.startsWith('/') ? `${API_INTERNAL}${API_PATH}` : API_PATH;
 
 export async function generateMetadata({
   params,
