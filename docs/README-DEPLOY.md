@@ -31,8 +31,16 @@ https://tudominio.com/docs        → documentación interactiva de la API
 https://tudominio.com/health      → señal de vida (para monitoreo)
 ```
 
-`www.tudominio.com` redirige al dominio sin `www`, para tener una sola
-dirección canónica (importante para Google).
+Si el dominio es un **dominio raíz** (p. ej. `tarinternacional.com`) se puede
+activar además la redirección de `www.tudominio.com` hacia el dominio sin `www`,
+para tener una sola dirección canónica (importante para Google). Viene
+desactivada; se activa copiando `infra/caddy-sites/www-redirect.caddy.example`
+a `infra/caddy-sites/www-redirect.caddy` y reiniciando Caddy.
+
+⚠️ **No la actives si el dominio es un subdominio** (p. ej.
+`propiedades.tarinternacional.com.mx`): Caddy pediría un certificado para
+`www.propiedades…`, que no resuelve, y quedaría reintentando contra Let's
+Encrypt hasta agotar el cupo de emisiones.
 
 ---
 
@@ -103,7 +111,14 @@ openssl rand -base64 36
 
 ### 2.4 Apuntar el dominio
 
-En el panel de DNS del dominio, dos registros **A** hacia la IP del servidor:
+En el panel de DNS del dominio, un registro **A** hacia la IP del servidor:
+
+```
+propiedades.tarinternacional.com.mx    A    <IP-del-servidor>
+```
+
+Si en cambio se usara un **dominio raíz**, se añaden dos (y solo entonces se
+activa la redirección de `www`, ver §1):
 
 ```
 tarinternacional.com        A    <IP-del-servidor>
@@ -111,7 +126,11 @@ www.tarinternacional.com    A    <IP-del-servidor>
 ```
 
 Hazlo **antes** de desplegar: Caddy pide el certificado HTTPS en el primer
-arranque y necesita que el dominio ya resuelva.
+arranque y necesita que el dominio ya resuelva. Para comprobar que ya propagó:
+
+```bash
+getent hosts propiedades.tarinternacional.com.mx
+```
 
 ### 2.5 Desplegar
 
@@ -345,7 +364,7 @@ debe responder `200` con `"status":"ok"` y `"db":true`.
 ## 9. Lista de verificación para el arranque
 
 - [ ] Servidor preparado según `SETUP_SERVIDOR_UBUNTU.md` (firewall, SSH, Docker).
-- [ ] DNS de `dominio` y `www.dominio` apuntando al servidor.
+- [ ] DNS del dominio apuntando al servidor (y de `www.dominio` solo si es un dominio raíz y se activó la redirección).
 - [ ] `.env` completo, con contraseñas nuevas (no las de desarrollo).
 - [ ] Copia del `.env` guardada fuera del servidor, en un gestor de contraseñas.
 - [ ] `/srv/tar/media` creada y con el dueño correcto.

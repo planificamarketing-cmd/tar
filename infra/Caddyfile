@@ -7,6 +7,12 @@
 #   todo lo demás            → contenedor `web`  (Next.js, :3000)
 #
 # `SITE_DOMAIN` y `ACME_EMAIL` llegan del `.env` vía docker-compose.
+#
+# La redirección `www → dominio` NO está aquí: solo tiene sentido cuando
+# SITE_DOMAIN es un dominio raíz (apex). Si fuera un subdominio, Caddy pediría
+# un certificado para `www.<subdominio>` que no resuelve y quedaría reintentando
+# contra Let's Encrypt. Para activarla, copia
+# `caddy-sites/www-redirect.caddy.example` a `caddy-sites/www-redirect.caddy`.
 # TLS: automático con Let's Encrypt. Los certificados viven en el volumen
 # `caddy-data`; NO borrarlo (Let's Encrypt limita las re-emisiones).
 {
@@ -14,11 +20,6 @@
 	# Descomenta para probar contra el entorno de pruebas de Let's Encrypt sin
 	# gastar el cupo de certificados reales:
 	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
-}
-
-# www → dominio principal (una sola URL canónica, importante para SEO).
-www.{$SITE_DOMAIN} {
-	redir https://{$SITE_DOMAIN}{uri} permanent
 }
 
 {$SITE_DOMAIN} {

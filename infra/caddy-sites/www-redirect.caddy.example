@@ -1,0 +1,18 @@
+# Redirección `www.<dominio>` → `<dominio>` (una sola URL canónica, importante
+# para SEO). Está fuera del Caddyfile principal porque SOLO aplica cuando
+# `SITE_DOMAIN` es un dominio raíz (apex), p. ej. `tarinternacional.com`.
+#
+# NO la actives si SITE_DOMAIN es un subdominio (p. ej.
+# `propiedades.tarinternacional.com.mx`): Caddy pediría un certificado para
+# `www.propiedades...`, que no resuelve, y quedaría reintentando contra
+# Let's Encrypt hasta agotar el cupo de emisiones.
+#
+# Para activarla:
+#   cp infra/caddy-sites/www-redirect.caddy.example infra/caddy-sites/www-redirect.caddy
+#   docker compose -f infra/docker-compose.prod.yml restart caddy
+#
+# Requiere además un registro DNS A de `www.<dominio>` hacia la IP del servidor.
+
+www.{$SITE_DOMAIN} {
+	redir https://{$SITE_DOMAIN}{uri} permanent
+}
