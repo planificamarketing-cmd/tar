@@ -2,59 +2,43 @@
 
 > **Partida guardada del proyecto.** Este archivo (+ `git log`) es lo ÚNICO que se lee al iniciar sesión. NO releer el PRD, el plan ni el código completos: consultar solo la sección puntual que toque la tarea en curso. Se regenera (se sobrescribe) al final de cada sesión.
 
-**Última actualización:** 2026-08-29 (cierre de sesión) · sesión: **AJUSTES PEDIDOS POR EL CLIENTE** (privacidad de la ubicación, exclusivas, marca y folleto hacia el prospecto). Antes de empezar se trajeron de `origin/main` 6 commits del 18 de agosto (geocodificación del inventario, página `/mapa`, hero a pantalla completa y galería con lightbox) y se verificaron: `lint` + `typecheck` + **112 tests** en verde. Al cerrar la sesión: **121 tests**, `lint`, `typecheck` y `build` de producción en verde.
+**Última actualización:** 2026-09-06 · sesión: **PUESTA EN PRODUCCIÓN**. El portal está desplegado y corriendo en el VPS con el inventario real cargado. Falta un registro DNS (del cliente) para que salga a internet con HTTPS.
 
-**Fase actual:** Fase B cerrada + **bloque de ajustes del cliente** (ver `PLAN_EJECUCION_FASES.md` → "Ajustes solicitados por el cliente"). Avance global ~97%. Lo que falta depende del cliente (servidor, dominio, datos oficiales, marcar exclusivas) o es QA medible solo en el servidor.
+**Fase actual:** **Lanzamiento** (semana 16 del cronograma; se llegó adelantado). Avance global ~99%. Lo que queda depende del cliente o solo se mide con el dominio en línea.
 
 ---
 
-## Lo hecho en esta sesión (2026-08-29)
-Criterio de negocio detrás de casi todo: **TAR no divulga la ubicación exacta hasta que la operación avanza al cierre**.
+## Producción — datos de acceso
+- **Servidor:** `194.238.29.19` (Hostinger, Ubuntu 24.04.4 LTS, 4 vCPU / 7.8 GB / 96 GB).
+- **Acceso:** `ssh deploy@194.238.29.19` con llave ed25519 (`~/.ssh/id_ed25519` en el equipo de GBS). **Root por SSH está cerrado** y la autenticación por contraseña desactivada. `deploy` tiene `sudo` sin contraseña (`/etc/sudoers.d/90-deploy`).
+- **Código:** `/opt/tar` · **Imágenes:** `/srv/tar/media` (100 MB) · **`.env`:** `/opt/tar/.env` (600).
+- **Dominio previsto:** `propiedades.tarinternacional.com.mx` (**pendiente de DNS**).
+- **Panel:** `/admin` — administrador `sistemas@gbs-digital.com` (contraseña provisional entregada aparte; cambiar al entrar).
 
-1. **Dirección opcional en el folleto PDF, apagada por defecto** (`flyer-pdf.service.ts`).
-   - `generateFlyerPdf(id, { includeAddress })` — por defecto `false`.
-   - Público (`/properties/:slug/flyer.pdf`) → **siempre sin calle**. Staff (`/properties/admin/:id/flyer.pdf`) → **con calle**, salvo `?direccion=0`.
-   - Panel: botón nuevo **"PDF sin dirección"** junto a **"Folleto PDF"**; el archivo baja con sufijo `-sin-direccion`.
-   - `locationLine()` (exportada, con test unitario) evita la colonia duplicada del inventario importado.
-2. **La ficha pública ya no imprime la calle** (`propiedades/[slug]/page.tsx`): solo colonia/municipio/estado. `displayAddress()` queda en `lib/public.ts` sin usarse, por si se revierte.
-3. **Zona aproximada en el mapa de la ficha** (`property-map.tsx`): se conserva el pin (así lo pidió el cliente) y se añade un `Circle` de **400 m** configurable con `NEXT_PUBLIC_MAP_AREA_RADIUS_M`, más la nota al pie. Zoom inicial 15 → 14 para que el círculo entre completo.
-4. **Logo del portal más grande** (`site-header.tsx`): 52/66 px → **64/84 px**, con `py` reducido. Se reajustó el `pt-*` de todas las páginas públicas (`/propiedades`, `[slug]`, `/mapa`, `/nosotros`, `/contacto`, `/aviso-privacidad`).
-5. **Campo "En exclusiva"** (migración `0006_exotic_sunfire.sql`, columna `is_exclusive`).
-   - **Cuenta como destacada** en el `featuredRank` del orden por relevancia → entra sola a la portada. Verificado en vivo.
-   - Insignia en tarjeta, fila, ficha, vista previa del mapa, panel y **los dos flyers** (PNG y PDF).
-   - Filtro `?exclusiva=true` (listado admin y exportación), columna en el CSV, casilla en el editor, se copia al duplicar, viaja en el snapshot de los webhooks.
-   - El seed marca el **loft de Roma Norte** como exclusiva con destaque *normal*: sirve para comprobar el orden.
-6. **Ficha PDF hacia el prospecto por webhook** (`leads.service.ts`): `data.property.flyer = { url, filename, contentType, includesAddress: false }` en `lead.created`, solo si la propiedad está publicada. Nueva env **opcional** `PUBLIC_API_URL` (si falta, se deriva de `PUBLIC_SITE_URL` + `/api/v1`, que es lo correcto en producción detrás de Caddy).
+## Lo hecho en esta sesión (2026-09-06)
+1. **Aprovisionamiento completo del VPS** según `SETUP_SERVIDOR_UBUNTU.md`: usuario `deploy`, UFW (solo 22/80/443 — 5432 y 4000 cerrados), fail2ban, zona horaria CDMX, swap de 2 GB, `unattended-upgrades`, Docker 29.8.0 + Compose v5.5.1 con rotación de logs, y hardening de SSH.
+2. **Stack desplegado** con `./infra/deploy.sh`: `tar-db` (PostGIS 16-3.4), `tar-api`, `tar-web` y `tar-caddy`, los cuatro sanos. La API ve la base y PostGIS.
+3. **Inventario real importado:** 105 propiedades creadas (35 venta / 70 renta), **1173 imágenes descargadas y 18 caídas**. Todas quedan en `borrador`.
+4. **Geocodificación con Nominatim** (`geocode:borrador`), que no requiere cuenta de Google.
 
-**Documentación al día:** `docs/MANUAL-ADMIN.md` (dos versiones del folleto, campo exclusiva, receta de n8n para adjuntar el PDF), `docs/README-DEPLOY.md` y `.env.example` (dos variables nuevas), `docs/reportes/semana-11.md` + índice, y el bloque "Ajustes solicitados por el cliente" en `PLAN_EJECUCION_FASES.md`.
+### Tres fallos reales encontrados al desplegar (corregidos)
+- **`4e43c13`** — El Caddyfile tenía fijo el bloque `www.{$SITE_DOMAIN}`. Con un subdominio, Caddy pedía certificado para un nombre inexistente y reintentaba contra Let's Encrypt gastando cupo. Ahora la redirección `www` es opcional (`infra/caddy-sites/www-redirect.caddy.example`), solo para dominios raíz.
+- **`1774039`** — La API entraba en **bucle de reinicio** porque `LEADS_NOTIFY_TO=` vacío no pasa `.email()` aunque el campo sea opcional (igual pasaría con `PUBLIC_API_URL` y `.url()`). Las variables vacías ahora se descartan antes de validar.
+- **`2c834d3`** — La imagen de producción no lleva `tsx` ni la carpeta `scripts/`, así que **el inventario no se podía importar en el servidor**. `import-inventario` y `geocode-borrador` se compilan al bundle, con entradas nombradas para que `dist/` siga plano (con lista, tsup replicaba carpetas y rompía el CMD del contenedor).
+- **`38cb5ac`** — El manual de despliegue no documentaba la importación en producción: nueva §2.7.
 
-## Cómo verificarlo rápido
-```bash
-pnpm --filter api dev &                 # API en :4000 (Docker `tar-db` arriba)
-curl -s "localhost:4000/api/v1/properties?sort=relevancia&limit=6"   # el loft exclusiva sale en la portada
-curl -so f.pdf "localhost:4000/api/v1/properties/<slug>/flyer.pdf"   # 200, PDF sin calle
-pnpm test                                # 121 en verde
-```
-
-## Pruebas de navegador (Playwright) — nuevo en esta sesión
-`@playwright/test` instalado en `apps/web` con `playwright.config.ts` (proyectos **escritorio 1440** y **móvil 390**; levanta API y web solo si no están corriendo). `pnpm test:e2e` → **18 en verde**, 0 omitidas. Especificaciones en `apps/web/e2e/`: humo del sitio público y verificación de los ajustes de agosto (altura del logo medida sobre el elemento, ausencia de la calle en la ficha, círculo + pin en el mapa, insignia Exclusiva y su entrada a la portada). Capturas en `apps/web/test-results/capturas/` (ignorado por git).
-- **Requisito del SO (una vez):** `sudo apt-get update && sudo apt-get install -y libnss3 libnspr4 libasound2t64`. Sin eso Chromium no arranca (`libnspr4.so`). No usar `playwright install-deps`: quiere 244 paquetes (Firefox, WebKit, xvfb).
-- El seed ahora pone **calle real** en dos propiedades (`street`), porque antes guardaba "Colonia, Municipio" como dirección y no se podía comprobar que el portal la oculta.
-
-## Mosaicos del mapa: CARTO → OpenStreetMap estándar (2026-08-29)
-Las capturas del navegador destaparon que **CARTO empezó a estampar "API KEY REQUIRED"** sobre los mosaicos servidos sin llave (comprobado también con `curl` al tile: responde 200 pero marcado). El cliente descartó abrir cuenta también en CARTO, así que el valor por defecto de `MAP_TILES_URL` pasa a los **mosaicos estándar de OpenStreetMap** (`https://tile.openstreetmap.org/{z}/{x}/{y}.png`), que responden limpios y sin cuenta. Verificado en navegador: ficha y `/mapa` pintan el mosaico completo, con la atribución obligatoria.
-- Sin `{s}` (subdominios) ni `{r}` (retina): esa URL no los admite.
-- **Condición de uso:** atribución visible, nada de descargas masivas y tráfico razonable. Si el portal creciera, la salida es proveedor de pago o servidor propio — solo cambian dos variables de entorno.
-
-## Al retomar (siguiente sesión)
-1. **11 commits locales sin subir** a `origin/main`: revisar y `git push` si procede.
-2. Servidores apagados; Docker `tar-db` queda arriba. Para volver: `pnpm dev` (+ `pnpm db:seed` si hiciera falta).
-3. Con la decisión del cliente sobre el radio del círculo y la ficha sin calle, ajustar y avisar. Después, **Fase QA**: Lighthouse/§9 sobre el servidor real.
+## Siguiente (máx. 3)
+1. **DNS:** falta el registro `propiedades A 194.238.29.19` (lo gestiona Byteware, `dns.byteware.com.mx`). En cuanto resuelva: `docker compose -f infra/docker-compose.prod.yml restart caddy` y el certificado se emite solo. Verificado ya que el enrutado funciona (HTTP→HTTPS devuelve 308); solo falta el certificado.
+2. **Revisar y publicar** las 105 propiedades desde el panel: siguen en `borrador` a propósito. Muchas tienen el pin **aproximado** (centro de colonia o de municipio) y hay que ajustarlo con el pin arrastrable.
+3. **Fase QA:** Lighthouse y métricas §9 contra el dominio real, que solo se pueden medir en línea.
 
 ## Pendiente del cliente
-- Confirmar si la **ficha del portal** debe quedarse sin calle (hoy así está) y si **400 m** es el radio correcto del círculo.
-- **Marcar en el panel** qué propiedades son exclusivas (el campo existe, el dato lo tiene TAR).
-- Los de siempre: servidor, dominio, datos oficiales de contacto.
+- **El registro DNS** (bloquea la salida a internet).
+- **Datos oficiales:** `LEADS_NOTIFY_TO` (correo que recibe los prospectos) y `SENDGRID_API_KEY`; sin ellos el formulario de contacto guarda el lead pero no manda correo.
+- **Respaldos:** credenciales de Cloudflare R2 (`R2_*`) para la copia off-site; el respaldo local aún no está en cron.
+- **Confirmar el tipo de cambio** `USD_MXN_RATE` (hoy 18.50).
+- Marcar en el panel qué propiedades son **exclusivas**.
+- **No cancelar EasyBroker todavía** si se quiere reintentar las 18 imágenes caídas: al cancelar, esas fotos desaparecen.
 
 ## Recordatorio
 Lee solo la sección del PRD/plan que toque la tarea actual. No releas todo.

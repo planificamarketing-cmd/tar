@@ -41,7 +41,7 @@ Plantillas: [`_plantilla-semanal.md`](_plantilla-semanal.md) ·
 | 11 | Fase B — ajustes del cliente (privacidad de ubicación, exclusivas, marca) | [semana-11](semana-11.md) | ✅ |
 | 12–13 | Fase B — pulido y ajustes del cliente | _(en curso)_ | ⏳ |
 | 14–15 | Fase QA | — | ⏳ |
-| 16 | Lanzamiento | — | ⏳ |
+| 16 | Lanzamiento — despliegue en el servidor e inventario real | [semana-16](semana-16.md) | ⏳ |
 
 Quincenales: [quincena-1](quincena-1.md) (sem 1–2) · [quincena-2](quincena-2.md)
 (sem 3–4) · [quincena-3](quincena-3.md) (sem 5–6) · [quincena-4](quincena-4.md)
