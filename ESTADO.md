@@ -16,6 +16,28 @@
 - **Dominio definitivo previsto:** `propiedades.tarinternacional.com.mx` (**pendiente del registro DNS**, lo gestiona Byteware / `dns.byteware.com.mx`).
 - **Panel:** `/admin` — administrador `sistemas@gbs-digital.com` (contraseña provisional entregada aparte; cambiar al entrar).
 
+## ⚠️ Se trabaja DENTRO del servidor de producción (desde 2026-09-06)
+La sesión de Claude Code se movió al VPS: el repo de trabajo es `/opt/tar`, que es
+**el mismo que sirve el sitio en vivo**. No hay separación entre desarrollo y
+producción, así que:
+
+- **El `.env` de la raíz es el de PRODUCCIÓN.** No lo uses como si fuera de dev.
+- **NO corras `pnpm test`, `pnpm db:seed` ni `pnpm db:migrate` desde el host.**
+  Los tests hacen borrados (acotados a sus fixturas, pero reales) y el seed
+  inserta datos de muestra. Hoy fallarían solos porque `DATABASE_URL` apunta al
+  host `db`, que solo existe dentro de la red de Docker — esa es la única red de
+  seguridad que hay. Si alguna vez cambias esa variable, desaparece.
+- **Para desplegar un cambio:** commit → push → `./infra/deploy.sh`. El script
+  hace `git pull` y **se niega a desplegar si hay cambios sin commitear**.
+- **Para inspeccionar la BD:** `docker compose --env-file .env -f
+  infra/docker-compose.prod.yml exec -T db psql -U tar -d tar_portal`.
+- Node 20.20.2 y pnpm 9.15.9 instalados vía nvm (mismas versiones que el equipo
+  de GBS). `lint`, `typecheck` y `build` sí son seguros de correr.
+- `CLAUDE.md`, `.claude/` y la memoria **no están en el repo**: se copiaron a mano
+  y se excluyeron en `.git/info/exclude` (que no viaja con git). Si alguna vez se
+  vuelve a clonar el repo en otra máquina, hay que repetir ambas cosas o el
+  autocommit del hook `SessionEnd` los subiría al repositorio del cliente.
+
 ## Lo hecho en esta sesión (2026-09-06)
 1. **Aprovisionamiento completo del VPS** según `SETUP_SERVIDOR_UBUNTU.md`: usuario `deploy`, UFW (solo 22/80/443 — 5432 y 4000 cerrados), fail2ban, zona horaria CDMX, swap de 2 GB, `unattended-upgrades`, Docker 29.8.0 + Compose v5.5.1 con rotación de logs, y hardening de SSH.
 2. **Stack desplegado** con `./infra/deploy.sh`: `tar-db` (PostGIS 16-3.4), `tar-api`, `tar-web` y `tar-caddy`, los cuatro sanos. La API ve la base y PostGIS.
